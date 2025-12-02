@@ -31,7 +31,8 @@ class AuthResult {
 enum UserRole {
   candidate,
   employer,
-  school;
+  school,
+  admin;
 
   String get value => name;
 

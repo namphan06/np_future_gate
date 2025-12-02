@@ -6,6 +6,7 @@ import '../auth/login_screen.dart';
 import '../candidate/candidate_home_screen.dart';
 import '../employer/employer_home_screen.dart';
 import '../school/school_home_screen.dart';
+import '../admin/admin_home_screen.dart';
 
 /// Splash Screen - Kiểm tra auth state khi khởi động app
 class SplashScreen extends StatefulWidget {
@@ -51,6 +52,9 @@ class _SplashScreenState extends State<SplashScreen> {
               break;
             case UserRole.school:
               homeScreen = const SchoolHomeScreen();
+              break;
+            case UserRole.admin:
+              homeScreen = const AdminHomeScreen();
               break;
           }
           

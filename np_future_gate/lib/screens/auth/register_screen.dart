@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/screens/admin/admin_home_screen.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -61,6 +62,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return 'Nhà tuyển dụng';
       case UserRole.school:
         return 'Nhà trường';
+      case UserRole.admin:
+        return 'Quản trị viên';
     }
   }
 
@@ -72,6 +75,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return 'Tuyển dụng nhân tài';
       case UserRole.school:
         return 'Kết nối sinh viên với doanh nghiệp';
+      case UserRole.admin:
+        return 'Quản trị hệ thống';
     }
   }
 
@@ -83,6 +88,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         return Icons.business_outlined;
       case UserRole.school:
         return Icons.school_outlined;
+      case UserRole.admin:
+        return Icons.admin_panel_settings_outlined;
     }
   }
 
@@ -117,6 +124,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               break;
             case UserRole.school:
               homeScreen = const SchoolHomeScreen();
+              break;
+            case UserRole.admin:
+              homeScreen = const AdminHomeScreen();
               break;
           }
           
@@ -164,6 +174,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               break;
             case UserRole.school:
               homeScreen = const SchoolHomeScreen();
+            case UserRole.admin:
+              homeScreen = const AdminHomeScreen();
               break;
           }
           

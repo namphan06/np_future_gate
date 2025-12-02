@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/screens/admin/admin_home_screen.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -71,6 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 break;
               case UserRole.school:
                 homeScreen = const SchoolHomeScreen();
+         
+              case UserRole.admin:
+                homeScreen = const AdminHomeScreen();
                 break;
             }
             
@@ -118,6 +122,9 @@ class _LoginScreenState extends State<LoginScreen> {
               break;
             case UserRole.school:
               homeScreen = const SchoolHomeScreen();
+              break;
+            case UserRole.admin:
+              homeScreen = const AdminHomeScreen();
               break;
           }
           

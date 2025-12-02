@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/navigation/custom_bottom_nav_bar.dart';
-import '../test/test_home_page.dart';
-import '../test/test_search_page.dart';
-import '../test/test_tools_page.dart';
-import '../test/test_settings_page.dart';
+import 'home_page_employer.dart';
+import 'search_page_employer.dart';
+import 'tools_page_employer.dart';
+import 'profile_page_employer.dart';
 
 class EmployerHomeScreen extends StatefulWidget {
   const EmployerHomeScreen({super.key});
@@ -17,10 +17,10 @@ class _EmployerHomeScreenState extends State<EmployerHomeScreen> {
   int _currentIndex = 0;
   
   final List<Widget> _pages = const [
-    TestHomePage(),
-    TestSearchPage(),
-    TestToolsPage(),
-    TestSettingsPage(),
+    HomePageEmployer(),
+    SearchPageEmployer(),
+    ToolsPageEmployer(),
+    ProfilePageEmployer(),
   ];
 
   @override
@@ -30,7 +30,7 @@ class _EmployerHomeScreenState extends State<EmployerHomeScreen> {
       extendBody: true,
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppMainColors.primaryGradient,
+          gradient: AppMainColors.lightGradient,
         ),
         child: _pages[_currentIndex],
       ),
