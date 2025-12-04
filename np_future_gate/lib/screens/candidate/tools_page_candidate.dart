@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/screens/cv/cv_creation_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_management_screen.dart';
 import '../../core/theme/app_main_colors.dart';
 
 class ToolsPageCandidate extends StatelessWidget {
@@ -172,7 +174,14 @@ class ToolsPageCandidate extends StatelessWidget {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: () => _showComingSoon(context, 'Tạo CV mới'),
+                              onTap: (){
+                                Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => const CVCreationScreen(),
+  ),
+);
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: Row(
@@ -228,7 +237,14 @@ class ToolsPageCandidate extends StatelessWidget {
                                 title: 'CV đã tạo',
                                 subtitle: '3 CV',
                                 color: Colors.blue,
-                                onTap: () => _showComingSoon(context, 'CV đã tạo'),
+                                onTap: () {
+                                   Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => const CVManagementScreen(),
+  ),);
+                                  
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),

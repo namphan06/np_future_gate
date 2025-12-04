@@ -1,0 +1,64 @@
+-- extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- helper to update updated_at timestamp
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
+-- cv_templates table
+CREATE TABLE public.cv_templates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  mcv text NOT NULL UNIQUE,
+  title text NOT NULL,
+  description text,
+  tags text[] DEFAULT ARRAY[]::text[],
+  data jsonb DEFAULT '{}'::jsonb,
+  type text NOT NULL CHECK (type IN ('general', 'field', 'upload')),
+  user_create uuid REFERENCES auth.users ON DELETE SET NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- trigger to maintain updated_at
+CREATE TRIGGER trg_cv_templates_updated_at
+BEFORE UPDATE ON public.cv_templates
+FOR EACH ROW
+EXECUTE FUNCTION public.update_updated_at_column();
+
+-- useful indexes
+CREATE INDEX idx_cv_templates_tags_gin ON public.cv_templates USING GIN (tags);
+CREATE INDEX idx_cv_templates_user_create ON public.cv_templates (user_create);
+CREATE INDEX idx_cv_templates_mcv ON public.cv_templates (mcv);
+
+
+
+-- Bật RLS nếu chưa bật
+ALTER TABLE public.cv_templates ENABLE ROW LEVEL SECURITY;
+
+-- Cho phép người đã đăng nhập SELECT chỉ các bản ghi của họ
+CREATE POLICY "Select own cv" ON public.cv_templates
+  FOR SELECT
+  USING (user_create = auth.uid());
+
+-- Cho phép người đã đăng nhập INSERT nhưng chỉ khi giá trị user_create bằng auth.uid()
+CREATE POLICY "Insert own cv" ON public.cv_templates
+  FOR INSERT
+  WITH CHECK (user_create = auth.uid());
+
+-- Cho phép người đã đăng nhập UPDATE chỉ lên bản ghi của họ
+CREATE POLICY "Update own cv" ON public.cv_templates
+  FOR UPDATE
+  USING (user_create = auth.uid())
+  WITH CHECK (user_create = auth.uid());
+
+-- Cho phép người đã đăng nhập DELETE chỉ bản ghi của họ
+CREATE POLICY "Delete own cv" ON public.cv_templates
+  FOR DELETE
+  USING (user_create = auth.uid());

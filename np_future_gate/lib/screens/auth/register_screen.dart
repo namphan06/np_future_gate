@@ -259,7 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
 
                   Row(
-                    children: UserRole.values.map((role) {
+                    children: UserRole.values.where((role) => role != UserRole.admin).map((role) {
                       final isSelected = _selectedRole == role;
                       return Expanded(
                         child: Padding(
