@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/repositories/auth_repository.dart';
+import '../../core/models/profile_model.dart';
+import '../profile/edit_profile_screen.dart';
 
 class SettingsPageCandidate extends StatefulWidget {
   const SettingsPageCandidate({super.key});
@@ -11,95 +14,137 @@ class SettingsPageCandidate extends StatefulWidget {
 
 class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
   final supabaseService = SupabaseService.instance;
+  final _authRepo = AuthRepository();
+  Profile? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final profile = await _authRepo.getCurrentUserProfile();
+    if (mounted) {
+      setState(() {
+        _profile = profile;
+      });
+    }
+  }
+
+  Future<void> _navigateToEditProfile() async {
+    // Use existing profile if available, otherwise fetch
+    final profile = _profile ?? await _authRepo.getCurrentUserProfile();
+    
+    if (profile != null && mounted) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => EditProfileScreen(profile: profile)),
+      );
+      if (result == true) {
+        _loadProfile(); // Reload profile from DB to get latest avatar
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể tải thông tin hồ sơ')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final currentUser = supabaseService.currentUser;
+    // Prioritize profile avatar, fallback to user metadata
+    final avatarUrl = _profile?.avatarUrl ?? currentUser?.userMetadata?['avatar_url'];
+    final fullName = _profile?.fullName ?? currentUser?.userMetadata?['full_name'] ?? 'Người dùng';
+    final phone = _profile?.phone ?? currentUser?.userMetadata?['phone'];
 
     return Stack(
       children: [
-        Container(
-          decoration: const BoxDecoration(
-             color: AppMainColors.backgroundLightStart,
-          ),
-          child: SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                // Profile Header
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 20,
-                          offset: const Offset(0, 4),
+            Container(
+              decoration: const BoxDecoration(
+                 color: AppMainColors.backgroundLightStart,
+              ),
+              child: SafeArea(
+                child: CustomScrollView(
+                  slivers: [
+                    // Profile Header
+                    SliverToBoxAdapter(
+                      child: Container(
+                        margin: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        // Avatar - Rectangle with rounded corners
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            gradient: currentUser?.userMetadata?['avatar_url'] == null
-                                ? LinearGradient(
-                                    colors: [
-                                      AppMainColors.primary.withOpacity(0.8),
-                                      AppMainColors.primaryDark,
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  )
-                                : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppMainColors.primary.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: currentUser?.userMetadata?['avatar_url'] != null
-                                ? Image.network(
-                                    currentUser!.userMetadata!['avatar_url'],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              AppMainColors.primary.withOpacity(0.8),
-                                              AppMainColors.primaryDark,
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.person_rounded,
-                                          size: 40,
-                                          color: Colors.white,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : const Icon(
-                                    Icons.person_rounded,
-                                    size: 40,
-                                    color: Colors.white,
+                        child: Row(
+                          children: [
+                            // Avatar - Rectangle with rounded corners
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                gradient: avatarUrl == null
+                                    ? LinearGradient(
+                                        colors: [
+                                          AppMainColors.primary.withOpacity(0.8),
+                                          AppMainColors.primaryDark,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      )
+                                    : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppMainColors.primary.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
-                          ),
-                        ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: avatarUrl != null
+                                    ? Image.network(
+                                        avatarUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  AppMainColors.primary.withOpacity(0.8),
+                                                  AppMainColors.primaryDark,
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              Icons.person_rounded,
+                                              size: 40,
+                                              color: Colors.white,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : const Icon(
+                                        Icons.person_rounded,
+                                        size: 40,
+                                        color: Colors.white,
+                                      ),
+                              ),
+                            ),
                         const SizedBox(width: 16),
 
                         // User Info
@@ -109,7 +154,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                             children: [
                               // User Name
                               Text(
-                                currentUser?.userMetadata?['full_name'] ?? 'Người dùng',
+                                fullName,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -144,7 +189,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                               ),
 
                               // Phone if available
-                              if (currentUser?.userMetadata?['phone'] != null) ...[
+                              if (phone != null) ...[
                                 const SizedBox(height: 4),
                                 Row(
                                   children: [
@@ -155,7 +200,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      currentUser!.userMetadata!['phone'],
+                                      phone,
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: Colors.grey.shade600,
@@ -178,7 +223,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
-                              onTap: () => _showComingSoon(context, 'Chỉnh sửa hồ sơ'),
+                              onTap: _navigateToEditProfile,
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
                                 child: Icon(
@@ -218,7 +263,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                           title: 'Chỉnh sửa hồ sơ',
                           subtitle: 'Cập nhật thông tin cá nhân',
                           color: Colors.blue,
-                          onTap: () => _showComingSoon(context, 'Chỉnh sửa hồ sơ'),
+                          onTap: _navigateToEditProfile,
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

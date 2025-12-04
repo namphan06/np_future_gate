@@ -18,11 +18,34 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
   List<Map<String, dynamic>> _cvList = [];
   bool _isLoading = false;
   String _searchText = '';
+  final Set<String> _selectedTags = {};
 
   @override
   void initState() {
     super.initState();
     _loadCVs();
+  }
+
+  List<String> get _allTags {
+    final tags = <String>{};
+    for (var cv in _cvList) {
+      if (cv['tags'] != null) {
+        for (var tag in cv['tags']) {
+          tags.add(tag.toString());
+        }
+      }
+    }
+    return tags.toList()..sort();
+  }
+
+  void _toggleTag(String tag) {
+    setState(() {
+      if (_selectedTags.contains(tag)) {
+        _selectedTags.remove(tag);
+      } else {
+        _selectedTags.add(tag);
+      }
+    });
   }
 
   Future<void> _loadCVs() async {
@@ -244,59 +267,217 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Quản lý CV'),
-          elevation: 0,
-          backgroundColor: Colors.blue[700],
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'CV Chung'),
-              Tab(text: 'Theo lĩnh vực'),
-              Tab(text: 'Upload'),
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                onChanged: (value) => setState(() => _searchText = value),
-                decoration: InputDecoration(
-                  hintText: 'Tìm kiếm CV...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  suffixIcon: _searchText.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () => setState(() => _searchText = ''),
-                        )
-                      : null,
-                ),
-              ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.blue[50]!, Colors.white],
             ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Custom Header
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quản lý CV',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Danh sách CV đã tạo của bạn',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
-            // Tab Views
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : TabBarView(
-                      children: [
-                        _buildGeneralTab(),
-                        _buildDomainTab(),
-                        _buildUploadTab(),
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
+                    child: TextField(
+                      onChanged: (value) => setState(() => _searchText = value),
+                      decoration: InputDecoration(
+                        hintText: 'Tìm kiếm CV...',
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                        prefixIcon: Icon(Icons.search, color: Colors.blue[400]),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        suffixIcon: _searchText.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () => setState(() => _searchText = ''),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Tag Filters
+                if (_allTags.isNotEmpty)
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      children: [
+                        _buildFilterChip('Tất cả', _selectedTags.isEmpty, isAll: true),
+                        const SizedBox(width: 8),
+                        ..._allTags.map((tag) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildFilterChip(tag, _selectedTags.contains(tag)),
+                        )),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
+
+                // Custom Tab Bar
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TabBar(
+                    labelColor: Colors.blue[700],
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: Colors.blue[700],
+                    indicatorWeight: 3,
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      Tab(text: 'CV Chung'),
+                      Tab(text: 'Theo lĩnh vực'),
+                      Tab(text: 'Upload'),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Tab Views
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : TabBarView(
+                          children: [
+                            _buildGeneralTab(),
+                            _buildDomainTab(),
+                            _buildUploadTab(),
+                          ],
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _showCreateOptions,
           tooltip: 'Tạo CV mới',
+          backgroundColor: Colors.blue[600],
           child: const Icon(Icons.add),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, bool isSelected, {bool isAll = false}) {
+    return GestureDetector(
+      onTap: () {
+        if (isAll) {
+          setState(() {
+            _selectedTags.clear();
+          });
+        } else {
+          _toggleTag(label);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.grey[300]!,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
         ),
       ),
     );
@@ -308,7 +489,12 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
       final type = cv['type'] ?? 'general';
       final title = (cv['title'] ?? '').toLowerCase();
       final searchMatch = _searchText.isEmpty || title.contains(_searchText.toLowerCase());
-      return type == 'general' && searchMatch;
+      
+      // Tag filtering
+      final tags = List<String>.from(cv['tags'] ?? []);
+      final tagMatch = _selectedTags.isEmpty || tags.any((t) => _selectedTags.contains(t));
+
+      return type == 'general' && searchMatch && tagMatch;
     }).toList();
 
     if (generalCVs.isEmpty) {
@@ -316,7 +502,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       itemCount: generalCVs.length,
       itemBuilder: (context, index) => _buildCVCard(generalCVs[index]),
     );
@@ -327,6 +513,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
     return _DomainCVList(
       cvList: _cvList,
       searchText: _searchText,
+      selectedTags: _selectedTags, // Pass selected tags
       onView: _viewCV,
       onEdit: (id) => _editCV(id),
       onDelete: (id, title) => _deleteCV(id, title),
@@ -339,18 +526,21 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
       final type = cv['type'];
       final title = (cv['title'] ?? '').toLowerCase();
       final searchMatch = _searchText.isEmpty || title.contains(_searchText.toLowerCase());
-      return type == 'upload' && searchMatch;
+      
+      // Tag filtering (Uploads might not have tags, but if they do)
+      final tags = List<String>.from(cv['tags'] ?? []);
+      final tagMatch = _selectedTags.isEmpty || tags.any((t) => _selectedTags.contains(t));
+
+      return type == 'upload' && searchMatch && tagMatch;
     }).toList();
 
     return Column(
       children: [
-        // Removed Upload Button as requested
-        const SizedBox(height: 16),
         Expanded(
           child: uploadedCVs.isEmpty
               ? _buildEmptyState('Chưa có CV nào được tải lên')
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   itemCount: uploadedCVs.length,
                   itemBuilder: (context, index) => _buildCVCard(uploadedCVs[index]),
                 ),
@@ -490,6 +680,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
 class _DomainCVList extends StatefulWidget {
   final List<Map<String, dynamic>> cvList;
   final String searchText;
+  final Set<String> selectedTags;
   final Function(Map<String, dynamic>) onView;
   final Function(String) onEdit;
   final Function(String, String) onDelete;
@@ -498,6 +689,7 @@ class _DomainCVList extends StatefulWidget {
     Key? key,
     required this.cvList,
     required this.searchText,
+    required this.selectedTags,
     required this.onView,
     required this.onEdit,
     required this.onDelete,
@@ -538,6 +730,12 @@ class _DomainCVListState extends State<_DomainCVList> {
         if (!title.contains(widget.searchText.toLowerCase())) return false;
       }
 
+      // Filter by tags
+      final tags = List<String>.from(cv['tags'] ?? []);
+      if (widget.selectedTags.isNotEmpty) {
+        if (!tags.any((t) => widget.selectedTags.contains(t))) return false;
+      }
+
       return true;
     }).toList();
 
@@ -545,30 +743,20 @@ class _DomainCVListState extends State<_DomainCVList> {
       children: [
         // Category Filter
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: SizedBox(
-            height: 50,
+            height: 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: FilterChip(
-                    label: const Text('Tất cả'),
-                    selected: _selectedCategory == null,
-                    onSelected: (_) => setState(() => _selectedCategory = null),
-                  ),
-                ),
-                ...(_categories.map((cat) {
+                _buildCategoryChip('Tất cả', _selectedCategory == null),
+                const SizedBox(width: 8),
+                ..._categories.map((cat) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: FilterChip(
-                      label: Text(cat),
-                      selected: _selectedCategory == cat,
-                      onSelected: (_) => setState(() => _selectedCategory = cat),
-                    ),
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildCategoryChip(cat, _selectedCategory == cat),
                   );
-                }).toList()),
+                }).toList(),
               ],
             ),
           ),
@@ -578,13 +766,20 @@ class _DomainCVListState extends State<_DomainCVList> {
         Expanded(
           child: filteredCVs.isEmpty
               ? Center(
-                  child: Text(
-                    'Không tìm thấy CV lĩnh vực nào',
-                    style: TextStyle(color: Colors.grey[600]),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.search_off, size: 64, color: Colors.grey[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Không tìm thấy CV lĩnh vực nào',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   itemCount: filteredCVs.length,
                   itemBuilder: (context, index) {
                     final cv = filteredCVs[index];
@@ -596,135 +791,206 @@ class _DomainCVListState extends State<_DomainCVList> {
     );
   }
 
+  Widget _buildCategoryChip(String label, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = label == 'Tất cả' ? null : label;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.green : Colors.grey[300]!,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.green.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCVCard(Map<String, dynamic> cv) {
     final title = cv['title'] ?? 'Untitled CV';
     final mcv = cv['mcv'] ?? 'CV001';
     final tags = List<String>.from(cv['tags'] ?? []);
     final typeField = cv['typeField'];
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          widget.onView(cv);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              'Template: $mcv',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            widget.onView(cv);
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.description, color: Colors.green[700]),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
-                            if (typeField != null) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(
+                                'Template: $mcv',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
                                 ),
-                                child: Text(
-                                  typeField,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.orange[800],
-                                    fontWeight: FontWeight.bold,
+                              ),
+                              if (typeField != null) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                                  ),
+                                  child: Text(
+                                    typeField,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.orange[800],
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
-                          ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton(
+                      onSelected: (action) {
+                        if (action == 'view') {
+                          widget.onView(cv);
+                        } else if (action == 'edit') {
+                          widget.onEdit(cv['id']);
+                        } else if (action == 'delete') {
+                          widget.onDelete(cv['id'], title);
+                        }
+                      },
+                      itemBuilder: (BuildContext context) => [
+                        const PopupMenuItem(
+                          value: 'view',
+                          child: Row(
+                            children: [
+                              Icon(Icons.visibility, size: 20),
+                              SizedBox(width: 8),
+                              Text('Xem'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: 20),
+                              SizedBox(width: 8),
+                              Text('Sửa'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, size: 20, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Xóa', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  PopupMenuButton(
-                    onSelected: (action) {
-                      if (action == 'view') {
-                        widget.onView(cv);
-                      } else if (action == 'edit') {
-                        widget.onEdit(cv['id']);
-                      } else if (action == 'delete') {
-                        widget.onDelete(cv['id'], title);
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem(
-                        value: 'view',
-                        child: Row(
-                          children: [
-                            Icon(Icons.visibility, size: 20),
-                            SizedBox(width: 8),
-                            Text('Xem'),
-                          ],
+                  ],
+                ),
+                if (tags.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: tags.map((tag) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.blue[100]!),
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 20),
-                            SizedBox(width: 8),
-                            Text('Sửa'),
-                          ],
+                        child: Text(
+                          tag,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.blue[700],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 20, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Xóa', style: TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              if (tags.isNotEmpty)
-                Wrap(
-                  spacing: 6,
-                  children: tags.map((tag) {
-                    return Chip(
-                      label: Text(
-                        tag,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      backgroundColor: Colors.blue[100],
-                      labelStyle: TextStyle(color: Colors.blue[900]),
-                      padding: EdgeInsets.zero,
-                    );
-                  }).toList(),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

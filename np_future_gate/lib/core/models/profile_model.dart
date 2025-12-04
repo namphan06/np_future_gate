@@ -80,6 +80,35 @@ class Profile {
     );
   }
 
+  // Helper getters for metadata fields
+  DateTime? get dateOfBirth {
+    final dob = metadata['date_of_birth'] as String?;
+    return dob != null ? DateTime.tryParse(dob) : null;
+  }
+
+  String? get address => metadata['address'] as String?;
+  
+  List<String> get workLocations => 
+      (metadata['work_locations'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      
+  String? get education => metadata['education'] as String?;
+  
+  String? get bio => metadata['bio'] as String?; // Reason to hire
+  
+  List<String> get interestedFields => 
+      (metadata['interested_fields'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      
+  List<String> get workTypes => 
+      (metadata['work_types'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      
+  List<String> get cvIds => 
+      (metadata['cv_ids'] as List?)?.map((e) => e.toString()).toList() ?? [];
+      
+  List<Map<String, dynamic>> get experience => 
+      (metadata['experience'] as List?)?.map((e) => e as Map<String, dynamic>).toList() ?? [];
+      
+  bool get security => metadata['security'] as bool? ?? false;
+
   @override
   String toString() {
     return 'Profile(id: $id, email: $email, fullName: $fullName, role: ${role.value})';

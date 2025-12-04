@@ -14,6 +14,7 @@ class CVGeneralTemplatesScreen extends StatefulWidget {
 
 class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
   String _searchQuery = '';
+  final Set<String> _selectedTags = {};
   List<CVMetadata> _templates = [];
 
   @override
@@ -24,135 +25,352 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
   }
 
   List<CVMetadata> get _filteredTemplates {
-    if (_searchQuery.isEmpty) return _templates;
-    return _templates.where((t) =>
-        t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        t.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        t.tags.any((tag) => tag.label.toLowerCase().contains(_searchQuery.toLowerCase()))
-    ).toList();
+    // Filter only 'general' type templates
+    var result = _templates.where((t) => t.type == 'general').toList();
+
+    // Filter by Search Query
+    if (_searchQuery.isNotEmpty) {
+      result = result.where((t) =>
+          t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          t.description.toLowerCase().contains(_searchQuery.toLowerCase())
+      ).toList();
+    }
+
+    // Filter by Selected Tags (OR logic: match ANY selected tag)
+    if (_selectedTags.isNotEmpty) {
+      result = result.where((t) =>
+          t.tags.any((tag) => _selectedTags.contains(tag.label))
+      ).toList();
+    }
+    
+    return result;
+  }
+
+  void _toggleTag(String tag) {
+    setState(() {
+      if (_selectedTags.contains(tag)) {
+        _selectedTags.remove(tag);
+      } else {
+        _selectedTags.add(tag);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mẫu CV Chung'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.manage_search),
-            tooltip: 'Quản lý CV',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CVManagementScreen()),
-              );
-            },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.blue[50]!, Colors.white],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              onChanged: (v) => setState(() => _searchQuery = v),
-              decoration: InputDecoration(
-                hintText: 'Tìm kiếm theo tên, mô tả hoặc thẻ...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Mẫu CV Chung',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Các mẫu phổ biến phù hợp mọi ngành nghề',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.manage_search, color: Colors.blue),
+                      ),
+                      tooltip: 'Quản lý CV',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CVManagementScreen()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
+
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm mẫu CV...',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      prefixIcon: Icon(Icons.search, color: Colors.blue[400]),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Tag Filter Chips (Horizontal Scroll)
+              SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildFilterChip('Tất cả', _selectedTags.isEmpty, isAll: true),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Professional', _selectedTags.contains('Professional')),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Creative', _selectedTags.contains('Creative')),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Modern', _selectedTags.contains('Modern')),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Simple', _selectedTags.contains('Simple')),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // List
+              Expanded(
+                child: _filteredTemplates.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.search_off, size: 64, color: Colors.grey[300]),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Không tìm thấy mẫu phù hợp',
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        itemCount: _filteredTemplates.length,
+                        itemBuilder: (ctx, i) => _buildEnhancedCard(_filteredTemplates[i]),
+                      ),
+              ),
+            ],
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _filteredTemplates.length,
-              itemBuilder: (ctx, i) => _buildCard(_filteredTemplates[i]),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildCard(CVMetadata t) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: () {
-          if (t.mcv == 'CV001') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CV1InputScreen()),
-            );
-          } else if (t.mcv == 'CV002') {
-            // Navigate to CV2 input screen when implemented
-           Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CV2InputScreen()),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Đang phát triển mẫu: ${t.title}')),
-            );
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(t.icon, color: Colors.blue, size: 32),
+  Widget _buildFilterChip(String label, bool isSelected, {bool isAll = false}) {
+    return GestureDetector(
+      onTap: () {
+        if (isAll) {
+          setState(() {
+            _selectedTags.clear();
+          });
+        } else {
+          _toggleTag(label);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.blue : Colors.grey[300]!,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          t.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCard(CVMetadata t) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (t.mcv == 'CV001') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV1InputScreen()),
+              );
+            } else if (t.mcv == 'CV002') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV2InputScreen()),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Đang phát triển mẫu: ${t.title}')),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(t.icon, color: Colors.blue[600], size: 32),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
+                          const SizedBox(height: 6),
+                          Text(
+                            t.description,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: t.tags.map((tag) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: tag.color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: tag.color.withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (tag.icon != null) ...[
+                          Icon(tag.icon, size: 12, color: tag.color),
+                          const SizedBox(width: 4),
+                        ],
                         Text(
-                          t.description,
-                          style: TextStyle(color: Colors.grey[600]),
+                          tag.label,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: tag.color,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: t.tags.map((tag) => Chip(
-                  label: Text(
-                    tag.label,
-                    style: const TextStyle(fontSize: 12, color: Colors.white),
-                  ),
-                  backgroundColor: tag.color,
-                  padding: EdgeInsets.zero,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                )).toList(),
-              ),
-            ],
+                  )).toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),

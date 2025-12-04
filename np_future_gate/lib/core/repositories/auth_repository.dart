@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/supabase_service.dart';
@@ -226,18 +227,68 @@ class AuthRepository {
     String? fullName,
     String? phone,
     String? avatarUrl,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final updates = <String, dynamic>{};
       if (fullName != null) updates['full_name'] = fullName;
       if (phone != null) updates['phone'] = phone;
       if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+      if (metadata != null) updates['metadata'] = metadata;
 
       await _client.from('profiles').update(updates).eq('id', userId);
+
+      // Sync with Auth User Metadata
+      final userUpdates = UserAttributes(
+        data: {
+          if (fullName != null) 'full_name': fullName,
+          if (phone != null) 'phone': phone,
+          if (avatarUrl != null) 'avatar_url': avatarUrl,
+          // We don't sync all metadata to auth user to keep it light, 
+          // but basic info is good.
+        },
+      );
+      await _client.auth.updateUser(userUpdates);
 
       return AuthResult.success(message: 'Cập nhật thông tin thành công!');
     } catch (e) {
       return AuthResult.failure('Đã xảy ra lỗi khi cập nhật: $e');
+    }
+  }
+
+  /// Upload avatar and return URL
+  Future<String?> uploadAvatar(File file, String userId) async {
+    try {
+      final fileExt = file.path.split('.').last;
+      final fileName = '$userId/avatar_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final filePath = fileName;
+
+      // Delete old avatar if exists
+      try {
+        final profile = await getCurrentUserProfile();
+        if (profile?.avatarUrl != null) {
+           final oldUrl = profile!.avatarUrl!;
+           // Check if it's a supabase storage url in the 'profile' bucket
+           if (oldUrl.contains('/storage/v1/object/public/profile/')) {
+             final oldPath = oldUrl.split('/profile/').last;
+             await _client.storage.from('profile').remove([oldPath]);
+           }
+        }
+      } catch (e) {
+        print('Error deleting old avatar: $e');
+      }
+
+      await _client.storage.from('profile').upload(
+        filePath,
+        file,
+        fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+      );
+
+      final imageUrl = _client.storage.from('profile').getPublicUrl(filePath);
+      return imageUrl;
+    } catch (e) {
+      print('Error uploading avatar: $e');
+      throw Exception('Upload failed: $e');
     }
   }
 

@@ -1,0 +1,44 @@
+-- 1. Tạo bucket 'profile' nếu chưa có (để chắc chắn)
+insert into storage.buckets (id, name, public)
+values ('profile', 'profile', true)
+on conflict (id) do nothing;
+
+-- 2. XÓA các policy cũ (để làm sạch trước khi tạo lại)
+drop policy if exists "Public Access" on storage.objects;
+drop policy if exists "Authenticated users can upload their own avatar" on storage.objects;
+drop policy if exists "Authenticated users can update their own avatar" on storage.objects;
+drop policy if exists "Authenticated users can delete their own avatar" on storage.objects;
+
+-- 3. TẠO LẠI các policy mới
+
+-- Cho phép mọi người xem ảnh (Public Access)
+create policy "Public Access"
+  on storage.objects for select
+  using ( bucket_id = 'profile' );
+
+-- Cho phép user đã đăng nhập upload ảnh vào thư mục của chính họ
+create policy "Authenticated users can upload their own avatar"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'profile' and
+    auth.role() = 'authenticated' and
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Cho phép user update ảnh của chính họ
+create policy "Authenticated users can update their own avatar"
+  on storage.objects for update
+  using (
+    bucket_id = 'profile' and
+    auth.role() = 'authenticated' and
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Cho phép user xóa ảnh cũ của chính họ
+create policy "Authenticated users can delete their own avatar"
+  on storage.objects for delete
+  using (
+    bucket_id = 'profile' and
+    auth.role() = 'authenticated' and
+    (storage.foldername(name))[1] = auth.uid()::text
+  );

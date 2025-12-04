@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:np_future_gate/screens/test/data/job_data.dart';
+import '../../core/repositories/auth_repository.dart';
+import '../../core/models/profile_model.dart';
 
 class HomePageCandidate extends StatefulWidget {
   const HomePageCandidate({super.key});
@@ -16,6 +18,23 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
     mockJobPostings.length,
     (index) => GlobalKey(),
   );
+  final _authRepo = AuthRepository();
+  Profile? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final profile = await _authRepo.getCurrentUserProfile();
+    if (mounted) {
+      setState(() {
+        _profile = profile;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -69,6 +88,11 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
   Widget build(BuildContext context) {
     final supabaseService = SupabaseService.instance;
     final currentUser = supabaseService.currentUser;
+    
+    // Prioritize profile data, fallback to user metadata
+    final avatarUrl = _profile?.avatarUrl ?? currentUser?.userMetadata?['avatar_url'];
+    final fullName = _profile?.fullName ?? currentUser?.userMetadata?['full_name'] ?? 'Người dùng';
+    final phone = _profile?.phone ?? currentUser?.userMetadata?['phone'];
 
     return Stack(
       children: [
@@ -104,7 +128,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                       height: 60,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
-                        gradient: currentUser?.userMetadata?['avatar_url'] == null
+                        gradient: avatarUrl == null
                             ? LinearGradient(
                                 colors: [
                                   AppMainColors.primary.withOpacity(0.8),
@@ -124,9 +148,9 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(14),
-                        child: currentUser?.userMetadata?['avatar_url'] != null
+                        child: avatarUrl != null
                             ? Image.network(
-                                currentUser!.userMetadata!['avatar_url'],
+                                avatarUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
@@ -163,8 +187,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            currentUser?.userMetadata?['full_name'] ??
-                                'Người dùng',
+                            fullName,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -195,7 +218,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                               ),
                             ],
                           ),
-                          if (currentUser?.userMetadata?['phone'] != null) ...[
+                          if (phone != null) ...[
                             const SizedBox(height: 2),
                             Row(
                               children: [
@@ -206,7 +229,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  currentUser!.userMetadata!['phone'],
+                                  phone,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
