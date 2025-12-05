@@ -76,19 +76,21 @@ class Cv1 extends StatelessWidget {
                           'avatar',
                           Container(
                             width: 155,
-                            child: ClipRRect(
-                                child: Image.asset(
-                              "assets/images_cv/pro_1_v2.webp", // TODO: Handle dynamic image
-                              fit: BoxFit.cover,
-                              width: 155,
-                              height: 155,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                width: 155,
-                                height: 155,
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.person, size: 48, color: Colors.white),
-                              ),
-                            )),
+                            height: 155,
+                            color: Colors.grey[300],
+                            child: personalInfo['avatar_url'] != null &&
+                                    personalInfo['avatar_url'].toString().isNotEmpty
+                                ? Image.network(
+                                    personalInfo['avatar_url'],
+                                    fit: BoxFit.cover,
+                                    width: 155,
+                                    height: 155,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        const Icon(Icons.person,
+                                            size: 80, color: Colors.white),
+                                  )
+                                : const Icon(Icons.person,
+                                    size: 80, color: Colors.white),
                           ),
                         ),
                         Padding(

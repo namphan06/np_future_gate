@@ -1,0 +1,96 @@
+-- 1. Tạo bảng jobs
+create table public.jobs (
+  id uuid not null default gen_random_uuid() primary key,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+
+  -- Người tạo (Liên kết với bảng auth.users)
+  creator_id uuid not null references auth.users(id) on delete cascade,
+
+  -- Trạng thái tin tuyển dụng
+  is_active boolean default true,
+
+  -- Thời hạn nộp hồ sơ
+  deadline timestamp with time zone,
+
+  -- Cột Metadata chứa toàn bộ thông tin chi tiết về việc làm
+  -- Cấu trúc JSON dự kiến:
+  -- {
+  --   "title": "Tên công việc",
+  --   "working_regions": ["Hà Nội", "Remote"],
+  --   "experience_required": "1 năm",
+  --   "fields": ["IT Phần mềm", "Mobile App"],
+  --   "requirements_tags": ["Flutter", "Dart", "Supabase"],
+  --   "salary": {
+  --     "min": 1000,
+  --     "max": 2000,
+  --     "currency": "USD",
+  --     "is_negotiable": false,
+  --     "type": "monthly"
+  --   },
+  --   "employment_types": ["Full-time", "Remote"],
+  --   "work_locations": ["Tòa nhà A, Cầu Giấy", "Tòa nhà B, Q1"],
+  --   "job_description": ["Gạch đầu dòng 1", "Gạch đầu dòng 2"],
+  --   "candidate_requirements": ["Gạch đầu dòng 1", "Gạch đầu dòng 2"],
+  --   "benefits": ["Bảo hiểm", "Laptop"]
+  -- }
+  metadata jsonb default '{}'::jsonb,
+
+  -- Danh sách người ứng tuyển
+  -- Cấu trúc JSON dự kiến:
+  -- [
+  --   { "user_id": "uuid...", "cv_id": "uuid...", "applied_at": "timestamp..." }
+  -- ]
+  applicants jsonb default '[]'::jsonb,
+
+  -- Các trường đề xuất thêm
+  view_count integer default 0, -- Đếm lượt xem
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected', 'closed')) -- Trạng thái duyệt tin
+);
+
+-- 2. Tạo Index để tìm kiếm nhanh hơn trong cột metadata (Optional nhưng rất cần thiết)
+create index jobs_metadata_gin on public.jobs using gin (metadata);
+create index jobs_creator_id_idx on public.jobs (creator_id);
+
+-- 3. Bật Row Level Security (RLS)
+alter table public.jobs enable row level security;
+
+-- 4. Tạo Policies (Quyền truy cập)
+
+-- Ai cũng có thể xem các tin tuyển dụng đang active và đã được duyệt
+create policy "Public jobs are viewable by everyone"
+on public.jobs for select
+using ( is_active = true and status = 'approved' );
+
+-- Người tạo có thể xem tin của chính mình (kể cả khi chưa active)
+create policy "Users can view own jobs"
+on public.jobs for select
+using ( auth.uid() = creator_id );
+
+-- Chỉ người dùng đã đăng nhập mới được tạo tin
+create policy "Authenticated users can insert jobs"
+on public.jobs for insert
+with check ( auth.uid() = creator_id );
+
+-- Người tạo có thể cập nhật tin của mình
+create policy "Users can update own jobs"
+on public.jobs for update
+using ( auth.uid() = creator_id );
+
+-- Người tạo có thể xóa tin của mình
+create policy "Users can delete own jobs"
+on public.jobs for delete
+using ( auth.uid() = creator_id );
+
+-- 5. Trigger để tự động cập nhật updated_at
+create or replace function public.handle_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger on_jobs_updated
+  before update on public.jobs
+  for each row execute procedure public.handle_updated_at();

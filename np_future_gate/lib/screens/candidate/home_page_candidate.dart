@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:np_future_gate/core/theme/app_main_colors.dart';
-import 'package:np_future_gate/screens/test/data/job_data.dart';
 import '../../core/repositories/auth_repository.dart';
+import '../../core/repositories/job_repository.dart';
 import '../../core/models/profile_model.dart';
+import '../../core/models/job_model.dart';
+import 'job_detail_screen.dart';
 
 class HomePageCandidate extends StatefulWidget {
   const HomePageCandidate({super.key});
@@ -14,17 +16,18 @@ class HomePageCandidate extends StatefulWidget {
 
 class _HomePageCandidateState extends State<HomePageCandidate> {
   final ScrollController _scrollController = ScrollController();
-  final List<GlobalKey> _itemKeys = List.generate(
-    mockJobPostings.length,
-    (index) => GlobalKey(),
-  );
   final _authRepo = AuthRepository();
+  final _jobRepo = JobRepository();
+  
   Profile? _profile;
+  List<JobModel> _jobs = [];
+  bool _isLoadingJobs = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadJobs();
   }
 
   Future<void> _loadProfile() async {
@@ -36,40 +39,33 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
     }
   }
 
+  Future<void> _loadJobs() async {
+    try {
+      final jobs = await _jobRepo.getActiveJobs();
+      if (mounted) {
+        setState(() {
+          _jobs = jobs;
+          _isLoadingJobs = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingJobs = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading jobs: $e')),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
 
-  double _calculateOpacity(int index) {
-    try {
-      final RenderBox? renderBox =
-          _itemKeys[index].currentContext?.findRenderObject() as RenderBox?;
-      if (renderBox == null || !renderBox.hasSize) return 1.0;
-
-      final position = renderBox.localToGlobal(Offset.zero);
-      final screenHeight = MediaQuery.of(context).size.height;
-      final navbarHeight = 100.0;
-      final visibleBottom = screenHeight - navbarHeight;
-
-      final itemBottom = position.dy + renderBox.size.height;
-
-      if (itemBottom > visibleBottom) {
-        final overlapDistance = itemBottom - visibleBottom;
-        final totalHeight = renderBox.size.height;
-        final visiblePercentage =
-            1 - (overlapDistance / totalHeight).clamp(0.0, 1.0);
-        return (visiblePercentage * 1.2).clamp(0.15, 1.0);
-      }
-
-      return 1.0;
-    } catch (e) {
-      return 1.0;
-    }
-  }
-
-  String _getTimeAgo(DateTime dateTime) {
+  String _getTimeAgo(DateTime? dateTime) {
+    if (dateTime == null) return 'Vừa xong';
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
@@ -306,7 +302,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                       ),
                     ),
                     Text(
-                      '${mockJobPostings.length} việc',
+                      '${_jobs.length} việc',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -318,202 +314,222 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
             ),
 
             // Job List
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final job = mockJobPostings[index];
+            _isLoadingJobs
+                ? const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                : _jobs.isEmpty
+                    ? const SliverFillRemaining(
+                        child: Center(child: Text('Chưa có việc làm nào')),
+                      )
+                    : SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final job = _jobs[index];
+                              final meta = job.metadata;
 
-                    return AnimatedBuilder(
-                      animation: _scrollController,
-                      builder: (context, child) {
-                        double opacity = _calculateOpacity(index);
-                        return Opacity(opacity: opacity, child: child!);
-                      },
-                      child: Container(
-                        key: _itemKeys[index],
-                        margin: const EdgeInsets.only(bottom: 15),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text(
-                                        'Xem chi tiết: ${job.title}')),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 50,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            job.company[0],
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppMainColors.primary,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              job.title,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              job.company,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color:
-                                                    Colors.grey.shade700,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.bookmark_border,
-                                        color: Colors.grey.shade400,
-                                        size: 22,
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 12),
-
-                                  Row(
-                                    children: [
-                                      Icon(Icons.location_on_outlined,
-                                          size: 16,
-                                          color: Colors.grey.shade600),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        job.location,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Icon(Icons.work_outline,
-                                          size: 16,
-                                          color: Colors.grey.shade600),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        job.type,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 10),
-
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: job.tags.map((tag) {
-                                      return Container(
-                                        padding:
-                                            const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppMainColors
-                                              .backgroundLightStart,
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          tag,
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            color:
-                                                AppMainColors.primaryDark,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 15),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.06),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              JobDetailScreen(job: job),
                                         ),
                                       );
-                                    }).toList(),
-                                  ),
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                width: 50,
+                                                height: 50,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade100,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    meta.title.isNotEmpty
+                                                        ? meta.title[0]
+                                                            .toUpperCase()
+                                                        : 'J',
+                                                    style: const TextStyle(
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.bold,
+                                                      color:
+                                                          AppMainColors.primary,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      meta.title,
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Colors.black87,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      meta.workingRegions
+                                                              .isNotEmpty
+                                                          ? meta.workingRegions
+                                                              .first
+                                                          : 'Toàn quốc',
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey
+                                                            .shade700,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Icon(
+                                                Icons.bookmark_border,
+                                                color: Colors.grey.shade400,
+                                                size: 22,
+                                              ),
+                                            ],
+                                          ),
 
-                                  const SizedBox(height: 10),
+                                          const SizedBox(height: 12),
 
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        job.salary,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green.shade700,
-                                        ),
+                                          Row(
+                                            children: [
+                                              Icon(Icons.location_on_outlined,
+                                                  size: 16,
+                                                  color: Colors.grey.shade600),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                meta.workLocations.isNotEmpty
+                                                    ? meta.workLocations.first
+                                                    : 'N/A',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Icon(Icons.work_outline,
+                                                  size: 16,
+                                                  color: Colors.grey.shade600),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                meta.employmentTypes.isNotEmpty
+                                                    ? meta.employmentTypes.first
+                                                    : 'Full-time',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 10),
+
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: meta.requirementsTags
+                                                .take(3)
+                                                .map((tag) {
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 10,
+                                                  vertical: 5,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppMainColors
+                                                      .backgroundLightStart,
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  tag,
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: AppMainColors
+                                                        .primaryDark,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+
+                                          const SizedBox(height: 10),
+
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                meta.salary.isNegotiable
+                                                    ? 'Thỏa thuận'
+                                                    : '${meta.salary.min} - ${meta.salary.max} ${meta.salary.currency}',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green.shade700,
+                                                ),
+                                              ),
+                                              Text(
+                                                _getTimeAgo(job.createdAt),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey.shade500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        _getTimeAgo(job.postedDate),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
+                                ),
+                              );
+                            },
+                            childCount: _jobs.length,
                           ),
                         ),
                       ),
-                    );
-                  },
-                  childCount: mockJobPostings.length,
-                ),
-              ),
-            ),
           ],
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
+import 'jobs/edit_job_screen.dart';
+import 'jobs/employer_jobs_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -82,13 +84,29 @@ class ToolsPageEmployer extends StatelessWidget {
                             title: 'Đăng tin',
                             subtitle: 'Đăng tin tuyển dụng',
                             color: Colors.green,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const EditJobScreen(),
+                                ),
+                              );
+                            },
                           ),
                           _buildToolCard(
                             context,
                             icon: Icons.list_alt,
                             title: 'Tin đã đăng',
-                            subtitle: '3 tin',
+                            subtitle: 'Quản lý tin',
                             color: Colors.blue,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const EmployerJobsScreen(),
+                                ),
+                              );
+                            },
                           ),
                           _buildToolCard(
                             context,
@@ -297,6 +315,7 @@ class ToolsPageEmployer extends StatelessWidget {
     required String title,
     required String subtitle,
     required Color color,
+    VoidCallback? onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -314,11 +333,12 @@ class ToolsPageEmployer extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$title - Đang phát triển')),
-            );
-          },
+          onTap: onTap ??
+              () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('$title - Đang phát triển')),
+                );
+              },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

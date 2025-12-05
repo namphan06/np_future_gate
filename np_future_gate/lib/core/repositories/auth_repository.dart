@@ -320,4 +320,21 @@ class AuthRepository {
         return e.message;
     }
   }
+
+  /// Get profiles by list of IDs
+  Future<List<Profile>> getProfilesByIds(List<String> userIds) async {
+    try {
+      if (userIds.isEmpty) return [];
+      
+      final response = await _client
+          .from('profiles')
+          .select()
+          .filter('id', 'in', '(${userIds.map((e) => '"$e"').join(',')})');
+
+      return (response as List).map((e) => Profile.fromJson(e)).toList();
+    } catch (e) {
+      print('❌ Lỗi lấy danh sách profiles: $e');
+      return [];
+    }
+  }
 }

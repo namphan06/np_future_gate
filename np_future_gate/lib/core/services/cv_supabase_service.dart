@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/cv_model.dart';
 
 /// CV Supabase Service - Quản lý lưu trữ và truy xuất CV từ Supabase
 class CVSupabaseService {
@@ -105,6 +106,22 @@ class CVSupabaseService {
     }
   }
 
+  /// Lấy danh sách CV dưới dạng Model cho Job Application
+  Future<List<CVModel>> getUserCVs(String userId) async {
+    try {
+      final response = await _supabase
+          .from('cv_templates')
+          .select()
+          .eq('user_create', userId)
+          .order('updated_at', ascending: false);
+
+      return (response as List).map((e) => CVModel.fromJson(e)).toList();
+    } catch (e) {
+      debugPrint('Error fetching user CVs: $e');
+      return [];
+    }
+  }
+
   /// Lấy CVs theo tags
   Future<List<Map<String, dynamic>>> getCVsByTags(List<String> tags) async {
     try {
@@ -129,6 +146,23 @@ class CVSupabaseService {
       debugPrint('CVSupabaseService.deleteCV error: $e');
       debugPrintStack(stackTrace: st, label: 'deleteCV stacktrace');
       throw Exception('Không thể xóa CV: $e');
+    }
+  }
+
+  /// Lấy dữ liệu đầy đủ của CV theo ID (bao gồm mcv, type, title, data...)
+  Future<Map<String, dynamic>?> getCVFullData(String cvId) async {
+    try {
+      final response = await _supabase
+          .from('cv_templates')
+          .select('*')
+          .eq('id', cvId)
+          .single();
+
+      return response;
+    } catch (e, st) {
+      debugPrint('CVSupabaseService.getCVFullData error: $e');
+      debugPrintStack(stackTrace: st, label: 'getCVFullData stacktrace');
+      throw Exception('Không thể tải thông tin CV: $e');
     }
   }
 

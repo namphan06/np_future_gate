@@ -62,3 +62,32 @@ CREATE POLICY "Update own cv" ON public.cv_templates
 CREATE POLICY "Delete own cv" ON public.cv_templates
   FOR DELETE
   USING (user_create = auth.uid());
+
+
+create policy "Employers can view applicant CVs"
+on public.cv_templates
+for select
+using (
+  exists (
+    select 1
+    from public.jobs j
+    cross join jsonb_array_elements(j.applicants) as app
+    where j.creator_id = auth.uid() -- The viewer is the employer
+    and (app->>'cv_id')::uuid = cv_templates.id -- The CV matches
+  )
+);
+
+
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 
+        FROM pg_constraint 
+        WHERE conname = 'cv_templates_mcv_key'
+    ) THEN
+        ALTER TABLE public.cv_templates 
+        DROP CONSTRAINT cv_templates_mcv_key;
+    END IF;
+END$$;
+

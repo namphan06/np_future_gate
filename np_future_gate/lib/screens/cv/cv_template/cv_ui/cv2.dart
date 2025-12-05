@@ -112,7 +112,19 @@ class Cv2 extends StatelessWidget {
                           child: CircleAvatar(
                             radius: 60,
                             backgroundColor: Colors.blue[200],
-                            backgroundImage: const AssetImage("assets/images_cv/pro_1_v2.webp"), // Placeholder
+                            backgroundImage: personalInfo['avatar_url'] != null &&
+                                    personalInfo['avatar_url']
+                                        .toString()
+                                        .isNotEmpty
+                                ? NetworkImage(personalInfo['avatar_url'])
+                                : null,
+                            child: personalInfo['avatar_url'] == null ||
+                                    personalInfo['avatar_url']
+                                        .toString()
+                                        .isEmpty
+                                ? const Icon(Icons.person,
+                                    size: 60, color: Colors.white)
+                                : null,
                           ),
                         ),
                       ),
