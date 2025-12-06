@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../auth/change_password_screen.dart';
 import '../../core/services/supabase_service.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
@@ -229,7 +230,12 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           title: 'Đổi mật khẩu',
                           subtitle: 'Thay đổi mật khẩu đăng nhập',
                           color: Colors.orange,
-                          onTap: () => _showComingSoon(context, 'Đổi mật khẩu'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

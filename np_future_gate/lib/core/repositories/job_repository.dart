@@ -84,8 +84,34 @@ class JobRepository {
 
   Future<void> applyForJob(String jobId, String userId, String cvId) async {
     try {
-      // Call the secure RPC function to update the 'applicants' column in the 'jobs' table.
-      // This function adds the user_id, cv_id, applied_at, and status='pending' to the list.
+      // 1. Update user_job_activities
+      final existing = await _supabase
+          .from('user_job_activities')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('job_id', jobId)
+          .maybeSingle();
+
+      if (existing != null) {
+        await _supabase.from('user_job_activities').update({
+          'is_applied': true,
+          'cv_id': cvId,
+          'application_status': 'pending',
+          'applied_at': DateTime.now().toIso8601String(),
+        }).eq('id', existing['id']);
+      } else {
+        await _supabase.from('user_job_activities').insert({
+          'user_id': userId,
+          'job_id': jobId,
+          'is_applied': true,
+          'cv_id': cvId,
+          'application_status': 'pending',
+          'applied_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      // 2. Call RPC to update jobs table (legacy support or for employer view if needed)
+      // Note: Ideally we should migrate employer view to use user_job_activities too
       await _supabase.rpc('apply_to_job', params: {
         'p_job_id': jobId,
         'p_user_id': userId,
@@ -112,32 +138,7 @@ class JobRepository {
     }
   }
 
-  Future<void> toggleSaveJob(String userId, String jobId, bool isSaved) async {
-    try {
-      // Check if activity exists
-      final existing = await _supabase
-          .from('user_job_activities')
-          .select()
-          .eq('user_id', userId)
-          .eq('job_id', jobId)
-          .maybeSingle();
-
-      if (existing != null) {
-        await _supabase
-            .from('user_job_activities')
-            .update({'is_saved': isSaved})
-            .eq('id', existing['id']);
-      } else {
-        await _supabase.from('user_job_activities').insert({
-          'user_id': userId,
-          'job_id': jobId,
-          'is_saved': isSaved,
-        });
-      }
-    } catch (e) {
-      throw Exception('Failed to toggle save job: $e');
-    }
-  }
+  // --- Saved Jobs ---
 
   Future<List<String>> getSavedJobIds(String userId) async {
     try {
@@ -153,9 +154,38 @@ class JobRepository {
     }
   }
 
+  Future<void> toggleSaveJob(String userId, String jobId) async {
+    try {
+      // Check if activity exists
+      final existing = await _supabase
+          .from('user_job_activities')
+          .select('id, is_saved')
+          .eq('user_id', userId)
+          .eq('job_id', jobId)
+          .maybeSingle();
+
+      if (existing != null) {
+        // Update existing
+        final currentStatus = existing['is_saved'] as bool;
+        await _supabase
+            .from('user_job_activities')
+            .update({'is_saved': !currentStatus})
+            .eq('id', existing['id']);
+      } else {
+        // Insert new
+        await _supabase.from('user_job_activities').insert({
+          'user_id': userId,
+          'job_id': jobId,
+          'is_saved': true,
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to toggle save job: $e');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getAppliedJobs(String userId) async {
     try {
-      // Fetch full CV data to allow viewing the CV later
       final response = await _supabase
           .from('user_job_activities')
           .select('*, jobs(*), cv_templates(*)')
@@ -165,8 +195,7 @@ class JobRepository {
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      debugPrint('Error fetching applied jobs: $e');
-      return [];
+      throw Exception('Failed to fetch applied jobs: $e');
     }
   }
 }

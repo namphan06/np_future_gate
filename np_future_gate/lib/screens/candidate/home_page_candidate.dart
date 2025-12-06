@@ -22,12 +22,14 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
   Profile? _profile;
   List<JobModel> _jobs = [];
   bool _isLoadingJobs = true;
+  List<String> _savedJobIds = [];
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
     _loadJobs();
+    _loadSavedJobs();
   }
 
   Future<void> _loadProfile() async {
@@ -53,6 +55,44 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
         setState(() => _isLoadingJobs = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading jobs: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadSavedJobs() async {
+    final user = SupabaseService.instance.currentUser;
+    if (user != null) {
+      final savedIds = await _jobRepo.getSavedJobIds(user.id);
+      if (mounted) {
+        setState(() {
+          _savedJobIds = savedIds;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleSaveJob(String jobId) async {
+    final user = SupabaseService.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      // Optimistic update
+      setState(() {
+        if (_savedJobIds.contains(jobId)) {
+          _savedJobIds.remove(jobId);
+        } else {
+          _savedJobIds.add(jobId);
+        }
+      });
+
+      await _jobRepo.toggleSaveJob(user.id, jobId);
+    } catch (e) {
+      // Revert if error
+      _loadSavedJobs();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving job: $e')),
         );
       }
     }
@@ -419,10 +459,17 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                                                   ],
                                                 ),
                                               ),
-                                              Icon(
-                                                Icons.bookmark_border,
-                                                color: Colors.grey.shade400,
-                                                size: 22,
+                                              InkWell(
+                                                onTap: () => _toggleSaveJob(job.id!),
+                                                child: Icon(
+                                                  _savedJobIds.contains(job.id)
+                                                      ? Icons.bookmark
+                                                      : Icons.bookmark_border,
+                                                  color: _savedJobIds.contains(job.id)
+                                                      ? AppMainColors.primary
+                                                      : Colors.grey.shade400,
+                                                  size: 22,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -500,15 +547,33 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text(
-                                                meta.salary.isNegotiable
-                                                    ? 'Thỏa thuận'
-                                                    : '${meta.salary.min} - ${meta.salary.max} ${meta.salary.currency}',
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.green.shade700,
-                                                ),
+                                              Builder(
+                                                builder: (context) {
+                                                  String salaryText = 'Thỏa thuận';
+                                                  if (meta.salary.isNegotiable) {
+                                                    salaryText = 'Thỏa thuận';
+                                                  } else {
+                                                    final min = meta.salary.min;
+                                                    final max = meta.salary.max;
+                                                    final currency = meta.salary.currency;
+                                                    
+                                                    if (min != null && max != null) {
+                                                      salaryText = '$min - $max $currency';
+                                                    } else if (min != null) {
+                                                      salaryText = 'Từ $min $currency';
+                                                    } else if (max != null) {
+                                                      salaryText = 'Đến $max $currency';
+                                                    }
+                                                  }
+                                                  return Text(
+                                                    salaryText,
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.green.shade700,
+                                                    ),
+                                                  );
+                                                },
                                               ),
                                               Text(
                                                 _getTimeAgo(job.createdAt),

@@ -134,135 +134,203 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Applicants'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _currentApplicants.isEmpty
-              ? const Center(child: Text('No applicants yet'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _currentApplicants.length,
-                  itemBuilder: (context, index) {
-                    final application = _currentApplicants[index];
-                    final profile = _profiles.firstWhere(
-                      (p) => p.id == application.userId,
-                      orElse: () => Profile(
-                        id: application.userId,
-                        email: 'Unknown',
-                        fullName: 'Unknown User',
-                        role: UserRole.candidate,
-                        metadata: {},
-                        createdAt: DateTime.now(),
-                        updatedAt: DateTime.now(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppMainColors.lightGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
                       ),
-                    );
+                    ),
+                    const SizedBox(width: 16),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Danh sách ứng viên',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Quản lý hồ sơ ứng tuyển',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            Row(
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _currentApplicants.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircleAvatar(
-                                  radius: 25,
-                                  backgroundImage: profile.avatarUrl != null
-                                      ? NetworkImage(profile.avatarUrl!)
-                                      : null,
-                                  child: profile.avatarUrl == null
-                                      ? const Icon(Icons.person)
-                                      : null,
+                                Icon(Icons.people_outline, size: 64, color: Colors.grey[300]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Chưa có ứng viên nào',
+                                  style: TextStyle(color: Colors.grey[600]),
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(20),
+                            itemCount: _currentApplicants.length,
+                            itemBuilder: (context, index) {
+                              final application = _currentApplicants[index];
+                              final profile = _profiles.firstWhere(
+                                (p) => p.id == application.userId,
+                                orElse: () => Profile(
+                                  id: application.userId,
+                                  email: 'Unknown',
+                                  fullName: 'Unknown User',
+                                  role: UserRole.candidate,
+                                  metadata: {},
+                                  createdAt: DateTime.now(),
+                                  updatedAt: DateTime.now(),
+                                ),
+                              );
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        profile.fullName ?? 'No Name',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 25,
+                                            backgroundImage: profile.avatarUrl != null
+                                                ? NetworkImage(profile.avatarUrl!)
+                                                : null,
+                                            child: profile.avatarUrl == null
+                                                ? const Icon(Icons.person)
+                                                : null,
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  profile.fullName ?? 'Unknown User',
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Applied: ${_currentApplicants[index].appliedAt.toString().split(' ')[0]}',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          _buildStatusBadge(application.status),
+                                        ],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Applied: ${application.appliedAt.toString().split(' ')[0]}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
+                                      const SizedBox(height: 16),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          OutlinedButton.icon(
+                                            onPressed: () => _viewCV(application.cvId),
+                                            icon: const Icon(Icons.description_outlined, size: 18),
+                                            label: const Text('View CV'),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          PopupMenuButton<String>(
+                                            onSelected: (status) => _updateStatus(application.userId, status),
+                                            itemBuilder: (context) => [
+                                              const PopupMenuItem(
+                                                value: 'pending',
+                                                child: Text('Mark as Pending'),
+                                              ),
+                                              const PopupMenuItem(
+                                                value: 'accepted',
+                                                child: Text('Accept', style: TextStyle(color: Colors.green)),
+                                              ),
+                                              const PopupMenuItem(
+                                                value: 'rejected',
+                                                child: Text('Reject', style: TextStyle(color: Colors.red)),
+                                              ),
+                                            ],
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                              decoration: BoxDecoration(
+                                                color: AppMainColors.primary.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'Update Status',
+                                                    style: TextStyle(
+                                                      color: AppMainColors.primary,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Icon(Icons.arrow_drop_down, color: AppMainColors.primary),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
                                 ),
-                                _buildStatusBadge(application.status),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                OutlinedButton.icon(
-                                  onPressed: () => _viewCV(application.cvId),
-                                  icon: const Icon(Icons.description_outlined, size: 18),
-                                  label: const Text('View CV'),
-                                ),
-                                const SizedBox(width: 8),
-                                PopupMenuButton<String>(
-                                  onSelected: (status) => _updateStatus(application.userId, status),
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(
-                                      value: 'pending',
-                                      child: Text('Mark as Pending'),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'accepted',
-                                      child: Text('Accept', style: TextStyle(color: Colors.green)),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'rejected',
-                                      child: Text('Reject', style: TextStyle(color: Colors.red)),
-                                    ),
-                                  ],
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: AppMainColors.primary.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          'Update Status',
-                                          style: TextStyle(
-                                            color: AppMainColors.primary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(Icons.arrow_drop_down, color: AppMainColors.primary),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                              );
+                            },
+                          ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

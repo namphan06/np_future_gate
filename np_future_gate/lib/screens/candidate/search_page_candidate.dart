@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_main_colors.dart';
-import '../test/data/job_data.dart';
+import '../../core/models/job_model.dart';
+import '../../core/repositories/job_repository.dart';
+import 'job_detail_screen.dart';
 import 'data/filter_data.dart';
 
 class SearchPageCandidate extends StatefulWidget {
@@ -11,6 +14,7 @@ class SearchPageCandidate extends StatefulWidget {
 }
 
 class _SearchPageCandidateState extends State<SearchPageCandidate> {
+  final JobRepository _jobRepo = JobRepository();
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _minSalaryController = TextEditingController();
   final TextEditingController _maxSalaryController = TextEditingController();
@@ -21,7 +25,73 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
   String? _selectedWorkType;
   
   bool _showFilters = false;
-  List<JobPosting> _filteredJobs = mockJobPostings;
+  List<JobModel> _allJobs = [];
+  List<JobModel> _filteredJobs = [];
+  bool _isLoading = true;
+  List<String> _savedJobIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadJobs();
+    _loadSavedJobs();
+  }
+
+  Future<void> _loadSavedJobs() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      final savedIds = await _jobRepo.getSavedJobIds(user.id);
+      if (mounted) {
+        setState(() {
+          _savedJobIds = savedIds;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleSaveJob(String jobId) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      setState(() {
+        if (_savedJobIds.contains(jobId)) {
+          _savedJobIds.remove(jobId);
+        } else {
+          _savedJobIds.add(jobId);
+        }
+      });
+
+      await _jobRepo.toggleSaveJob(user.id, jobId);
+    } catch (e) {
+      _loadSavedJobs();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving job: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadJobs() async {
+    try {
+      final jobs = await _jobRepo.getActiveJobs();
+      if (mounted) {
+        setState(() {
+          _allJobs = jobs;
+          _filteredJobs = jobs;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading jobs: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -33,39 +103,47 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
 
   void _applyFilters() {
     setState(() {
-      _filteredJobs = mockJobPostings.where((job) {
-        // Lọc theo tên công việc
-        if (_searchController.text.isNotEmpty &&
-            !job.title.toLowerCase().contains(_searchController.text.toLowerCase()) &&
-            !job.company.toLowerCase().contains(_searchController.text.toLowerCase())) {
+      _filteredJobs = _allJobs.where((job) {
+        final meta = job.metadata;
+        
+        // Search by Title OR Tags
+        if (_searchController.text.isNotEmpty) {
+          final query = _searchController.text.toLowerCase();
+          final titleMatch = meta.title.toLowerCase().contains(query);
+          final tagMatch = meta.requirementsTags.any((tag) => tag.toLowerCase().contains(query));
+          
+          if (!titleMatch && !tagMatch) return false;
+        }
+
+        // Filter by City (Working Regions)
+        if (_selectedCity != null && !meta.workingRegions.contains(_selectedCity)) {
           return false;
         }
 
-        // Lọc theo thành phố
-        if (_selectedCity != null && job.location != _selectedCity) {
+        // Filter by Experience
+        if (_selectedExperience != null && meta.experienceRequired != _selectedExperience) {
           return false;
         }
 
-        // Lọc theo kinh nghiệm
-        if (_selectedExperience != null && job.level != _selectedExperience) {
+        // Filter by Job Type (Fields)
+        if (_selectedJobType != null && !meta.fields.contains(_selectedJobType)) {
           return false;
         }
 
-        // Lọc theo loại công việc
-        if (_selectedJobType != null && !job.tags.contains(_selectedJobType)) {
+        // Filter by Work Type (Employment Types)
+        if (_selectedWorkType != null && !meta.employmentTypes.contains(_selectedWorkType)) {
           return false;
         }
 
-        // Lọc theo loại hình công việc
-        if (_selectedWorkType != null && job.type != _selectedWorkType) {
-          return false;
+        // Salary Filter (Simplified)
+        if (_minSalaryController.text.isNotEmpty) {
+          final minFilter = double.tryParse(_minSalaryController.text);
+          if (minFilter != null && (meta.salary.max ?? 0) < minFilter) return false;
         }
-
-        // Lọc theo mức lương (giả sử salary có format "XX - YY triệu")
-        if (_minSalaryController.text.isNotEmpty || _maxSalaryController.text.isNotEmpty) {
-          // Parse salary from job (simplified - thực tế cần parse chính xác hơn)
-          final salaryText = job.salary.replaceAll(RegExp(r'[^0-9-]'), '');
-          // Đơn giản hóa - trong thực tế cần xử lý phức tạp hơn
+        
+        if (_maxSalaryController.text.isNotEmpty) {
+          final maxFilter = double.tryParse(_maxSalaryController.text);
+          if (maxFilter != null && (meta.salary.min ?? 0) > maxFilter) return false;
         }
 
         return true;
@@ -82,11 +160,12 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
       _selectedExperience = null;
       _selectedJobType = null;
       _selectedWorkType = null;
-      _filteredJobs = mockJobPostings;
+      _filteredJobs = _allJobs;
     });
   }
 
-  String _getTimeAgo(DateTime dateTime) {
+  String _getTimeAgo(DateTime? dateTime) {
+    if (dateTime == null) return 'Vừa xong';
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
@@ -516,6 +595,8 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final job = _filteredJobs[index];
+                          final meta = job.metadata;
+                          
                           return Container(
                             margin: const EdgeInsets.only(bottom: 15),
                             decoration: BoxDecoration(
@@ -534,7 +615,12 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(16),
                                 onTap: () {
-                                  // TODO: Navigate to job detail
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => JobDetailScreen(job: job),
+                                    ),
+                                  );
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
@@ -552,8 +638,8 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                             ),
                                             child: Center(
                                               child: Text(
-                                                job.company[0],
-                                                style: TextStyle(
+                                                meta.title.isNotEmpty ? meta.title[0].toUpperCase() : 'J',
+                                                style: const TextStyle(
                                                   fontSize: 24,
                                                   fontWeight: FontWeight.bold,
                                                   color: AppMainColors.primary,
@@ -567,7 +653,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  job.title,
+                                                  meta.title,
                                                   style: const TextStyle(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.bold,
@@ -577,7 +663,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                                 ),
                                                 const SizedBox(height: 4),
                                                 Text(
-                                                  job.company,
+                                                  meta.workingRegions.isNotEmpty ? meta.workingRegions.first : 'Toàn quốc',
                                                   style: TextStyle(
                                                     fontSize: 14,
                                                     color: Colors.grey.shade600,
@@ -586,9 +672,16 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                               ],
                                             ),
                                           ),
-                                          Icon(
-                                            Icons.bookmark_border,
-                                            color: AppMainColors.primary,
+                                          InkWell(
+                                            onTap: () => _toggleSaveJob(job.id!),
+                                            child: Icon(
+                                              _savedJobIds.contains(job.id)
+                                                  ? Icons.bookmark
+                                                  : Icons.bookmark_border,
+                                              color: _savedJobIds.contains(job.id)
+                                                  ? AppMainColors.primary
+                                                  : Colors.grey.shade400,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -596,7 +689,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                       Wrap(
                                         spacing: 8,
                                         runSpacing: 8,
-                                        children: job.tags.map((tag) {
+                                        children: meta.requirementsTags.take(3).map((tag) {
                                           return Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                             decoration: BoxDecoration(
@@ -605,7 +698,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                             ),
                                             child: Text(
                                               tag,
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 12,
                                                 color: AppMainColors.primary,
                                               ),
@@ -619,7 +712,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                           Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
                                           const SizedBox(width: 4),
                                           Text(
-                                            job.location,
+                                            meta.workLocations.isNotEmpty ? meta.workLocations.first : 'N/A',
                                             style: TextStyle(
                                               fontSize: 13,
                                               color: Colors.grey.shade600,
@@ -629,7 +722,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                           Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
                                           const SizedBox(width: 4),
                                           Text(
-                                            job.type,
+                                            meta.employmentTypes.isNotEmpty ? meta.employmentTypes.first : 'Full-time',
                                             style: TextStyle(
                                               fontSize: 13,
                                               color: Colors.grey.shade600,
@@ -643,7 +736,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                           Icon(Icons.stars, size: 16, color: Colors.grey.shade600),
                                           const SizedBox(width: 4),
                                           Text(
-                                            job.level,
+                                            meta.experienceRequired,
                                             style: TextStyle(
                                               fontSize: 13,
                                               color: Colors.grey.shade600,
@@ -655,16 +748,36 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(
-                                            job.salary,
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.green.shade700,
-                                            ),
+                                          Builder(
+                                            builder: (context) {
+                                              String salaryText = 'Thỏa thuận';
+                                              if (meta.salary.isNegotiable) {
+                                                salaryText = 'Thỏa thuận';
+                                              } else {
+                                                final min = meta.salary.min;
+                                                final max = meta.salary.max;
+                                                final currency = meta.salary.currency;
+                                                
+                                                if (min != null && max != null) {
+                                                  salaryText = '$min - $max $currency';
+                                                } else if (min != null) {
+                                                  salaryText = 'Từ $min $currency';
+                                                } else if (max != null) {
+                                                  salaryText = 'Đến $max $currency';
+                                                }
+                                              }
+                                              return Text(
+                                                salaryText,
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green.shade700,
+                                                ),
+                                              );
+                                            },
                                           ),
                                           Text(
-                                            _getTimeAgo(job.postedDate),
+                                            _getTimeAgo(job.createdAt),
                                             style: TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey.shade500,

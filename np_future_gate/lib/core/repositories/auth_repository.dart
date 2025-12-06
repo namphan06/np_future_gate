@@ -292,6 +292,17 @@ class AuthRepository {
     }
   }
 
+  /// Update Password
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      await _client.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+    } catch (e) {
+      throw Exception('Failed to update password: $e');
+    }
+  }
+
   /// Get user authentication state stream
   Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 

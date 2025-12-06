@@ -101,72 +101,111 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> {
     final filteredJobs = _getFilteredJobs();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Posted Jobs'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search by title or tags...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              onChanged: (value) => setState(() => _searchQuery = value),
-            ),
-          ),
-
-          // Job List
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : filteredJobs.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.work_off_outlined,
-                                size: 64, color: Colors.grey),
-                            const SizedBox(height: 16),
-                            const Text('No jobs found'),
-                            if (_jobs.isEmpty) ...[
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () => _navigateToEditJob(),
-                                child: const Text('Post a Job'),
-                              ),
-                            ],
-                          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppMainColors.lightGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Quản lý việc làm',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadJobs,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          itemCount: filteredJobs.length,
-                          itemBuilder: (context, index) {
-                            final job = filteredJobs[index];
-                            return _buildJobCard(job);
-                          },
+                        SizedBox(height: 4),
+                        Text(
+                          'Danh sách việc làm đã đăng',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
                         ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.filter_list),
+                      onPressed: _showFilterDialog,
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.all(12),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Search Bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm theo tiêu đề hoặc tags...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Job List
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : filteredJobs.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.work_off_outlined, size: 64, color: Colors.grey[300]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Chưa có việc làm nào',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadJobs,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 80),
+                              itemCount: filteredJobs.length,
+                              itemBuilder: (context, index) => _buildJobCard(filteredJobs[index]),
+                            ),
+                          ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToEditJob(),

@@ -16,7 +16,9 @@ class CVManagementScreen extends StatefulWidget {
 class _CVManagementScreenState extends State<CVManagementScreen> {
   final CVSupabaseService _cvService = CVSupabaseService();
   List<Map<String, dynamic>> _cvList = [];
+  List<Map<String, dynamic>> _filteredCVList = [];
   bool _isLoading = false;
+  final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
   final Set<String> _selectedTags = {};
 
@@ -24,6 +26,13 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
   void initState() {
     super.initState();
     _loadCVs();
+    _searchController.addListener(_filterCVs);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   List<String> get _allTags {
@@ -52,7 +61,10 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
     setState(() => _isLoading = true);
     try {
       final cvs = await _cvService.getMyCVs();
-      setState(() => _cvList = cvs);
+      setState(() {
+        _cvList = cvs;
+        _filteredCVList = cvs; // Initialize filtered list
+      });
       debugPrint('Loaded ${cvs.length} CVs');
     } catch (e) {
       _showError('Không thể tải danh sách CV: $e');
@@ -60,6 +72,21 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  void _filterCVs() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredCVList = _cvList.where((cv) {
+        final title = (cv['title'] ?? '').toString().toLowerCase();
+        final tags = (cv['tags'] as List<dynamic>?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
+        
+        final matchesQuery = title.contains(query) || tags.any((t) => t.contains(query));
+        final matchesTags = _selectedTags.isEmpty || tags.any((t) => _selectedTags.contains(t)); // Simplified tag filter
+
+        return matchesQuery && matchesTags;
+      }).toList();
+    });
   }
 
   Future<void> _deleteCV(String cvId, String title) async {
@@ -345,6 +372,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
                       ],
                     ),
                     child: TextField(
+                      controller: _searchController,
                       onChanged: (value) => setState(() => _searchText = value),
                       decoration: InputDecoration(
                         hintText: 'Tìm kiếm CV...',
@@ -485,7 +513,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
 
   // Tab 1: CV Chung (All General CVs)
   Widget _buildGeneralTab() {
-    final generalCVs = _cvList.where((cv) {
+    final generalCVs = _filteredCVList.where((cv) {
       final type = cv['type'] ?? 'general';
       final title = (cv['title'] ?? '').toLowerCase();
       final searchMatch = _searchText.isEmpty || title.contains(_searchText.toLowerCase());
@@ -724,10 +752,16 @@ class _DomainCVListState extends State<_DomainCVList> {
         if (typeField != _selectedCategory) return false;
       }
 
-      // Filter by search
+      // Filter by search (Title OR Tags)
       if (widget.searchText.isNotEmpty) {
+        final query = widget.searchText.toLowerCase();
         final title = (cv['title'] ?? '').toLowerCase();
-        if (!title.contains(widget.searchText.toLowerCase())) return false;
+        final tags = List<String>.from(cv['tags'] ?? []).map((e) => e.toLowerCase()).toList();
+        
+        final titleMatch = title.contains(query);
+        final tagMatch = tags.any((t) => t.contains(query));
+        
+        if (!titleMatch && !tagMatch) return false;
       }
 
       // Filter by tags

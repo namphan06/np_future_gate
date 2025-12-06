@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../auth/change_password_screen.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/models/profile_model.dart';
@@ -271,7 +272,12 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                           title: 'Đổi mật khẩu',
                           subtitle: 'Thay đổi mật khẩu đăng nhập',
                           color: Colors.orange,
-                          onTap: () => _showComingSoon(context, 'Đổi mật khẩu'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

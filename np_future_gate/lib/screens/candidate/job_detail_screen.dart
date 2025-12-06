@@ -43,7 +43,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   Future<void> _toggleSave() async {
     if (_currentUserId == null) return;
     try {
-      await _jobRepository.toggleSaveJob(_currentUserId!, widget.job.id!, !_isSaved);
+      await _jobRepository.toggleSaveJob(_currentUserId!, widget.job.id!);
       setState(() => _isSaved = !_isSaved);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
