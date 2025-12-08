@@ -3,6 +3,7 @@ import 'package:np_future_gate/screens/cv/cv_creation_screen.dart';
 import 'package:np_future_gate/screens/cv/cv_management_screen.dart';
 import '../../core/theme/app_main_colors.dart';
 import 'applied_jobs_screen.dart';
+import 'saved_jobs_screen.dart';
 
 class ToolsPageCandidate extends StatelessWidget {
   const ToolsPageCandidate({super.key});
@@ -104,9 +105,16 @@ class ToolsPageCandidate extends StatelessWidget {
                               context,
                               icon: Icons.bookmark,
                               title: 'Đã lưu',
-                              subtitle: '8 việc',
+                              subtitle: 'Xem danh sách',
                               color: Colors.orange,
-                              onTap: () => _showComingSoon(context, 'Việc đã lưu'),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SavedJobsScreen(),
+                                  ),
+                                );
+                              },
                             ),
                             _buildToolCard(
                               context,

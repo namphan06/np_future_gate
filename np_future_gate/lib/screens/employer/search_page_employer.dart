@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../core/enums/vietnam_provinces.dart';
+import '../../core/enums/job_fields.dart';
+import '../../core/enums/experience_levels.dart';
 import '../../core/theme/app_main_colors.dart';
 
 class SearchPageEmployer extends StatefulWidget {
@@ -168,14 +171,14 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                         _buildDropdownFilter(
                           'Kinh nghiệm',
                           _selectedExperience,
-                          ['Tất cả', 'Dưới 1 năm', '1-2 năm', '3-5 năm', 'Trên 5 năm'],
+                          ['Tất cả', ...ExperienceLevel.valuesList],
                           (value) => setState(() => _selectedExperience = value!),
                         ),
                         const SizedBox(height: 12),
                         _buildDropdownFilter(
                           'Lĩnh vực',
                           _selectedField,
-                          ['Tất cả', 'Mobile Development', 'Web Development', 'Backend Development', 'Design', 'Data Science'],
+                          ['Tất cả', ...JobField.valuesList],
                           (value) => setState(() => _selectedField = value!),
                         ),
                         const SizedBox(height: 12),
@@ -196,7 +199,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                         _buildDropdownFilter(
                           'Địa điểm',
                           _selectedLocation,
-                          ['Tất cả', 'Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Cần Thơ', 'Hải Phòng'],
+                          ['Tất cả', ...VietnamProvince.valuesList],
                           (value) => setState(() => _selectedLocation = value!),
                         ),
                         const SizedBox(height: 16),

@@ -5,6 +5,7 @@ import '../../core/models/job_model.dart';
 import '../../core/repositories/job_repository.dart';
 import 'job_detail_screen.dart';
 import 'data/filter_data.dart';
+import '../../widgets/cards/job_card.dart';
 
 class SearchPageCandidate extends StatefulWidget {
   const SearchPageCandidate({super.key});
@@ -29,6 +30,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
   List<JobModel> _filteredJobs = [];
   bool _isLoading = true;
   List<String> _savedJobIds = [];
+  List<String> _appliedJobIds = [];
 
   @override
   void initState() {
@@ -41,9 +43,11 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
       final savedIds = await _jobRepo.getSavedJobIds(user.id);
+      final appliedIds = await _jobRepo.getAppliedJobIds(user.id);
       if (mounted) {
         setState(() {
           _savedJobIds = savedIds;
+          _appliedJobIds = appliedIds;
         });
       }
     }
@@ -162,22 +166,6 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
       _selectedWorkType = null;
       _filteredJobs = _allJobs;
     });
-  }
-
-  String _getTimeAgo(DateTime? dateTime) {
-    if (dateTime == null) return 'Vừa xong';
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} ngày trước';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} giờ trước';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} phút trước';
-    } else {
-      return 'Vừa xong';
-    }
   }
 
   @override
@@ -595,201 +583,22 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final job = _filteredJobs[index];
-                          final meta = job.metadata;
+                          final isSaved = _savedJobIds.contains(job.id);
+                          final isApplied = _appliedJobIds.contains(job.id);
                           
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 15),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.06),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
+                          return JobCard(
+                            job: job,
+                            isSaved: isSaved,
+                            isApplied: isApplied,
+                            onToggleSave: () => _toggleSaveJob(job.id!),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => JobDetailScreen(job: job),
                                 ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => JobDetailScreen(job: job),
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            width: 50,
-                                            height: 50,
-                                            decoration: BoxDecoration(
-                                              color: AppMainColors.backgroundLightStart,
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                meta.title.isNotEmpty ? meta.title[0].toUpperCase() : 'J',
-                                                style: const TextStyle(
-                                                  fontSize: 24,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: AppMainColors.primary,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  meta.title,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  meta.workingRegions.isNotEmpty ? meta.workingRegions.first : 'Toàn quốc',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.grey.shade600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          InkWell(
-                                            onTap: () => _toggleSaveJob(job.id!),
-                                            child: Icon(
-                                              _savedJobIds.contains(job.id)
-                                                  ? Icons.bookmark
-                                                  : Icons.bookmark_border,
-                                              color: _savedJobIds.contains(job.id)
-                                                  ? AppMainColors.primary
-                                                  : Colors.grey.shade400,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 8,
-                                        children: meta.requirementsTags.take(3).map((tag) {
-                                          return Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                            decoration: BoxDecoration(
-                                              color: AppMainColors.backgroundLightStart,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              tag,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: AppMainColors.primary,
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            meta.workLocations.isNotEmpty ? meta.workLocations.first : 'N/A',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            meta.employmentTypes.isNotEmpty ? meta.employmentTypes.first : 'Full-time',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          Icon(Icons.stars, size: 16, color: Colors.grey.shade600),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            meta.experienceRequired,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Builder(
-                                            builder: (context) {
-                                              String salaryText = 'Thỏa thuận';
-                                              if (meta.salary.isNegotiable) {
-                                                salaryText = 'Thỏa thuận';
-                                              } else {
-                                                final min = meta.salary.min;
-                                                final max = meta.salary.max;
-                                                final currency = meta.salary.currency;
-                                                
-                                                if (min != null && max != null) {
-                                                  salaryText = '$min - $max $currency';
-                                                } else if (min != null) {
-                                                  salaryText = 'Từ $min $currency';
-                                                } else if (max != null) {
-                                                  salaryText = 'Đến $max $currency';
-                                                }
-                                              }
-                                              return Text(
-                                                salaryText,
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.green.shade700,
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                          Text(
-                                            _getTimeAgo(job.createdAt),
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey.shade500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                              );
+                            },
                           );
                         },
                         childCount: _filteredJobs.length,

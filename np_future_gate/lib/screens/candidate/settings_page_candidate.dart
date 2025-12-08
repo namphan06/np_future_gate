@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../widgets/animated_avatar.dart';
 import '../auth/change_password_screen.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/repositories/auth_repository.dart';
@@ -115,35 +116,13 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                child: avatarUrl != null
-                                    ? Image.network(
-                                        avatarUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  AppMainColors.primary.withOpacity(0.8),
-                                                  AppMainColors.primaryDark,
-                                                ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                            ),
-                                            child: const Icon(
-                                              Icons.person_rounded,
-                                              size: 40,
-                                              color: Colors.white,
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : const Icon(
-                                        Icons.person_rounded,
-                                        size: 40,
-                                        color: Colors.white,
-                                      ),
+                                child: AnimatedAvatar(
+                                  avatarUrl: avatarUrl,
+                                  width: 80,
+                                  height: 80,
+                                  borderRadius: 16,
+                                  placeholderColor: Colors.transparent,
+                                ),
                               ),
                             ),
                         const SizedBox(width: 16),

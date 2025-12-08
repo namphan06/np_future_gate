@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../auth/change_password_screen.dart';
 import '../../core/services/supabase_service.dart';
+import '../../widgets/animated_avatar.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -70,35 +71,14 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: currentUser?.userMetadata?['avatar_url'] != null
-                                ? Image.network(
-                                    currentUser!.userMetadata!['avatar_url'],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              AppMainColors.primary.withOpacity(0.8),
-                                              AppMainColors.primaryDark,
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.business_rounded,
-                                          size: 40,
-                                          color: Colors.white,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : const Icon(
-                                    Icons.business_rounded,
-                                    size: 40,
-                                    color: Colors.white,
-                                  ),
+                            child: AnimatedAvatar(
+                              avatarUrl: currentUser?.userMetadata?['avatar_url'],
+                              width: 80,
+                              height: 80,
+                              borderRadius: 16,
+                              placeholderIcon: Icons.business_rounded,
+                              placeholderColor: Colors.transparent,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),

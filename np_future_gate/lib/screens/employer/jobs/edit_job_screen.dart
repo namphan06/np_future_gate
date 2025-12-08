@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
+import '../../../core/enums/vietnam_provinces.dart';
+import '../../../core/enums/job_fields.dart';
+import '../../../core/enums/employment_types.dart';
+import '../../../core/enums/experience_levels.dart';
 import '../../../core/theme/app_main_colors.dart';
 
 class EditJobScreen extends StatefulWidget {
@@ -20,7 +24,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
 
   // Controllers
   final _titleController = TextEditingController();
-  final _experienceController = TextEditingController();
+  // final _experienceController = TextEditingController(); // Removed in favor of dropdown
   final _salaryMinController = TextEditingController();
   final _salaryMaxController = TextEditingController();
 
@@ -28,6 +32,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
   DateTime? _deadline;
   bool _isActive = true;
   bool _isNegotiable = false;
+  String? _selectedExperience;
   List<String> _workingRegions = [];
   List<String> _fields = [];
   List<String> _employmentTypes = [];
@@ -50,7 +55,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
     final meta = job.metadata;
 
     _titleController.text = meta.title;
-    _experienceController.text = meta.experienceRequired;
+    _selectedExperience = meta.experienceRequired;
     _salaryMinController.text = meta.salary.min?.toString() ?? '';
     _salaryMaxController.text = meta.salary.max?.toString() ?? '';
     
@@ -86,7 +91,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
       final metadata = JobMetadata(
         title: _titleController.text,
         workingRegions: _workingRegions,
-        experienceRequired: _experienceController.text,
+        experienceRequired: _selectedExperience ?? '',
         fields: _fields,
         requirementsTags: _requirementsTags,
         salary: salary,
@@ -161,7 +166,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
             _buildMultiSelect(
               title: 'Working Regions',
               items: _workingRegions,
-              options: ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Remote', 'Other'],
+              options: VietnamProvince.valuesList,
               onChanged: (val) => setState(() => _workingRegions = val),
             ),
             
@@ -169,14 +174,20 @@ class _EditJobScreenState extends State<EditJobScreen> {
             _buildMultiSelect(
               title: 'Fields',
               items: _fields,
-              options: ['IT Software', 'Marketing', 'Sales', 'Design', 'HR'],
+              options: JobField.valuesList,
               onChanged: (val) => setState(() => _fields = val),
             ),
 
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _experienceController,
+            DropdownButtonFormField<String>(
+              value: _selectedExperience != null && ExperienceLevel.valuesList.contains(_selectedExperience) 
+                  ? _selectedExperience 
+                  : null,
               decoration: const InputDecoration(labelText: 'Experience Required'),
+              items: ExperienceLevel.valuesList.map((e) {
+                return DropdownMenuItem(value: e, child: Text(e));
+              }).toList(),
+              onChanged: (val) => setState(() => _selectedExperience = val),
             ),
 
             const SizedBox(height: 24),
@@ -212,7 +223,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
             _buildMultiSelect(
               title: 'Employment Types',
               items: _employmentTypes,
-              options: ['Full-time', 'Part-time', 'Contract', 'Freelance'],
+              options: EmploymentType.valuesList,
               onChanged: (val) => setState(() => _employmentTypes = val),
             ),
 
@@ -235,11 +246,16 @@ class _EditJobScreenState extends State<EditJobScreen> {
               subtitle: Text(_deadline?.toString().split(' ')[0] ?? 'Not set'),
               trailing: const Icon(Icons.calendar_today),
               onTap: () async {
+                final now = DateTime.now();
+                final initialDate = _deadline ?? now;
+                // Ensure firstDate is not after initialDate
+                final firstDate = initialDate.isBefore(now) ? initialDate : now;
+
                 final date = await showDatePicker(
                   context: context,
-                  initialDate: _deadline ?? DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                  initialDate: initialDate,
+                  firstDate: firstDate,
+                  lastDate: now.add(const Duration(days: 365)),
                 );
                 if (date != null) setState(() => _deadline = date);
               },

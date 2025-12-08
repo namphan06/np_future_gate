@@ -1,52 +1,16 @@
+import 'package:np_future_gate/core/enums/vietnam_provinces.dart';
+import 'package:np_future_gate/core/enums/experience_levels.dart';
+import 'package:np_future_gate/core/enums/employment_types.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+
 // Danh sách các thành phố
-const List<String> cities = [
-  'Hà Nội',
-  'Hồ Chí Minh',
-  'Đà Nẵng',
-  'Hải Phòng',
-  'Cần Thơ',
-  'Biên Hòa',
-  'Nha Trang',
-  'Huế',
-  'Vũng Tàu',
-  'Buôn Ma Thuột',
-];
+final List<String> cities = VietnamProvince.valuesList;
 
 // Danh sách kinh nghiệm
-const List<String> experiences = [
-  'Không yêu cầu',
-  'Dưới 1 năm',
-  '1-2 năm',
-  '2-3 năm',
-  '3-5 năm',
-  'Trên 5 năm',
-];
+final List<String> experiences = ExperienceLevel.valuesList;
 
 // Danh sách loại hình công việc
-const List<String> jobWorkTypes = [
-  'Full-time',
-  'Part-time',
-  'Internship',
-  'Freelance',
-  'Contract',
-];
+final List<String> jobWorkTypes = EmploymentType.valuesList;
 
 // Danh sách loại công việc
-const List<String> jobTypes = [
-  'Công nghệ thông tin',
-  'Marketing',
-  'Kinh doanh',
-  'Kế toán',
-  'Nhân sự',
-  'Thiết kế',
-  'Giáo dục',
-  'Y tế',
-  'Xây dựng',
-  'Sản xuất',
-  'Logistics',
-  'Dịch vụ khách hàng',
-  'Bất động sản',
-  'Ngân hàng - Tài chính',
-  'Pháp lý',
-  'Khác',
-];
+final List<String> jobTypes = JobField.valuesList;

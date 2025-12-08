@@ -124,7 +124,8 @@ class JobRepository {
   
   Future<List<JobModel>> getActiveJobs() async {
     try {
-      final response = await _supabase
+      // 1. Fetch active jobs
+      final jobsResponse = await _supabase
           .from('jobs')
           .select()
           .eq('is_active', true)
@@ -132,7 +133,45 @@ class JobRepository {
           .gt('deadline', DateTime.now().toIso8601String())
           .order('created_at', ascending: false);
 
-      return (response as List).map((e) => JobModel.fromJson(e)).toList();
+      final jobsList = jobsResponse as List<dynamic>;
+      if (jobsList.isEmpty) return [];
+
+      // 2. Extract creator IDs
+      final creatorIds = jobsList
+          .map((job) => job['creator_id'] as String)
+          .toSet()
+          .toList();
+
+      // 3. Fetch profiles for these creators
+      final profilesResponse = await _supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, metadata')
+          .filter('id', 'in', '(${creatorIds.join(',')})');
+      
+      final profilesList = profilesResponse as List<dynamic>;
+      
+      // 4. Create a map of profiles for easy lookup
+      final profilesMap = {
+        for (var profile in profilesList) 
+          profile['id'] as String: profile
+      };
+
+      // 5. Merge data and create JobModels
+      return jobsList.map((jobData) {
+        final creatorId = jobData['creator_id'];
+        final profile = profilesMap[creatorId];
+        
+        // Create a mutable copy of jobData to inject profile
+        final Map<String, dynamic> jobWithProfile = Map.from(jobData);
+        
+        if (profile != null) {
+          // JobModel.fromJson expects 'profiles' key
+          jobWithProfile['profiles'] = profile;
+        }
+        
+        return JobModel.fromJson(jobWithProfile);
+      }).toList();
+
     } catch (e) {
       throw Exception('Failed to fetch active jobs: $e');
     }
@@ -196,6 +235,85 @@ class JobRepository {
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       throw Exception('Failed to fetch applied jobs: $e');
+    }
+  }
+
+  Future<List<JobModel>> getSavedJobs(String userId) async {
+    try {
+      final response = await _supabase
+          .from('user_job_activities')
+          .select('jobs(*)')
+          .eq('user_id', userId)
+          .eq('is_saved', true);
+      
+      final jobs = (response as List).map((item) {
+        final jobData = item['jobs'];
+        if (jobData != null) {
+          return JobModel.fromJson(jobData);
+        }
+        return null;
+      }).whereType<JobModel>().toList();
+
+      return jobs;
+    } catch (e) {
+      throw Exception('Failed to fetch saved jobs: $e');
+    }
+  }
+
+  Future<bool> hasApplied(String userId, String jobId) async {
+    try {
+      final response = await _supabase
+          .from('user_job_activities')
+          .select('is_applied')
+          .eq('user_id', userId)
+          .eq('job_id', jobId)
+          .maybeSingle();
+
+      if (response != null) {
+        return response['is_applied'] as bool? ?? false;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSavedJobsWithStatus(String userId) async {
+    try {
+      final response = await _supabase
+          .from('user_job_activities')
+          .select('*, jobs(*, profiles(full_name, avatar_url))')
+          .eq('user_id', userId)
+          .eq('is_saved', true);
+      
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      // Fallback without profiles join
+      try {
+        final response = await _supabase
+            .from('user_job_activities')
+            .select('*, jobs(*)')
+            .eq('user_id', userId)
+            .eq('is_saved', true);
+        
+        return List<Map<String, dynamic>>.from(response);
+      } catch (e2) {
+        throw Exception('Failed to fetch saved jobs with status: $e2');
+      }
+    }
+  }
+
+  Future<List<String>> getAppliedJobIds(String userId) async {
+    try {
+      final response = await _supabase
+          .from('user_job_activities')
+          .select('job_id')
+          .eq('user_id', userId)
+          .eq('is_applied', true);
+      
+      return (response as List).map((e) => e['job_id'] as String).toList();
+    } catch (e) {
+      return [];
     }
   }
 }

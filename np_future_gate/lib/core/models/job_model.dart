@@ -11,6 +11,9 @@ class JobModel {
   final List<JobApplication> applicants;
   final int viewCount;
   final String status; // 'pending', 'approved', 'rejected', 'closed'
+  final String? creatorName;
+  final String? creatorAvatarUrl;
+
 
   JobModel({
     this.id,
@@ -23,9 +26,23 @@ class JobModel {
     this.applicants = const [],
     this.viewCount = 0,
     this.status = 'pending',
+    this.creatorName,
+    this.creatorAvatarUrl,
+   
   });
 
   factory JobModel.fromJson(Map<String, dynamic> json) {
+    var profileData = json['profiles'];
+    Map<String, dynamic>? profile;
+
+    if (profileData is List) {
+      if (profileData.isNotEmpty) {
+        profile = profileData.first as Map<String, dynamic>;
+      }
+    } else if (profileData is Map) {
+      profile = profileData as Map<String, dynamic>;
+    }
+
     return JobModel(
       id: json['id'],
       creatorId: json['creator_id'],
@@ -40,6 +57,9 @@ class JobModel {
           [],
       viewCount: json['view_count'] ?? 0,
       status: json['status'] ?? 'pending',
+      creatorName: profile?['full_name'],
+      creatorAvatarUrl: profile?['avatar_url'],
+      
     );
   }
 

@@ -21,6 +21,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   
   bool _isSaved = false;
   bool _isApplying = false;
+  bool _hasApplied = false;
   String? _currentUserId;
 
   @override
@@ -28,6 +29,17 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     super.initState();
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
     _checkIfSaved();
+    _checkIfApplied();
+  }
+
+  Future<void> _checkIfApplied() async {
+    if (_currentUserId == null) return;
+    final hasApplied = await _jobRepository.hasApplied(_currentUserId!, widget.job.id!);
+    if (mounted) {
+      setState(() {
+        _hasApplied = hasApplied;
+      });
+    }
   }
 
   Future<void> _checkIfSaved() async {
@@ -110,6 +122,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     try {
       await _jobRepository.applyForJob(widget.job.id!, _currentUserId!, cvId);
       if (mounted) {
+        setState(() {
+          _hasApplied = true;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Application submitted successfully!')),
         );
@@ -130,128 +145,296 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     final meta = widget.job.metadata;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(meta.title),
-        actions: [
-          IconButton(
-            icon: Icon(_isSaved ? Icons.bookmark : Icons.bookmark_border),
-            color: _isSaved ? AppMainColors.primary : null,
-            onPressed: _toggleSave,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
           children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.business, size: 30),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        meta.title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 40), // Space for back button
+                        
+                        // Header: Logo & Company Name
+                        Center(
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(16),
+                                  image: widget.job.creatorAvatarUrl != null
+                                      ? DecorationImage(
+                                          image: NetworkImage(widget.job.creatorAvatarUrl!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: widget.job.creatorAvatarUrl == null
+                                    ? Center(
+                                        child: Text(
+                                          meta.title.isNotEmpty ? meta.title[0].toUpperCase() : 'J',
+                                          style: const TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppMainColors.primary,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(height: 16),
+                              if (widget.job.creatorName != null)
+                                Text(
+                                  widget.job.creatorName!,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              const SizedBox(height: 8),
+                              Text(
+                                meta.title,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    meta.workingRegions.isNotEmpty ? meta.workingRegions.first : 'Toàn quốc',
+                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        meta.workingRegions.join(', '),
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
+
+                        const SizedBox(height: 32),
+
+                        // Key Info Tags
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            _buildTag(
+                              Icons.monetization_on_outlined,
+                              meta.salary.isNegotiable
+                                  ? 'Thỏa thuận'
+                                  : '${meta.salary.min ?? 0} - ${meta.salary.max ?? 0} ${meta.salary.currency}',
+                              Colors.green.shade700,
+                              Colors.green.shade50,
+                            ),
+                            if (meta.employmentTypes.isNotEmpty)
+                              _buildTag(
+                                Icons.business_center_outlined,
+                                meta.employmentTypes.first,
+                                Colors.orange.shade700,
+                                Colors.orange.shade50,
+                              ),
+                            if (meta.experienceRequired.isNotEmpty)
+                              _buildTag(
+                                Icons.work_history_outlined,
+                                meta.experienceRequired,
+                                Colors.blue.shade700,
+                                Colors.blue.shade50,
+                              ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Requirements Tags
+                        if (meta.requirementsTags.isNotEmpty) ...[
+                          const Text(
+                            'Kỹ năng yêu cầu',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: meta.requirementsTags.map((tag) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+
+                        // Description Sections
+                        _buildSection('Mô tả công việc', meta.jobDescription),
+                        _buildSection('Yêu cầu ứng viên', meta.candidateRequirements),
+                        _buildSection('Quyền lợi', meta.benefits),
+                        
+                        const SizedBox(height: 100), // Space for bottom bar
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
 
-            // Salary & Type
-            Row(
-              children: [
-                _buildTag(Icons.monetization_on, 
-                  meta.salary.isNegotiable 
-                    ? 'Negotiable' 
-                    : '${meta.salary.min} - ${meta.salary.max} ${meta.salary.currency}'),
-                const SizedBox(width: 12),
-                _buildTag(Icons.work, meta.employmentTypes.join(', ')),
-              ],
+            // Back Button & Save Button
+            Positioned(
+              top: 10,
+              left: 20,
+              right: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildCircleButton(
+                    icon: Icons.arrow_back,
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  _buildCircleButton(
+                    icon: _isSaved ? Icons.bookmark : Icons.bookmark_border,
+                    color: _isSaved ? AppMainColors.primary : Colors.black87,
+                    onTap: _toggleSave,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-
-            // Description
-            _buildSection('Job Description', meta.jobDescription),
-            _buildSection('Requirements', meta.candidateRequirements),
-            _buildSection('Benefits', meta.benefits),
-            
-            const SizedBox(height: 80), // Space for bottom button
           ],
         ),
       ),
       bottomSheet: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
           ],
         ),
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            onPressed: _isApplying ? null : _showApplyDialog,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppMainColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        child: SafeArea(
+          child: SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _isApplying ? null : _showApplyDialog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppMainColors.primary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
+              child: _isApplying
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text(
+                      _hasApplied ? 'Ứng tuyển lại' : 'Ứng tuyển ngay',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
-            child: _isApplying
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('Apply Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTag(IconData icon, String text) {
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = Colors.black87,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppMainColors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Icon(icon, color: color, size: 20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTag(IconData icon, String text, Color color, Color bgColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: AppMainColors.primary),
-          const SizedBox(width: 6),
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
           Text(
             text,
             style: TextStyle(
-              color: AppMainColors.primary,
-              fontWeight: FontWeight.w500,
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
             ),
           ),
         ],

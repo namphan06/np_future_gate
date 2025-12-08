@@ -5,6 +5,9 @@ import 'package:intl/intl.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/services/cv_supabase_service.dart';
+import '../../core/enums/job_fields.dart';
+import '../../core/enums/employment_types.dart';
+import '../../core/theme/app_main_colors.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Profile profile;
@@ -50,26 +53,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     'Khác'
   ];
 
-  final List<String> _fieldOptions = [
-    'Công nghệ thông tin',
-    'Kinh doanh / Bán hàng',
-    'Marketing / Truyền thông',
-    'Thiết kế / Sáng tạo',
-    'Tài chính / Kế toán',
-    'Y tế / Sức khỏe',
-    'Giáo dục / Đào tạo',
-    'Dịch vụ khách hàng',
-    'Hành chính / Nhân sự',
-    'Kỹ thuật / Cơ khí'
-  ];
+  final List<String> _fieldOptions = JobField.valuesList;
 
-  final List<String> _workTypeOptions = [
-    'Full-time',
-    'Part-time',
-    'Freelance',
-    'Remote',
-    'Thực tập'
-  ];
+  final List<String> _workTypeOptions = EmploymentType.valuesList;
 
   @override
   void initState() {
