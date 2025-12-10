@@ -3,6 +3,7 @@ import '../../core/theme/app_main_colors.dart';
 import '../auth/change_password_screen.dart';
 import '../../core/services/supabase_service.dart';
 import '../../widgets/animated_avatar.dart';
+import 'edit_company_profile_screen.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -13,6 +14,16 @@ class ProfilePageEmployer extends StatefulWidget {
 
 class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
   final supabaseService = SupabaseService.instance;
+
+  void _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EditCompanyProfileScreen()),
+    );
+    if (result == true) {
+      setState(() {}); // Rebuild to show updated info
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +100,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                currentUser?.userMetadata?['company_name'] ?? 'Công ty',
+                                currentUser?.userMetadata?['company_name'] ?? currentUser?.userMetadata?['full_name'] ?? 'Công ty',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -154,7 +165,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
-                              onTap: () => _showComingSoon(context, 'Chỉnh sửa hồ sơ'),
+                              onTap: _navigateToEditProfile,
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
                                 child: Icon(
@@ -194,7 +205,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           title: 'Thông tin công ty',
                           subtitle: 'Cập nhật thông tin doanh nghiệp',
                           color: Colors.blue,
-                          onTap: () => _showComingSoon(context, 'Thông tin công ty'),
+                          onTap: _navigateToEditProfile,
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

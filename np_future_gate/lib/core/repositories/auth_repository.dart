@@ -244,8 +244,7 @@ class AuthRepository {
           if (fullName != null) 'full_name': fullName,
           if (phone != null) 'phone': phone,
           if (avatarUrl != null) 'avatar_url': avatarUrl,
-          // We don't sync all metadata to auth user to keep it light, 
-          // but basic info is good.
+          if (metadata != null && metadata.containsKey('company_name')) 'company_name': metadata['company_name'],
         },
       );
       await _client.auth.updateUser(userUpdates);

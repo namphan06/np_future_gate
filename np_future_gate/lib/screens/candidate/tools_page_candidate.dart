@@ -4,6 +4,7 @@ import 'package:np_future_gate/screens/cv/cv_management_screen.dart';
 import '../../core/theme/app_main_colors.dart';
 import 'applied_jobs_screen.dart';
 import 'saved_jobs_screen.dart';
+import 'companies_list_screen.dart';
 
 class ToolsPageCandidate extends StatelessWidget {
   const ToolsPageCandidate({super.key});
@@ -120,9 +121,16 @@ class ToolsPageCandidate extends StatelessWidget {
                               context,
                               icon: Icons.business,
                               title: 'Công ty theo dõi',
-                              subtitle: '5 công ty',
+                              subtitle: 'Danh sách công ty',
                               color: Colors.teal,
-                              onTap: () => _showComingSoon(context, 'Công ty theo dõi'),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const CompaniesListScreen(),
+                                  ),
+                                );
+                              },
                             ),
                             _buildToolCard(
                               context,

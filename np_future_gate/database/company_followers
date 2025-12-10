@@ -1,0 +1,24 @@
+-- Tạo bảng theo dõi công ty
+create table public.company_followers (
+  id uuid not null default gen_random_uuid (),
+  candidate_id uuid not null references public.profiles (id) on delete cascade,
+  employer_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamp with time zone not null default now(),
+  constraint company_followers_pkey primary key (id),
+  constraint company_followers_unique unique (candidate_id, employer_id)
+);
+
+-- Bật RLS (Row Level Security)
+alter table public.company_followers enable row level security;
+
+-- Policy: Ai cũng có thể xem (để hiển thị số lượng follower nếu cần)
+create policy "Public profiles are viewable by everyone." on public.company_followers
+  for select using (true);
+
+-- Policy: Người dùng đã đăng nhập có thể thêm theo dõi
+create policy "Users can insert their own follow." on public.company_followers
+  for insert with check (auth.uid() = candidate_id);
+
+-- Policy: Người dùng có thể bỏ theo dõi của chính mình
+create policy "Users can delete their own follow." on public.company_followers
+  for delete using (auth.uid() = candidate_id);
