@@ -24,7 +24,6 @@ class _EditJobScreenState extends State<EditJobScreen> {
 
   // Controllers
   final _titleController = TextEditingController();
-  // final _experienceController = TextEditingController(); // Removed in favor of dropdown
   final _salaryMinController = TextEditingController();
   final _salaryMaxController = TextEditingController();
 
@@ -123,7 +122,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving job: $e')),
+          SnackBar(content: Text('Lỗi khi lưu tin: $e')),
         );
       }
     } finally {
@@ -131,225 +130,589 @@ class _EditJobScreenState extends State<EditJobScreen> {
     }
   }
 
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final initialDate = _deadline ?? now;
+    final firstDate = initialDate.isBefore(now) ? initialDate : now;
+
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: now.add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppMainColors.primary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (date != null) setState(() => _deadline = date);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.job == null ? 'Post New Job' : 'Edit Job'),
-        actions: [
-          IconButton(
-            onPressed: _saveJob,
-            icon: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        color: Colors.white, strokeWidth: 2),
-                  )
-                : const Icon(Icons.check),
-          ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+      backgroundColor: const Color(0xFFF5F7FA),
+      body: SafeArea(
+        child: Column(
           children: [
-            _buildSectionTitle('Basic Information'),
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Job Title'),
-              validator: (v) => v?.isEmpty == true ? 'Required' : null,
-            ),
-            const SizedBox(height: 16),
-            
-            _buildMultiSelect(
-              title: 'Working Regions',
-              items: _workingRegions,
-              options: VietnamProvince.valuesList,
-              onChanged: (val) => setState(() => _workingRegions = val),
-            ),
-            
-            const SizedBox(height: 16),
-            _buildMultiSelect(
-              title: 'Fields',
-              items: _fields,
-              options: JobField.valuesList,
-              onChanged: (val) => setState(() => _fields = val),
-            ),
+            _buildHeader(),
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    _buildSectionContainer(
+                      title: 'Thông tin cơ bản',
+                      icon: Icons.info_outline,
+                      children: [
+                        _buildTextField(
+                          controller: _titleController,
+                          label: 'Tiêu đề công việc',
+                          hint: 'VD: Senior Flutter Developer',
+                          validator: (v) => v?.isEmpty == true ? 'Vui lòng nhập tiêu đề' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDropdown(
+                          label: 'Kinh nghiệm',
+                          value: _selectedExperience,
+                          items: ExperienceLevel.valuesList,
+                          onChanged: (val) => setState(() => _selectedExperience = val),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildMultiSelectField(
+                          title: 'Khu vực làm việc',
+                          items: _workingRegions,
+                          options: VietnamProvince.valuesList,
+                          onChanged: (val) => setState(() => _workingRegions = val),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildMultiSelectField(
+                          title: 'Lĩnh vực chuyên môn',
+                          items: _fields,
+                          options: JobField.valuesList,
+                          onChanged: (val) => setState(() => _fields = val),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    _buildSectionContainer(
+                      title: 'Lương & Hình thức',
+                      icon: Icons.monetization_on_outlined,
+                      children: [
+                         Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _salaryMinController,
+                                label: 'Lương tối thiểu',
+                                hint: '0',
+                                keyboardType: TextInputType.number,
+                                enabled: !_isNegotiable,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _salaryMaxController,
+                                label: 'Lương tối đa',
+                                hint: '0',
+                                keyboardType: TextInputType.number,
+                                enabled: !_isNegotiable,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        CheckboxListTile(
+                          title: const Text('Lương thỏa thuận'),
+                          value: _isNegotiable,
+                          onChanged: (v) => setState(() {
+                            _isNegotiable = v!;
+                            if (v) {
+                              _salaryMinController.clear();
+                              _salaryMaxController.clear();
+                            }
+                          }),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: AppMainColors.primary,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildMultiSelectField(
+                          title: 'Hình thức làm việc',
+                          items: _employmentTypes,
+                          options: EmploymentType.valuesList,
+                          onChanged: (val) => setState(() => _employmentTypes = val),
+                        ),
+                      ],
+                    ),
 
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedExperience != null && ExperienceLevel.valuesList.contains(_selectedExperience) 
-                  ? _selectedExperience 
-                  : null,
-              decoration: const InputDecoration(labelText: 'Experience Required'),
-              items: ExperienceLevel.valuesList.map((e) {
-                return DropdownMenuItem(value: e, child: Text(e));
-              }).toList(),
-              onChanged: (val) => setState(() => _selectedExperience = val),
-            ),
+                    const SizedBox(height: 16),
 
-            const SizedBox(height: 24),
-            _buildSectionTitle('Salary & Employment'),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _salaryMinController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Min Salary'),
-                  ),
+                    _buildSectionContainer(
+                      title: 'Chi tiết công việc',
+                      icon: Icons.description_outlined,
+                      children: [
+                        _buildDynamicList('Địa điểm làm việc cụ thể', _workLocations, hint: 'Nhập địa chỉ...'),
+                        const SizedBox(height: 24),
+                        _buildDynamicList('Mô tả công việc', _jobDescription, isLongText: true, hint: 'Nhập mô tả...'),
+                        const SizedBox(height: 24),
+                        _buildDynamicList('Yêu cầu ứng viên', _candidateRequirements, isLongText: true, hint: 'Nhập yêu cầu...'),
+                        const SizedBox(height: 24),
+                        _buildDynamicList('Quyền lợi', _benefits, isLongText: true, hint: 'Nhập quyền lợi...'),
+                        const SizedBox(height: 24),
+                        _buildDynamicList('Thẻ từ khóa (Tags)', _requirementsTags, hint: 'VD: Flutter, Dart...'),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _buildSectionContainer(
+                      title: 'Cài đặt tin',
+                      icon: Icons.settings_outlined,
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Hạn nộp hồ sơ', style: TextStyle(fontWeight: FontWeight.w500)),
+                          subtitle: Text(
+                            _deadline != null 
+                              ? '${_deadline!.day}/${_deadline!.month}/${_deadline!.year}' 
+                              : 'Chưa thiết lập',
+                            style: TextStyle(color: _deadline != null ? Colors.black87 : Colors.grey),
+                          ),
+                          trailing: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppMainColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(Icons.calendar_today, color: AppMainColors.primary, size: 20),
+                          ),
+                          onTap: _pickDate,
+                        ),
+                        const Divider(height: 24),
+                        SwitchListTile(
+                          title: const Text('Trạng thái hoạt động', style: TextStyle(fontWeight: FontWeight.w500)),
+                          subtitle: Text(
+                            _isActive ? 'Tin đang hiển thị với ứng viên' : 'Tin đang bị ẩn',
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                          ),
+                          value: _isActive,
+                          onChanged: (v) => setState(() => _isActive = v),
+                          activeColor: AppMainColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _salaryMaxController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Max Salary'),
-                  ),
-                ),
-              ],
+              ),
             ),
-            CheckboxListTile(
-              title: const Text('Negotiable'),
-              value: _isNegotiable,
-              onChanged: (v) => setState(() => _isNegotiable = v!),
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-            ),
-
-            const SizedBox(height: 16),
-            _buildMultiSelect(
-              title: 'Employment Types',
-              items: _employmentTypes,
-              options: EmploymentType.valuesList,
-              onChanged: (val) => setState(() => _employmentTypes = val),
-            ),
-
-            const SizedBox(height: 24),
-            _buildSectionTitle('Details'),
-            _buildDynamicList('Work Locations', _workLocations),
-            const SizedBox(height: 16),
-            _buildDynamicList('Job Description', _jobDescription),
-            const SizedBox(height: 16),
-            _buildDynamicList('Candidate Requirements', _candidateRequirements),
-            const SizedBox(height: 16),
-            _buildDynamicList('Benefits', _benefits),
-            const SizedBox(height: 16),
-            _buildDynamicList('Tags', _requirementsTags),
-
-            const SizedBox(height: 24),
-            _buildSectionTitle('Settings'),
-            ListTile(
-              title: const Text('Application Deadline'),
-              subtitle: Text(_deadline?.toString().split(' ')[0] ?? 'Not set'),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () async {
-                final now = DateTime.now();
-                final initialDate = _deadline ?? now;
-                // Ensure firstDate is not after initialDate
-                final firstDate = initialDate.isBefore(now) ? initialDate : now;
-
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: initialDate,
-                  firstDate: firstDate,
-                  lastDate: now.add(const Duration(days: 365)),
-                );
-                if (date != null) setState(() => _deadline = date);
-              },
-            ),
-            SwitchListTile(
-              title: const Text('Active Status'),
-              value: _isActive,
-              onChanged: (v) => setState(() => _isActive = v),
-            ),
-            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: AppMainColors.primary,
-        ),
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () => Navigator.pop(context),
+            borderRadius: BorderRadius.circular(20),
+            child: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Icon(Icons.arrow_back_ios_new, size: 20),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              widget.job == null ? 'Đăng tin tuyển dụng' : 'Chỉnh sửa tin',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _saveJob,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppMainColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  )
+                : const Text('Lưu', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMultiSelect({
+  Widget _buildSectionContainer({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppMainColors.primary, size: 22),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    TextInputType? keyboardType,
+    bool enabled = true,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      enabled: enabled,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        filled: true,
+        fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppMainColors.primary, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: items.contains(value) ? value : null,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      items: items.map((e) {
+        return DropdownMenuItem(value: e, child: Text(e));
+      }).toList(),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildMultiSelectField({
     required String title,
     required List<String> items,
     required List<String> options,
     required Function(List<String>) onChanged,
   }) {
+    final bool isLargeList = options.length > 10;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          children: options.map((option) {
-            final isSelected = items.contains(option);
-            return FilterChip(
-              label: Text(option),
-              selected: isSelected,
-              onSelected: (selected) {
-                final newItems = List<String>.from(items);
-                if (selected) {
-                  newItems.add(option);
-                } else {
-                  newItems.remove(option);
-                }
-                onChanged(newItems);
-              },
-            );
-          }).toList(),
-        ),
+        if (isLargeList)
+          InkWell(
+            onTap: () => _showMultiSelectDialog(title, items, options, onChanged),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      items.isEmpty ? 'Chọn $title' : items.join(', '),
+                      style: TextStyle(
+                        color: items.isEmpty ? Colors.grey : Colors.black87,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                ],
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options.map((option) {
+              final isSelected = items.contains(option);
+              return FilterChip(
+                label: Text(option),
+                selected: isSelected,
+                onSelected: (selected) {
+                  final newItems = List<String>.from(items);
+                  if (selected) {
+                    newItems.add(option);
+                  } else {
+                    newItems.remove(option);
+                  }
+                  onChanged(newItems);
+                },
+                selectedColor: AppMainColors.primary.withOpacity(0.15),
+                checkmarkColor: AppMainColors.primary,
+                labelStyle: TextStyle(
+                  color: isSelected ? AppMainColors.primary : Colors.black87,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                ),
+                backgroundColor: Colors.grey.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: isSelected ? AppMainColors.primary.withOpacity(0.5) : Colors.transparent,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }
 
-  Widget _buildDynamicList(String title, List<String> items) {
+  void _showMultiSelectDialog(
+    String title,
+    List<String> currentItems,
+    List<String> options,
+    Function(List<String>) onChanged,
+  ) {
+    final tempItems = List<String>.from(currentItems);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text('Chọn $title'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final option = options[index];
+                    final isSelected = tempItems.contains(option);
+                    return CheckboxListTile(
+                      title: Text(option),
+                      value: isSelected,
+                      activeColor: AppMainColors.primary,
+                      onChanged: (val) {
+                        setStateDialog(() {
+                          if (val == true) {
+                            tempItems.add(option);
+                          } else {
+                            tempItems.remove(option);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Hủy'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    onChanged(tempItems);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Xác nhận'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDynamicList(String title, List<String> items, {bool isLongText = false, String? hint}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: () {
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black87)),
+            InkWell(
+              onTap: () {
                 _showAddItemDialog(title, (val) {
                   setState(() => items.add(val));
-                });
+                }, isLongText: isLongText, hint: hint);
               },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppMainColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.add, size: 16, color: AppMainColors.primary),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Thêm',
+                      style: TextStyle(
+                        color: AppMainColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
+        const SizedBox(height: 12),
         if (items.isEmpty)
-          const Text('No items added', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic))
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Text(
+              'Chưa có thông tin',
+              style: TextStyle(color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+              textAlign: TextAlign.center,
+            ),
+          )
         else
           ...items.asMap().entries.map((entry) {
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text('• ${entry.value}'),
-              trailing: IconButton(
-                icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-                onPressed: () {
-                  setState(() => items.removeAt(entry.key));
-                },
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(Icons.circle, size: 8, color: AppMainColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      entry.value,
+                      style: const TextStyle(height: 1.4),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => setState(() => items.removeAt(entry.key)),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Icon(Icons.close, size: 18, color: Colors.grey.shade400),
+                    ),
+                  ),
+                ],
               ),
             );
           }),
@@ -357,30 +720,38 @@ class _EditJobScreenState extends State<EditJobScreen> {
     );
   }
 
-  void _showAddItemDialog(String title, Function(String) onAdd) {
+  void _showAddItemDialog(String title, Function(String) onAdd, {bool isLongText = false, String? hint}) {
     final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add to $title'),
+        title: Text('Thêm $title'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter text...'),
+          decoration: InputDecoration(
+            hintText: hint ?? 'Nhập nội dung...',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
           autofocus: true,
+          maxLines: isLongText ? 3 : 1,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('Hủy'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
                 onAdd(controller.text);
                 Navigator.pop(context);
               }
             },
-            child: const Text('Add'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppMainColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Thêm'),
           ),
         ],
       ),

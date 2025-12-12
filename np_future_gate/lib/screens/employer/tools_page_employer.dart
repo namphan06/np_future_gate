@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
 import 'jobs/edit_job_screen.dart';
 import 'jobs/employer_jobs_screen.dart';
 

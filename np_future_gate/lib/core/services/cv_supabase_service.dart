@@ -198,10 +198,10 @@ class CVOutputWidget extends StatefulWidget {
   final String? mcv;
 
   const CVOutputWidget({
-    Key? key,
+    super.key,
     this.cvId,
     this.mcv,
-  }) : super(key: key);
+  });
 
   @override
   State<CVOutputWidget> createState() => _CVOutputWidgetState();

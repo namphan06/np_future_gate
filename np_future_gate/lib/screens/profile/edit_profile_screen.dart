@@ -7,12 +7,11 @@ import '../../core/repositories/auth_repository.dart';
 import '../../core/services/cv_supabase_service.dart';
 import '../../core/enums/job_fields.dart';
 import '../../core/enums/employment_types.dart';
-import '../../core/theme/app_main_colors.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Profile profile;
 
-  const EditProfileScreen({Key? key, required this.profile}) : super(key: key);
+  const EditProfileScreen({super.key, required this.profile});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -42,6 +41,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _security = false;
   bool _isLoading = false;
   List<Map<String, dynamic>> _myCVs = [];
+  
+  // Tags
+  List<String> _tags = [];
+  final _tagController = TextEditingController();
 
   // Predefined lists
   final List<String> _educationOptions = [
@@ -86,6 +89,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _selectedCvIds = List.from(p.cvIds);
     _experience = List.from(p.experience);
     _security = p.security;
+    
+    if (p.metadata['tags'] != null) {
+      _tags = List<String>.from(p.metadata['tags']);
+    }
   }
 
   Future<void> _loadMyCVs() async {
@@ -106,6 +113,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _addressController.dispose();
     _workLocationsController.dispose();
     _bioController.dispose();
+    _tagController.dispose();
     super.dispose();
   }
 
@@ -174,6 +182,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'cv_ids': _selectedCvIds,
         'experience': _experience,
         'security': _security,
+        'tags': _tags,
       };
 
       final result = await _authRepo.updateProfile(
@@ -293,8 +302,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         children: [
                           _buildDropdown('Trình độ học vấn', _education, _educationOptions, (v) => setState(() => _education = v)),
                           _buildTextField('Nơi có thể làm việc', _workLocationsController, hint: 'VD: Hà Nội, TP.HCM'),
-                          _buildMultiSelect('Lĩnh vực quan tâm', _fieldOptions, _interestedFields),
+                          _buildMultiSelectDialogField(
+                            title: 'Lĩnh vực quan tâm',
+                            items: _interestedFields,
+                            options: _fieldOptions,
+                            onChanged: (val) => setState(() => _interestedFields = val),
+                          ),
                           _buildMultiSelect('Hình thức làm việc', _workTypeOptions, _workTypes),
+                          _buildTagsSection(),
                           _buildTextField('Giới thiệu bản thân (Bio)', _bioController, maxLines: 4),
                         ],
                       ),
@@ -324,7 +339,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             title: const Text('Cho phép tìm kiếm', style: TextStyle(fontWeight: FontWeight.w500)),
                             subtitle: const Text('Hồ sơ của bạn sẽ hiển thị với nhà tuyển dụng'),
                             value: _security,
-                            activeColor: Colors.blue,
+                            activeThumbColor: Colors.blue,
                             onChanged: (v) => setState(() => _security = v),
                           ),
                         ],
@@ -337,6 +352,72 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTagsSection() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Thẻ từ khóa (Tags)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700])),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _tagController,
+                  decoration: InputDecoration(
+                    hintText: 'VD: Flutter, Dart...',
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () {
+                  if (_tagController.text.isNotEmpty) {
+                    setState(() {
+                      _tags.add(_tagController.text.trim());
+                      _tagController.clear();
+                    });
+                  }
+                },
+                icon: const Icon(Icons.add_circle, color: Colors.blue, size: 32),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _tags.map((tag) => Chip(
+              label: Text(tag),
+              deleteIcon: const Icon(Icons.close, size: 18),
+              onDeleted: () {
+                setState(() {
+                  _tags.remove(tag);
+                });
+              },
+              backgroundColor: Colors.blue.withOpacity(0.1),
+              labelStyle: const TextStyle(color: Colors.blue),
+              side: BorderSide.none,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            )).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -529,7 +610,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700])),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: value,
+            initialValue: value,
             icon: const Icon(Icons.keyboard_arrow_down),
             decoration: InputDecoration(
               filled: true,
@@ -600,6 +681,110 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  Widget _buildMultiSelectDialogField({
+    required String title,
+    required List<String> items,
+    required List<String> options,
+    required Function(List<String>) onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700])),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () => _showMultiSelectDialog(title, items, options, onChanged),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      items.isEmpty ? 'Chọn $title' : items.join(', '),
+                      style: TextStyle(
+                        color: items.isEmpty ? Colors.grey[400] : Colors.black87,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMultiSelectDialog(
+    String title,
+    List<String> currentItems,
+    List<String> options,
+    Function(List<String>) onChanged,
+  ) {
+    final tempItems = List<String>.from(currentItems);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text('Chọn $title'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final option = options[index];
+                    final isSelected = tempItems.contains(option);
+                    return CheckboxListTile(
+                      title: Text(option),
+                      value: isSelected,
+                      activeColor: Colors.blue,
+                      onChanged: (val) {
+                        setStateDialog(() {
+                          if (val == true) {
+                            tempItems.add(option);
+                          } else {
+                            tempItems.remove(option);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    onChanged(tempItems);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Xác nhận'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildExperienceList() {
     return Column(
       children: [
@@ -645,7 +830,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ],
             ),
           );
-        }).toList(),
+        }),
         
         SizedBox(
           width: double.infinity,

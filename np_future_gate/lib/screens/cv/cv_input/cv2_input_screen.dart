@@ -7,7 +7,7 @@ import '../../../core/services/cv_supabase_service.dart';
 class CV2InputScreen extends StatefulWidget {
   final String? cvId; // null = tạo mới, có giá trị = chỉnh sửa
 
-  const CV2InputScreen({Key? key, this.cvId}) : super(key: key);
+  const CV2InputScreen({super.key, this.cvId});
 
   @override
   State<CV2InputScreen> createState() => _CV2InputScreenState();

@@ -7,7 +7,7 @@ import 'cv_input/cv3_input_screen.dart';
 
 /// CV Management Screen - Quản lý danh sách CV của người dùng
 class CVManagementScreen extends StatefulWidget {
-  const CVManagementScreen({Key? key}) : super(key: key);
+  const CVManagementScreen({super.key});
 
   @override
   State<CVManagementScreen> createState() => _CVManagementScreenState();
@@ -714,14 +714,13 @@ class _DomainCVList extends StatefulWidget {
   final Function(String, String) onDelete;
 
   const _DomainCVList({
-    Key? key,
     required this.cvList,
     required this.searchText,
     required this.selectedTags,
     required this.onView,
     required this.onEdit,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   State<_DomainCVList> createState() => _DomainCVListState();
@@ -790,7 +789,7 @@ class _DomainCVListState extends State<_DomainCVList> {
                     padding: const EdgeInsets.only(right: 8),
                     child: _buildCategoryChip(cat, _selectedCategory == cat),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),

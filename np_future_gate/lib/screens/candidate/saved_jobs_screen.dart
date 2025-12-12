@@ -16,9 +16,9 @@ class SavedJobsScreen extends StatefulWidget {
 
 class _SavedJobsScreenState extends State<SavedJobsScreen> {
   final _jobRepo = JobRepository();
-  List<Map<String, dynamic>> _allSavedJobs = [];
-  List<Map<String, dynamic>> _filteredJobs = [];
-  bool _isLoading = true;
+  // List<Map<String, dynamic>> _allSavedJobs = []; // Removed
+  // List<Map<String, dynamic>> _filteredJobs = []; // Removed
+  // bool _isLoading = true; // Removed
 
   // Search & Filter
   final TextEditingController _searchController = TextEditingController();
@@ -35,8 +35,12 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSavedJobs();
-    _searchController.addListener(_applyFilters);
+    // _loadSavedJobs(); // Removed
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    setState(() {});
   }
 
   @override
@@ -47,37 +51,13 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
     super.dispose();
   }
 
-  Future<void> _loadSavedJobs() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return;
-
-    try {
-      final jobs = await _jobRepo.getSavedJobsWithStatus(userId);
-      if (mounted) {
-        setState(() {
-          _allSavedJobs = jobs;
-          _applyFilters();
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading saved jobs: $e')),
-        );
-      }
-    }
-  }
-
-  void _applyFilters() {
-    setState(() {
-      _filteredJobs = _allSavedJobs.where((item) {
+  List<Map<String, dynamic>> _filterJobs(List<Map<String, dynamic>> jobs) {
+    return jobs.where((item) {
         final jobData = item['jobs'];
         if (jobData == null) return false;
         
         try {
-          final job = JobModel.fromJson(jobData);
+          final job = JobModel.fromJson(Map<String, dynamic>.from(jobData as Map));
           final meta = job.metadata;
 
           // Search Text
@@ -124,7 +104,6 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
           return false;
         }
       }).toList();
-    });
   }
 
   Future<void> _unSaveJob(String jobId) async {
@@ -133,13 +112,6 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
     try {
       await _jobRepo.toggleSaveJob(userId, jobId);
-      setState(() {
-        _allSavedJobs.removeWhere((item) {
-           final jobData = item['jobs'];
-           return jobData != null && jobData['id'] == jobId;
-        });
-        _applyFilters();
-      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Đã bỏ lưu công việc')),
@@ -153,6 +125,12 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
       }
     }
   }
+
+  void _applyFilters() {
+    setState(() {});
+  }
+
+  Future<void> _loadSavedJobs() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +175,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                   
                   // Khu vực
                   DropdownButtonFormField<String>(
-                    value: _selectedCity,
+                    initialValue: _selectedCity,
                     decoration: InputDecoration(
                       labelText: 'Khu vực',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -215,7 +193,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
                   // Kinh nghiệm
                   DropdownButtonFormField<String>(
-                    value: _selectedExperience,
+                    initialValue: _selectedExperience,
                     decoration: InputDecoration(
                       labelText: 'Kinh nghiệm',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -233,7 +211,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
                   // Loại công việc
                   DropdownButtonFormField<String>(
-                    value: _selectedJobType,
+                    initialValue: _selectedJobType,
                     decoration: InputDecoration(
                       labelText: 'Loại công việc',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -285,52 +263,64 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
           // List
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredJobs.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.bookmark_border, size: 64, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Không tìm thấy công việc nào',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                            ),
-                          ],
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _jobRepo.getSavedJobsStream(Supabase.instance.client.auth.currentUser?.id ?? ''),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final allSavedJobs = snapshot.data ?? [];
+                final filteredJobs = _filterJobs(allSavedJobs);
+                
+                if (filteredJobs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.bookmark_border, size: 64, color: Colors.grey[300]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Không tìm thấy công việc nào',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 16),
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadSavedJobs,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _filteredJobs.length,
-                          itemBuilder: (context, index) {
-                            final item = _filteredJobs[index];
-                            final jobData = item['jobs'];
-                            if (jobData == null) return const SizedBox.shrink();
-                            
-                            final job = JobModel.fromJson(jobData);
-                            final isApplied = item['is_applied'] == true;
+                      ],
+                    ),
+                  );
+                }
+                
+                return RefreshIndicator(
+                  onRefresh: _loadSavedJobs,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredJobs.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredJobs[index];
+                      final jobData = item['jobs'];
+                      if (jobData == null) return const SizedBox.shrink();
+                      
+                      final job = JobModel.fromJson(Map<String, dynamic>.from(jobData as Map));
+                      final isApplied = item['is_applied'] == true;
 
-                            return JobCard(
-                              job: job,
-                              isSaved: true,
-                              isApplied: isApplied,
-                              onToggleSave: () => _unSaveJob(job.id!),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => JobDetailScreen(job: job),
-                                  ),
-                                ).then((_) => _loadSavedJobs());
-                              },
-                            );
-                          },
-                        ),
-                      ),
+                      return JobCard(
+                        job: job,
+                        isSaved: true,
+                        isApplied: isApplied,
+                        onToggleSave: () => _unSaveJob(job.id!),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => JobDetailScreen(job: job),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              }
+            ),
           ),
         ],
       ),

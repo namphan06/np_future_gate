@@ -240,7 +240,7 @@ class Cv2 extends StatelessWidget {
             e['position'] ?? "",
             e['duration'] ?? "",
             e['description'] ?? "",
-          )).toList(),
+          )),
         const SizedBox(height: 20),
       ],
     );
@@ -291,7 +291,7 @@ class Cv2 extends StatelessWidget {
                 Text(p['description'] ?? "", style: const TextStyle(fontSize: 13)),
               ],
             ),
-          )).toList(),
+          )),
       ],
     );
   }
@@ -319,7 +319,7 @@ class Cv2 extends StatelessWidget {
                 Text(e['year'] ?? "", style: const TextStyle(color: Colors.grey, fontSize: 12)),
               ],
             ),
-          )).toList(),
+          )),
       ],
     );
   }

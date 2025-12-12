@@ -19,15 +19,15 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
   final _supabaseService = SupabaseService.instance;
   final _searchController = TextEditingController();
   
-  bool _isLoading = true;
-  List<Profile> _allCompanies = [];
-  List<Profile> _filteredCompanies = [];
+  // bool _isLoading = true; // Removed
+  // List<Profile> _allCompanies = []; // Removed
+  // List<Profile> _filteredCompanies = []; // Removed
   List<String> _followedCompanyIds = [];
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadFollowedIds();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -38,43 +38,22 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredCompanies = _allCompanies.where((company) {
-        final name = (company.metadata['company_name'] ?? company.fullName ?? '').toLowerCase();
-        final fields = (company.metadata['fields'] as List?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
-        
-        return name.contains(query) || fields.any((f) => f.contains(query));
-      }).toList();
-    });
+    setState(() {});
   }
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+  Future<void> _loadFollowedIds() async {
     try {
-      final companies = await _companyRepository.getAllCompanies();
       final userId = _supabaseService.currentUserId;
-      List<String> followedIds = [];
-      
       if (userId != null) {
-        followedIds = await _companyRepository.getFollowedCompanyIds(userId);
-      }
-
-      if (mounted) {
-        setState(() {
-          _allCompanies = companies;
-          _filteredCompanies = companies;
-          _followedCompanyIds = followedIds;
-          _isLoading = false;
-        });
+        final followedIds = await _companyRepository.getFollowedCompanyIds(userId);
+        if (mounted) {
+          setState(() {
+            _followedCompanyIds = followedIds;
+          });
+        }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải dữ liệu: $e')),
-        );
-        setState(() => _isLoading = false);
-      }
+      debugPrint('Error loading followed companies: $e');
     }
   }
 
@@ -147,13 +126,13 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
       MaterialPageRoute(
         builder: (context) => CompanyDetailScreen(company: company),
       ),
-    ).then((_) => _loadData()); // Reload data when returning (in case follow status changed)
+    ).then((_) => _loadFollowedIds()); // Reload data when returning (in case follow status changed)
   }
 
   @override
   Widget build(BuildContext context) {
-    final followedCompanies = _filteredCompanies.where((c) => _followedCompanyIds.contains(c.id)).toList();
-    final otherCompanies = _filteredCompanies.where((c) => !_followedCompanyIds.contains(c.id)).toList();
+    // final followedCompanies = ... removed
+    // final otherCompanies = ... removed
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -212,10 +191,26 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
 
             // Content
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : RefreshIndicator(
-                      onRefresh: _loadData,
+              child: StreamBuilder<List<Profile>>(
+                stream: _companyRepository.companiesStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  
+                  final allCompanies = snapshot.data ?? [];
+                  final query = _searchController.text.toLowerCase();
+                  final filteredCompanies = allCompanies.where((company) {
+                    final name = (company.metadata['company_name'] ?? company.fullName ?? '').toLowerCase();
+                    final fields = (company.metadata['fields'] as List?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
+                    return name.contains(query) || fields.any((f) => f.contains(query));
+                  }).toList();
+
+                  final followedCompanies = filteredCompanies.where((c) => _followedCompanyIds.contains(c.id)).toList();
+                  final otherCompanies = filteredCompanies.where((c) => !_followedCompanyIds.contains(c.id)).toList();
+
+                  return RefreshIndicator(
+                      onRefresh: _loadFollowedIds,
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,7 +260,9 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
                           ],
                         ),
                       ),
-                    ),
+                    );
+                },
+              ),
             ),
           ],
         ),

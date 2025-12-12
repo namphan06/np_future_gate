@@ -4,7 +4,6 @@ import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
 import '../../../core/theme/app_main_colors.dart';
-import '../../../core/models/cv_model.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final JobModel job;

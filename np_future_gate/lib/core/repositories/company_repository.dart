@@ -48,7 +48,7 @@ class CompanyRepository {
       });
     } catch (e) {
       print('Error following company: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -62,7 +62,16 @@ class CompanyRepository {
           .eq('employer_id', employerId);
     } catch (e) {
       print('Error unfollowing company: $e');
-      throw e;
+      rethrow;
     }
+  }
+
+  /// Stream danh sách tất cả các công ty (Realtime)
+  Stream<List<Profile>> get companiesStream {
+    return _client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('role', 'employer')
+        .map((event) => event.map((e) => Profile.fromJson(e)).toList());
   }
 }

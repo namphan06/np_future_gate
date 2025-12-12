@@ -269,7 +269,7 @@ class Cv1 extends StatelessWidget {
               _buildSkill(s['name'] ?? ""),
               SizedBox(height: 10),
             ],
-          )).toList(),
+          )),
       ],
     );
   }
@@ -346,7 +346,7 @@ class Cv1 extends StatelessWidget {
               ),
               SizedBox(height: 10),
             ],
-          )).toList(),
+          )),
       ],
     );
   }
@@ -460,7 +460,7 @@ class Cv1 extends StatelessWidget {
               Text(e['degree'] ?? ""),
               SizedBox(height: 8),
             ],
-          )).toList(),
+          )),
       ],
     );
   }
@@ -496,7 +496,7 @@ class Cv1 extends StatelessWidget {
               ),
               SizedBox(height: 10),
             ],
-          )).toList(),
+          )),
       ],
     );
   }
@@ -537,7 +537,7 @@ class Cv1 extends StatelessWidget {
               Expanded(child: Text(a['name'] ?? "")),
               Text(a['year'] ?? ""),
             ],
-          )).toList(),
+          )),
       ],
     );
   }
@@ -575,7 +575,7 @@ class Cv1 extends StatelessWidget {
               Expanded(child: Text(c['name'] ?? "")),
               Text(c['year'] ?? ""),
             ],
-          )).toList(),
+          )),
       ],
     );
   }
@@ -615,7 +615,7 @@ class Cv1 extends StatelessWidget {
               Text(r['phone'] ?? ""),
               SizedBox(height: 8),
             ],
-          )).toList(),
+          )),
       ],
     );
   }

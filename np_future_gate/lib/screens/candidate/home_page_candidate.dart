@@ -22,8 +22,8 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
   final _jobRepo = JobRepository();
   
   Profile? _profile;
-  List<JobModel> _jobs = [];
-  bool _isLoadingJobs = true;
+  // List<JobModel> _jobs = []; // Removed
+  // bool _isLoadingJobs = true; // Removed
   List<String> _savedJobIds = [];
   List<String> _appliedJobIds = [];
 
@@ -31,7 +31,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
   void initState() {
     super.initState();
     _loadProfile();
-    _loadJobs();
+    // _loadJobs(); // Removed in favor of StreamBuilder
     _loadSavedJobs();
   }
 
@@ -44,24 +44,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
     }
   }
 
-  Future<void> _loadJobs() async {
-    try {
-      final jobs = await _jobRepo.getActiveJobs();
-      if (mounted) {
-        setState(() {
-          _jobs = jobs;
-          _isLoadingJobs = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingJobs = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading jobs: $e')),
-        );
-      }
-    }
-  }
+  // _loadJobs removed
 
   Future<void> _loadSavedJobs() async {
     final user = SupabaseService.instance.currentUser;
@@ -126,9 +109,38 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
         gradient: AppMainColors.lightGradient,
       ),
           child: SafeArea(
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
+            child: StreamBuilder<List<JobModel>>(
+              stream: _jobRepo.activeJobsStream,
+              builder: (context, snapshot) {
+                final allJobs = snapshot.data ?? [];
+                final isLoading = snapshot.connectionState == ConnectionState.waiting;
+
+                // Filter jobs: Created within 24h AND matches user profile fields
+                final now = DateTime.now();
+                final jobs = allJobs.where((job) {
+                  // 1. 24h Filter
+                  if (job.createdAt == null) return false;
+                  final diff = now.difference(job.createdAt!);
+                  if (diff.inHours > 24) return false;
+
+                  // 2. Profile Fields Filter
+                  if (_profile != null) {
+                    final userFields = _profile!.metadata['interested_fields'];
+                    if (userFields is List && userFields.isNotEmpty) {
+                      final jobFields = job.metadata.fields;
+                      // Check intersection
+                      final hasMatch = userFields.any((uField) => 
+                        jobFields.any((jField) => jField.toString().toLowerCase() == uField.toString().toLowerCase())
+                      );
+                      if (!hasMatch) return false;
+                    }
+                  }
+                  return true;
+                }).toList();
+
+                return CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
             // Profile Header
             SliverToBoxAdapter(
               child: Container(
@@ -310,7 +322,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                       ),
                     ),
                     Text(
-                      '${_jobs.length} việc',
+                      '${jobs.length} việc',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -322,11 +334,11 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
             ),
 
             // Job List
-            _isLoadingJobs
+            isLoading
                 ? const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   )
-                : _jobs.isEmpty
+                : jobs.isEmpty
                     ? const SliverFillRemaining(
                         child: Center(child: Text('Chưa có việc làm nào')),
                       )
@@ -335,7 +347,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                         sliver: SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
-                              final job = _jobs[index];
+                              final job = jobs[index];
                               final isSaved = _savedJobIds.contains(job.id);
                               final isApplied = _appliedJobIds.contains(job.id);
 
@@ -355,14 +367,16 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                                 },
                               );
                             },
-                            childCount: _jobs.length,
+                            childCount: jobs.length,
                           ),
                         ),
                       ),
-          ],
+                  ],
+                );
+              },
+            ),
+          ),
         ),
-      ),
-    ),
     // Gradient overlay để tạo sự chuyển tiếp mượt mà với navbar
     Positioned(
       left: 0,

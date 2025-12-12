@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
 
 class SettingsPageAdmin extends StatelessWidget {
   const SettingsPageAdmin({super.key});

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../core/enums/job_fields.dart';
 
 class EditCompanyProfileScreen extends StatefulWidget {
   const EditCompanyProfileScreen({super.key});
@@ -33,9 +34,10 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
   final _facebookController = TextEditingController();
   final _linkedinController = TextEditingController();
   
-  // Fields (Lĩnh vực)
-  final _fieldController = TextEditingController();
+  // Fields & Tags
   List<String> _fields = [];
+  final _tagController = TextEditingController();
+  List<String> _tags = [];
 
   @override
   void initState() {
@@ -60,6 +62,9 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
         
         if (profile.metadata['fields'] != null) {
           _fields = List<String>.from(profile.metadata['fields']);
+        }
+        if (profile.metadata['tags'] != null) {
+          _tags = List<String>.from(profile.metadata['tags']);
         }
       }
     } catch (e) {
@@ -112,6 +117,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
       metadata['facebook'] = _facebookController.text.trim();
       metadata['linkedin'] = _linkedinController.text.trim();
       metadata['fields'] = _fields;
+      metadata['tags'] = _tags;
 
       // Update profile
       final result = await _authRepository.updateProfile(
@@ -267,24 +273,32 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    _buildSectionTitle('Lĩnh vực hoạt động'),
+                    _buildMultiSelectField(
+                      title: 'Lĩnh vực hoạt động',
+                      items: _fields,
+                      options: JobField.valuesList,
+                      onChanged: (val) => setState(() => _fields = val),
+                    ),
+
+                    const SizedBox(height: 24),
+                    _buildSectionTitle('Thẻ từ khóa (Tags)'),
                     Row(
                       children: [
                         Expanded(
                           child: _buildTextField(
-                            controller: _fieldController,
-                            label: 'Thêm lĩnh vực',
-                            icon: Icons.category,
-                            hint: 'Ví dụ: IT, Marketing...',
+                            controller: _tagController,
+                            label: 'Thêm thẻ',
+                            icon: Icons.tag,
+                            hint: 'Ví dụ: Startup, Product...',
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
                           onPressed: () {
-                            if (_fieldController.text.isNotEmpty) {
+                            if (_tagController.text.isNotEmpty) {
                               setState(() {
-                                _fields.add(_fieldController.text.trim());
-                                _fieldController.clear();
+                                _tags.add(_tagController.text.trim());
+                                _tagController.clear();
                               });
                             }
                           },
@@ -296,12 +310,12 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: _fields.map((field) => Chip(
-                        label: Text(field),
+                      children: _tags.map((tag) => Chip(
+                        label: Text(tag),
                         deleteIcon: const Icon(Icons.close, size: 18),
                         onDeleted: () {
                           setState(() {
-                            _fields.remove(field);
+                            _tags.remove(tag);
                           });
                         },
                         backgroundColor: AppMainColors.primary.withOpacity(0.1),
@@ -440,6 +454,144 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+    );
+  }
+
+  Widget _buildMultiSelectField({
+    required String title,
+    required List<String> items,
+    required List<String> options,
+    required Function(List<String>) onChanged,
+  }) {
+    final bool isLargeList = options.length > 10;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+        const SizedBox(height: 8),
+        if (isLargeList)
+          InkWell(
+            onTap: () => _showMultiSelectDialog(title, items, options, onChanged),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      items.isEmpty ? 'Chọn $title' : items.join(', '),
+                      style: TextStyle(
+                        color: items.isEmpty ? Colors.grey : Colors.black87,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                ],
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options.map((option) {
+              final isSelected = items.contains(option);
+              return FilterChip(
+                label: Text(option),
+                selected: isSelected,
+                onSelected: (selected) {
+                  final newItems = List<String>.from(items);
+                  if (selected) {
+                    newItems.add(option);
+                  } else {
+                    newItems.remove(option);
+                  }
+                  onChanged(newItems);
+                },
+                selectedColor: AppMainColors.primary.withOpacity(0.15),
+                checkmarkColor: AppMainColors.primary,
+                labelStyle: TextStyle(
+                  color: isSelected ? AppMainColors.primary : Colors.black87,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                ),
+                backgroundColor: Colors.grey.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: isSelected ? AppMainColors.primary.withOpacity(0.5) : Colors.transparent,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  void _showMultiSelectDialog(
+    String title,
+    List<String> currentItems,
+    List<String> options,
+    Function(List<String>) onChanged,
+  ) {
+    final tempItems = List<String>.from(currentItems);
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text('Chọn $title'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final option = options[index];
+                    final isSelected = tempItems.contains(option);
+                    return CheckboxListTile(
+                      title: Text(option),
+                      value: isSelected,
+                      activeColor: AppMainColors.primary,
+                      onChanged: (val) {
+                        setStateDialog(() {
+                          if (val == true) {
+                            tempItems.add(option);
+                          } else {
+                            tempItems.remove(option);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Hủy'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    onChanged(tempItems);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Xác nhận'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

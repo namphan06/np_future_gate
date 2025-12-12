@@ -26,15 +26,15 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
 
   late TabController _tabController;
   bool _isFollowing = false;
-  bool _isLoadingJobs = true;
-  List<JobModel> _activeJobs = [];
+  // bool _isLoadingJobs = true; // Removed
+  // List<JobModel> _activeJobs = []; // Removed
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _checkFollowStatus();
-    _loadCompanyJobs();
+    // _loadCompanyJobs(); // Removed
   }
 
   @override
@@ -59,31 +59,6 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
     }
   }
 
-  Future<void> _loadCompanyJobs() async {
-    try {
-      // Fetch all jobs created by this employer
-      final jobs = await _jobRepository.getEmployerJobs(widget.company.id);
-      // Filter only active jobs (approved and not expired)
-      final now = DateTime.now();
-      final activeJobs = jobs.where((job) {
-        final isApproved = job.status == 'approved';
-        final isNotExpired = job.deadline == null || job.deadline!.isAfter(now);
-        return isApproved && isNotExpired;
-      }).toList();
-      
-      if (mounted) {
-        setState(() {
-          _activeJobs = activeJobs;
-          _isLoadingJobs = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading jobs: $e');
-      if (mounted) {
-        setState(() => _isLoadingJobs = false);
-      }
-    }
-  }
 
   Future<void> _toggleFollow() async {
     final userId = _supabaseService.currentUserId;
@@ -416,26 +391,37 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
             ),
 
             // Tab 2: Tuyển dụng
-            _isLoadingJobs
-                ? const Center(child: CircularProgressIndicator())
-                : _activeJobs.isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.work_off_outlined, size: 64, color: Colors.grey),
-                            SizedBox(height: 16),
-                            Text('Chưa có tin tuyển dụng nào đang mở'),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _activeJobs.length,
-                        itemBuilder: (context, index) {
-                          return JobCard(job: _activeJobs[index]);
-                        },
-                      ),
+            StreamBuilder<List<JobModel>>(
+              stream: _jobRepository.getEmployerJobsStream(widget.company.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final activeJobs = snapshot.data ?? [];
+                
+                if (activeJobs.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.work_off_outlined, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('Chưa có tin tuyển dụng nào đang mở'),
+                      ],
+                    ),
+                  );
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: activeJobs.length,
+                  itemBuilder: (context, index) {
+                    return JobCard(job: activeJobs[index]);
+                  },
+                );
+              }
+            ),
           ],
         ),
       ),

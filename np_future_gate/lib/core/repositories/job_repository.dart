@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/job_model.dart';
 
@@ -177,6 +176,73 @@ class JobRepository {
     }
   }
 
+  // --- Realtime Streams ---
+
+  Stream<List<JobModel>> get activeJobsStream {
+    return _supabase
+        .from('jobs')
+        .stream(primaryKey: ['id'])
+        .eq('is_active', true)
+        .order('created_at', ascending: false)
+        .asyncMap((jobsList) async {
+          if (jobsList.isEmpty) return <JobModel>[];
+          
+          // Filter locally
+          final now = DateTime.now();
+          final validJobs = jobsList.where((job) {
+            final status = job['status'] as String?;
+            if (status != 'approved') return false;
+
+            final deadlineStr = job['deadline'] as String?;
+            if (deadlineStr == null) return true;
+            final deadline = DateTime.parse(deadlineStr);
+            return deadline.isAfter(now);
+          }).toList();
+
+          if (validJobs.isEmpty) return <JobModel>[];
+
+          final creatorIds = validJobs
+              .map((job) => job['creator_id'] as String)
+              .toSet()
+              .toList();
+
+          if (creatorIds.isEmpty) {
+             return validJobs.map((e) => JobModel.fromJson(e)).toList();
+          }
+
+          final profilesResponse = await _supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url, metadata')
+              .filter('id', 'in', creatorIds);
+          
+          final profilesList = profilesResponse as List<dynamic>;
+          final profilesMap = {
+            for (var profile in profilesList) 
+              profile['id'] as String: profile
+          };
+
+          return validJobs.map((jobData) {
+            final creatorId = jobData['creator_id'];
+            final profile = profilesMap[creatorId];
+            
+            final Map<String, dynamic> jobWithProfile = Map.from(jobData);
+            if (profile != null) {
+              jobWithProfile['profiles'] = profile;
+            }
+            return JobModel.fromJson(jobWithProfile);
+          }).toList();
+        });
+  }
+
+  Stream<List<JobModel>> getEmployerJobsStream(String creatorId) {
+    return _supabase
+        .from('jobs')
+        .stream(primaryKey: ['id'])
+        .eq('creator_id', creatorId)
+        .order('created_at', ascending: false)
+        .map((event) => event.map((e) => JobModel.fromJson(e)).toList());
+  }
+
   // --- Saved Jobs ---
 
   Future<List<String>> getSavedJobIds(String userId) async {
@@ -315,5 +381,138 @@ class JobRepository {
     } catch (e) {
       return [];
     }
+  }
+
+  Stream<List<Map<String, dynamic>>> getSavedJobsStream(String userId) {
+    return _supabase
+        .from('user_job_activities')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .asyncMap((activities) async {
+          try {
+            final savedActivities = activities.where((a) => a['is_saved'] == true).toList();
+            if (savedActivities.isEmpty) return <Map<String, dynamic>>[];
+            
+            final jobIds = savedActivities.map((a) => a['job_id'] as String).toList();
+            if (jobIds.isEmpty) return <Map<String, dynamic>>[];
+
+            // Fetch jobs
+            final jobsResponse = await _supabase
+                .from('jobs')
+                .select()
+                .filter('id', 'in', jobIds);
+                
+            final jobsList = jobsResponse as List<dynamic>;
+            if (jobsList.isEmpty) return <Map<String, dynamic>>[];
+
+            // Fetch profiles for these jobs
+            final creatorIds = jobsList.map((j) => j['creator_id'] as String).toSet().toList();
+            Map<String, dynamic> profilesMap = {};
+            
+            if (creatorIds.isNotEmpty) {
+               final profilesResponse = await _supabase
+                   .from('profiles')
+                   .select('id, full_name, avatar_url, metadata')
+                   .filter('id', 'in', creatorIds);
+               for (var p in (profilesResponse as List)) {
+                 profilesMap[p['id']] = p;
+               }
+            }
+            
+            final jobsMap = { 
+              for (var j in jobsList) 
+              j['id']: <String, dynamic>{
+                ...Map<String, dynamic>.from(j as Map),
+                'profiles': profilesMap[j['creator_id']]
+              }
+            };
+            
+            return savedActivities.map((activity) {
+               final jobId = activity['job_id'];
+               final job = jobsMap[jobId];
+               
+               final Map<String, dynamic> result = Map.from(activity);
+               if (job != null) result['jobs'] = job;
+               
+               return result;
+            }).toList();
+          } catch (e) {
+            print('Error in getSavedJobsStream: $e');
+            return <Map<String, dynamic>>[];
+          }
+        });
+  }
+
+  Stream<List<Map<String, dynamic>>> getAppliedJobsStream(String userId) {
+    return _supabase
+        .from('user_job_activities')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .asyncMap((activities) async {
+          try {
+            final appliedActivities = activities.where((a) => a['is_applied'] == true).toList();
+            if (appliedActivities.isEmpty) return <Map<String, dynamic>>[];
+            
+            final jobIds = appliedActivities.map((a) => a['job_id'] as String).toList();
+            final cvIds = appliedActivities.map((a) => a['cv_id'] as String?).where((e) => e != null).toList();
+            
+            if (jobIds.isEmpty) return <Map<String, dynamic>>[];
+
+            // Fetch jobs
+            final jobsResponse = await _supabase
+                .from('jobs')
+                .select()
+                .filter('id', 'in', jobIds);
+            
+            final jobsList = jobsResponse as List<dynamic>;
+            
+            // Fetch profiles
+            final creatorIds = jobsList.map((j) => j['creator_id'] as String).toSet().toList();
+            Map<String, dynamic> profilesMap = {};
+            if (creatorIds.isNotEmpty) {
+               final profilesResponse = await _supabase
+                   .from('profiles')
+                   .select('id, full_name, avatar_url, metadata')
+                   .filter('id', 'in', creatorIds);
+               for (var p in (profilesResponse as List)) {
+                 profilesMap[p['id']] = p;
+               }
+            }
+
+            final jobsMap = { 
+              for (var j in jobsList) 
+              j['id']: <String, dynamic>{
+                ...Map<String, dynamic>.from(j as Map),
+                'profiles': profilesMap[j['creator_id']]
+              }
+            };
+            
+            Map<String, dynamic> cvsMap = {};
+            if (cvIds.isNotEmpty) {
+               final cvsResponse = await _supabase
+                   .from('cv_templates')
+                   .select()
+                   .filter('id', 'in', cvIds);
+               cvsMap = { for (var c in (cvsResponse as List)) c['id']: c };
+            }
+
+            return appliedActivities.map((activity) {
+               final jobId = activity['job_id'];
+               final cvId = activity['cv_id'];
+               
+               final job = jobsMap[jobId];
+               final cv = cvsMap[cvId];
+               
+               final Map<String, dynamic> result = Map.from(activity);
+               if (job != null) result['jobs'] = job;
+               if (cv != null) result['cv_templates'] = cv;
+               
+               return result;
+            }).toList();
+          } catch (e) {
+            print('Error in getAppliedJobsStream: $e');
+            return <Map<String, dynamic>>[];
+          }
+        });
   }
 }

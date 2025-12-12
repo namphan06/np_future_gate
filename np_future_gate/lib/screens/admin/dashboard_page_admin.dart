@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
 
 class DashboardPageAdmin extends StatelessWidget {
   const DashboardPageAdmin({super.key});

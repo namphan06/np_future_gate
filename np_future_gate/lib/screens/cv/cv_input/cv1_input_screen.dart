@@ -7,7 +7,7 @@ import '../../../core/services/cv_supabase_service.dart';
 class CV1InputScreen extends StatefulWidget {
   final String? cvId; // null = tạo mới, có giá trị = chỉnh sửa
 
-  const CV1InputScreen({Key? key, this.cvId}) : super(key: key);
+  const CV1InputScreen({super.key, this.cvId});
 
   @override
   State<CV1InputScreen> createState() => _CV1InputScreenState();
@@ -131,7 +131,7 @@ class _CV1InputScreenState extends State<CV1InputScreen> {
       // Also print to terminal with stack trace for debugging
       try {
         // Attempt to capture stack trace by throwing and catching
-        throw e;
+        rethrow;
       } catch (err, st) {
         // Use debugPrint to ensure messages appear in Flutter tool terminal
         debugPrint('Error saving CV: $err');

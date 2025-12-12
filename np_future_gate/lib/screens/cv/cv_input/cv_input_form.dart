@@ -8,12 +8,12 @@ class CV1InputForm extends StatefulWidget {
   final VoidCallback onClose;
 
   const CV1InputForm({
-    Key? key,
+    super.key,
     required this.section,
     required this.data,
     required this.onDataChanged,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<CV1InputForm> createState() => _CV1InputFormState();
@@ -71,7 +71,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
         final item = list[i];
         for (final f in fields) {
           _createControllerIfNeeded('$listName::'
-              '${i}::${f}', (item[f] ?? '').toString());
+              '$i::$f', (item[f] ?? '').toString());
         }
       }
     }
@@ -428,7 +428,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Vị trí',
               value: exp['position'],
-              controllerKey: 'experiences::${index}::position',
+              controllerKey: 'experiences::$index::position',
               onChanged: (val) {
                 exp['position'] = val;
                 _updateData();
@@ -437,7 +437,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Công ty',
               value: exp['company'],
-              controllerKey: 'experiences::${index}::company',
+              controllerKey: 'experiences::$index::company',
               onChanged: (val) {
                 exp['company'] = val;
                 _updateData();
@@ -446,7 +446,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Thời gian (VD: 2020 - 2023)',
               value: exp['duration'],
-              controllerKey: 'experiences::${index}::duration',
+              controllerKey: 'experiences::$index::duration',
               onChanged: (val) {
                 exp['duration'] = val;
                 _updateData();
@@ -455,7 +455,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Mô tả công việc',
               value: exp['description'],
-              controllerKey: 'experiences::${index}::description',
+              controllerKey: 'experiences::$index::description',
               maxLines: 3,
               onChanged: (val) {
                 exp['description'] = val;
@@ -523,7 +523,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Tên dự án',
               value: proj['name'],
-              controllerKey: 'projects::${index}::name',
+              controllerKey: 'projects::$index::name',
               onChanged: (val) {
                 proj['name'] = val;
                 _updateData();
@@ -532,7 +532,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Mô tả',
               value: proj['description'],
-              controllerKey: 'projects::${index}::description',
+              controllerKey: 'projects::$index::description',
               maxLines: 3,
               onChanged: (val) {
                 proj['description'] = val;
@@ -602,7 +602,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Bằng cấp',
               value: edu['degree'],
-              controllerKey: 'education::${index}::degree',
+              controllerKey: 'education::$index::degree',
               onChanged: (val) {
                 edu['degree'] = val;
                 _updateData();
@@ -611,7 +611,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Trường',
               value: edu['school'],
-              controllerKey: 'education::${index}::school',
+              controllerKey: 'education::$index::school',
               onChanged: (val) {
                 edu['school'] = val;
                 _updateData();
@@ -620,7 +620,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Năm',
               value: edu['year'],
-              controllerKey: 'education::${index}::year',
+              controllerKey: 'education::$index::year',
               onChanged: (val) {
                 edu['year'] = val;
                 _updateData();
@@ -670,7 +670,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
               child: _buildTextField(
                 label: 'Tên kỹ năng',
                     value: skill['name'],
-                    controllerKey: 'skills::${index}::name',
+                    controllerKey: 'skills::$index::name',
                     onChanged: (val) {
                       skill['name'] = val;
                       _updateData();
@@ -750,7 +750,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Tên chứng chỉ',
               value: cert['name'],
-              controllerKey: 'certifications::${index}::name',
+              controllerKey: 'certifications::$index::name',
               onChanged: (val) {
                 cert['name'] = val;
                 _updateData();
@@ -759,7 +759,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Tổ chức cấp',
               value: cert['issuer'],
-              controllerKey: 'certifications::${index}::issuer',
+              controllerKey: 'certifications::$index::issuer',
               onChanged: (val) {
                 cert['issuer'] = val;
                 _updateData();
@@ -768,7 +768,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             _buildTextField(
               label: 'Năm',
               value: cert['year'],
-              controllerKey: 'certifications::${index}::year',
+              controllerKey: 'certifications::$index::year',
               onChanged: (val) {
                 cert['year'] = val;
                 _updateData();
@@ -814,7 +814,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Tên hoạt động / tổ chức',
                     value: a['organization'],
-                    controllerKey: 'activities::${index}::organization',
+                    controllerKey: 'activities::$index::organization',
                     onChanged: (val) {
                       a['organization'] = val;
                       _updateData();
@@ -823,7 +823,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Vai trò',
                     value: a['role'],
-                    controllerKey: 'activities::${index}::role',
+                    controllerKey: 'activities::$index::role',
                     onChanged: (val) {
                       a['role'] = val;
                       _updateData();
@@ -832,7 +832,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Thời gian',
                     value: a['duration'],
-                    controllerKey: 'activities::${index}::duration',
+                    controllerKey: 'activities::$index::duration',
                     onChanged: (val) {
                       a['duration'] = val;
                       _updateData();
@@ -841,7 +841,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Mô tả',
                     value: a['description'],
-                    controllerKey: 'activities::${index}::description',
+                    controllerKey: 'activities::$index::description',
                     maxLines: 3,
                     onChanged: (val) {
                       a['description'] = val;
@@ -908,7 +908,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Tên danh hiệu / giải thưởng',
                     value: a['name'],
-                    controllerKey: 'awards::${index}::name',
+                    controllerKey: 'awards::$index::name',
                     onChanged: (val) {
                       a['name'] = val;
                       _updateData();
@@ -917,7 +917,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Năm',
                     value: a['year'],
-                    controllerKey: 'awards::${index}::year',
+                    controllerKey: 'awards::$index::year',
                     onChanged: (val) {
                       a['year'] = val;
                       _updateData();
@@ -926,7 +926,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                   _buildTextField(
                     label: 'Mô tả / ghi chú',
                     value: a['note'],
-                    controllerKey: 'awards::${index}::note',
+                    controllerKey: 'awards::$index::note',
                     maxLines: 2,
                     onChanged: (val) {
                       a['note'] = val;
@@ -975,7 +975,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                     child: _buildTextField(
                       label: 'Ngôn ngữ',
                       value: l['name'],
-                      controllerKey: 'languages::${index}::name',
+                      controllerKey: 'languages::$index::name',
                       onChanged: (val) {
                         l['name'] = val;
                         _updateData();
@@ -988,7 +988,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                     child: _buildTextField(
                       label: 'Trình độ',
                       value: l['level'] ?? 'Intermediate',
-                      controllerKey: 'languages::${index}::level',
+                      controllerKey: 'languages::$index::level',
                       onChanged: (val) {
                         l['level'] = val;
                         _updateData();
@@ -1060,7 +1060,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                     _buildTextField(
                       label: 'Tên',
                       value: r['name'],
-                      controllerKey: 'references::${index}::name',
+                      controllerKey: 'references::$index::name',
                       onChanged: (val) {
                         r['name'] = val;
                         _updateData();
@@ -1069,7 +1069,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                     _buildTextField(
                       label: 'Chức vụ',
                       value: r['position'],
-                      controllerKey: 'references::${index}::position',
+                      controllerKey: 'references::$index::position',
                       onChanged: (val) {
                         r['position'] = val;
                         _updateData();
@@ -1078,7 +1078,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                     _buildTextField(
                       label: 'Công ty / Tổ chức',
                       value: r['company'],
-                      controllerKey: 'references::${index}::company',
+                      controllerKey: 'references::$index::company',
                       onChanged: (val) {
                         r['company'] = val;
                         _updateData();
@@ -1087,7 +1087,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
                     _buildTextField(
                       label: 'Số điện thoại / Email',
                       value: r['phone'],
-                      controllerKey: 'references::${index}::phone',
+                      controllerKey: 'references::$index::phone',
                       onChanged: (val) {
                         r['phone'] = val;
                         _updateData();

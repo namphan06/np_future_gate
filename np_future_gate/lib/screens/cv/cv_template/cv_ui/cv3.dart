@@ -216,7 +216,7 @@ class Cv3 extends StatelessWidget {
             e['position'] ?? "",
             e['duration'] ?? "",
             e['description'] ?? "",
-          )).toList(),
+          )),
       ],
     );
   }
@@ -299,7 +299,7 @@ class Cv3 extends StatelessWidget {
                 ),
               ],
             ),
-          )).toList(),
+          )),
       ],
     );
   }
@@ -329,7 +329,7 @@ class Cv3 extends StatelessWidget {
                 Text(e['year'] ?? "", style: const TextStyle(color: Color(0xFF718096), fontWeight: FontWeight.bold)),
               ],
             ),
-          )).toList(),
+          )),
       ],
     );
   }

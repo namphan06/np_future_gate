@@ -16,7 +16,7 @@ class AnimatedAvatar extends StatefulWidget {
   final IconData placeholderIcon;
 
   const AnimatedAvatar({
-    Key? key,
+    super.key,
     required this.avatarUrl,
     this.width = 50,
     this.height = 50,
@@ -24,7 +24,7 @@ class AnimatedAvatar extends StatefulWidget {
     this.flipOnLoad = false,
     this.placeholderColor = const Color(0xFFF1F5F9),
     this.placeholderIcon = Icons.person_rounded,
-  }) : super(key: key);
+  });
 
   @override
   State<AnimatedAvatar> createState() => _AnimatedAvatarState();

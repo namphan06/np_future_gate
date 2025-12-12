@@ -451,10 +451,10 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                       ),
                       TextButton(
                         onPressed: () {},
-                        child: const Text('Xem tất cả'),
                         style: TextButton.styleFrom(
                           foregroundColor: AppMainColors.primary,
                         ),
+                        child: const Text('Xem tất cả'),
                       ),
                     ],
                   ),

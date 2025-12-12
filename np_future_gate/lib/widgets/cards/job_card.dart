@@ -8,6 +8,7 @@ class JobCard extends StatelessWidget {
   final VoidCallback? onToggleSave;
   final bool isApplied;
   final VoidCallback? onTap;
+  final Widget? bottomAction;
 
   const JobCard({
     super.key,
@@ -16,6 +17,7 @@ class JobCard extends StatelessWidget {
     this.onToggleSave,
     this.isApplied = false,
     this.onTap,
+    this.bottomAction,
   });
 
   String _getTimeAgo(DateTime? dateTime) {
@@ -56,169 +58,178 @@ class JobCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header: Logo, Title, Company, Save
-                Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(10),
-                        image: job.creatorAvatarUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(job.creatorAvatarUrl!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: job.creatorAvatarUrl == null
-                          ? Center(
-                              child: Text(
-                                meta.title.isNotEmpty ? meta.title[0].toUpperCase() : 'J',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppMainColors.primary,
+                    // Header: Logo, Title, Company, Save
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10),
+                            image: job.creatorAvatarUrl != null
+                                ? DecorationImage(
+                                    image: NetworkImage(job.creatorAvatarUrl!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: job.creatorAvatarUrl == null
+                              ? Center(
+                                  child: Text(
+                                    meta.title.isNotEmpty ? meta.title[0].toUpperCase() : 'J',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppMainColors.primary,
+                                    ),
+                                  ),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (job.creatorName != null) ...[
+                                Text(
+                                  job.creatorName!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppMainColors.primary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
+                                const SizedBox(height: 4),
+                              ],
+                              Text(
+                                meta.title,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (job.creatorName != null) ...[
-                            Text(
-                              job.creatorName!,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: AppMainColors.primary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                          ],
-                          Text(
-                            meta.title,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (onToggleSave != null)
-                      InkWell(
-                        onTap: onToggleSave,
-                        borderRadius: BorderRadius.circular(20),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: Icon(
-                            isSaved ? Icons.bookmark : Icons.bookmark_border,
-                            color: isSaved ? AppMainColors.primary : Colors.grey.shade400,
-                            size: 22,
+                            ],
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                
-                const SizedBox(height: 12),
-
-                // Info Row: Salary, Region, Type
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    _buildIconText(
-                      Icons.monetization_on_outlined,
-                      meta.salary.isNegotiable
-                          ? 'Thỏa thuận'
-                          : '${meta.salary.min ?? 0} - ${meta.salary.max ?? 0} ${meta.salary.currency}',
-                      Colors.green.shade700,
+                        if (onToggleSave != null)
+                          InkWell(
+                            onTap: onToggleSave,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                isSaved ? Icons.bookmark : Icons.bookmark_border,
+                                color: isSaved ? AppMainColors.primary : Colors.grey.shade400,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    _buildIconText(
-                      Icons.location_on_outlined,
-                      meta.workingRegions.isNotEmpty
-                          ? meta.workingRegions.first
-                          : 'Toàn quốc',
-                      Colors.grey.shade600,
-                    ),
-                    if (meta.employmentTypes.isNotEmpty)
-                      _buildIconText(
-                        Icons.business_center_outlined,
-                        meta.employmentTypes.first,
-                        Colors.orange.shade700,
-                      ),
-                  ],
-                ),
+                    
+                    const SizedBox(height: 12),
 
-                const SizedBox(height: 12),
-
-                // Footer: Applied Status (Left) & Date (Right)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (isApplied)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green.shade200),
+                    // Info Row: Salary, Region, Type
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        _buildIconText(
+                          Icons.monetization_on_outlined,
+                          meta.salary.isNegotiable
+                              ? 'Thỏa thuận'
+                              : '${meta.salary.min ?? 0} - ${meta.salary.max ?? 0} ${meta.salary.currency}',
+                          Colors.green.shade700,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        _buildIconText(
+                          Icons.location_on_outlined,
+                          meta.workingRegions.isNotEmpty
+                              ? meta.workingRegions.first
+                              : 'Toàn quốc',
+                          Colors.grey.shade600,
+                        ),
+                        if (meta.employmentTypes.isNotEmpty)
+                          _buildIconText(
+                            Icons.business_center_outlined,
+                            meta.employmentTypes.first,
+                            Colors.orange.shade700,
+                          ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Footer: Applied Status (Left) & Date (Right)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (isApplied && bottomAction == null) // Only show default applied tag if no custom bottom action
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.green.shade200),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle, size: 12, color: Colors.green.shade700),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Đã nộp CV',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          const SizedBox(), // Spacer if not applied
+
+                        Row(
                           children: [
-                            Icon(Icons.check_circle, size: 12, color: Colors.green.shade700),
+                            Icon(Icons.access_time, size: 14, color: Colors.grey.shade400),
                             const SizedBox(width: 4),
                             Text(
-                              'Đã nộp CV',
+                              _getTimeAgo(job.createdAt),
                               style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green.shade700,
+                                fontSize: 12,
+                                color: Colors.grey.shade500,
+                                fontStyle: FontStyle.italic,
                               ),
                             ),
                           ],
-                        ),
-                      )
-                    else
-                      const SizedBox(), // Spacer if not applied
-
-                    Row(
-                      children: [
-                        Icon(Icons.access_time, size: 14, color: Colors.grey.shade400),
-                        const SizedBox(width: 4),
-                        Text(
-                          _getTimeAgo(job.createdAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                            fontStyle: FontStyle.italic,
-                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
+              ),
+              if (bottomAction != null) ...[
+                const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                bottomAction!,
               ],
-            ),
+            ],
           ),
         ),
       ),

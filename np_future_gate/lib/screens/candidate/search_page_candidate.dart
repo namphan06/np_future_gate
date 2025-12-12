@@ -26,16 +26,16 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
   String? _selectedWorkType;
   
   bool _showFilters = false;
-  List<JobModel> _allJobs = [];
-  List<JobModel> _filteredJobs = [];
-  bool _isLoading = true;
+  // List<JobModel> _allJobs = []; // Removed
+  // List<JobModel> _filteredJobs = []; // Removed
+  // bool _isLoading = true; // Removed
   List<String> _savedJobIds = [];
   List<String> _appliedJobIds = [];
 
   @override
   void initState() {
     super.initState();
-    _loadJobs();
+    // _loadJobs(); // Removed
     _loadSavedJobs();
   }
 
@@ -77,37 +77,8 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
     }
   }
 
-  Future<void> _loadJobs() async {
-    try {
-      final jobs = await _jobRepo.getActiveJobs();
-      if (mounted) {
-        setState(() {
-          _allJobs = jobs;
-          _filteredJobs = jobs;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading jobs: $e')),
-        );
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _minSalaryController.dispose();
-    _maxSalaryController.dispose();
-    super.dispose();
-  }
-
-  void _applyFilters() {
-    setState(() {
-      _filteredJobs = _allJobs.where((job) {
+  List<JobModel> _filterJobs(List<JobModel> jobs) {
+    return jobs.where((job) {
         final meta = job.metadata;
         
         // Search by Title OR Tags
@@ -152,7 +123,10 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
 
         return true;
       }).toList();
-    });
+  }
+
+  void _applyFilters() {
+    setState(() {});
   }
 
   void _resetFilters() {
@@ -164,8 +138,15 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
       _selectedExperience = null;
       _selectedJobType = null;
       _selectedWorkType = null;
-      _filteredJobs = _allJobs;
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _minSalaryController.dispose();
+    _maxSalaryController.dispose();
+    super.dispose();
   }
 
   @override
@@ -553,58 +534,73 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                   ),
 
                 // Kết quả tìm kiếm
-                if (_filteredJobs.isEmpty)
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 80,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Không tìm thấy công việc phù hợp',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final job = _filteredJobs[index];
-                          final isSaved = _savedJobIds.contains(job.id);
-                          final isApplied = _appliedJobIds.contains(job.id);
-                          
-                          return JobCard(
-                            job: job,
-                            isSaved: isSaved,
-                            isApplied: isApplied,
-                            onToggleSave: () => _toggleSaveJob(job.id!),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => JobDetailScreen(job: job),
+                StreamBuilder<List<JobModel>>(
+                  stream: _jobRepo.activeJobsStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SliverFillRemaining(
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    
+                    final allJobs = snapshot.data ?? [];
+                    final filteredJobs = _filterJobs(allJobs);
+                    
+                    if (filteredJobs.isEmpty) {
+                      return SliverFillRemaining(
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 80,
+                                color: Colors.grey.shade300,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Không tìm thấy công việc phù hợp',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey.shade500,
                                 ),
-                              );
-                            },
-                          );
-                        },
-                        childCount: _filteredJobs.length,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    
+                    return SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final job = filteredJobs[index];
+                            final isSaved = _savedJobIds.contains(job.id);
+                            final isApplied = _appliedJobIds.contains(job.id);
+                            
+                            return JobCard(
+                              job: job,
+                              isSaved: isSaved,
+                              isApplied: isApplied,
+                              onToggleSave: () => _toggleSaveJob(job.id!),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => JobDetailScreen(job: job),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          childCount: filteredJobs.length,
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  }
+                ),
               ],
             ),
           ),

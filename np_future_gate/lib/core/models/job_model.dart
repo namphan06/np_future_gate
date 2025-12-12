@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 class JobModel {
   final String? id;
@@ -88,13 +87,13 @@ class JobModel {
     return JobModel(
       id: id ?? this.id,
       creatorId: creatorId ?? this.creatorId,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
       isActive: isActive ?? this.isActive,
       deadline: deadline ?? this.deadline,
       metadata: metadata ?? this.metadata,
       applicants: applicants ?? this.applicants,
-      viewCount: this.viewCount,
+      viewCount: viewCount,
       status: status ?? this.status,
     );
   }

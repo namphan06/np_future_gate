@@ -356,7 +356,7 @@ class CVCreationScreen extends StatelessWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
