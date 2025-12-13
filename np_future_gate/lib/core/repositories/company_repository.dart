@@ -27,7 +27,8 @@ class CompanyRepository {
       final response = await _client
           .from('company_followers')
           .select('employer_id')
-          .eq('candidate_id', candidateId);
+          .eq('candidate_id', candidateId)
+          .eq('followed_by', 'candidate');
 
       return (response as List)
           .map((e) => e['employer_id'] as String)
@@ -44,6 +45,7 @@ class CompanyRepository {
       await _client.from('company_followers').insert({
         'candidate_id': candidateId,
         'employer_id': employerId,
+        'followed_by': 'candidate',
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
@@ -59,7 +61,8 @@ class CompanyRepository {
           .from('company_followers')
           .delete()
           .eq('candidate_id', candidateId)
-          .eq('employer_id', employerId);
+          .eq('employer_id', employerId)
+          .eq('followed_by', 'candidate');
     } catch (e) {
       print('Error unfollowing company: $e');
       rethrow;

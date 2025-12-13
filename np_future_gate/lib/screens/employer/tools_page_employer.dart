@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'jobs/edit_job_screen.dart';
 import 'jobs/employer_jobs_screen.dart';
+import 'saved_candidates_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -192,6 +193,14 @@ class ToolsPageEmployer extends StatelessWidget {
                             title: 'Đã lưu',
                             subtitle: '18 UV',
                             color: Colors.blue,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SavedCandidatesScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

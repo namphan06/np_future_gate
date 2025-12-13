@@ -79,6 +79,28 @@ class JobRepository {
     }
   }
 
+  Future<void> deleteApplication(String jobId, String userId) async {
+    try {
+      // 1. Fetch current job to get applicants list
+      final response =
+          await _supabase.from('jobs').select('applicants').eq('id', jobId).single();
+      
+      final List<dynamic> currentApplicantsJson = response['applicants'] ?? [];
+      final List<JobApplication> applicants =
+          currentApplicantsJson.map((e) => JobApplication.fromJson(e)).toList();
+
+      // 2. Remove the application
+      applicants.removeWhere((app) => app.userId == userId);
+
+      // 3. Save back to DB
+      await _supabase.from('jobs').update({
+        'applicants': applicants.map((e) => e.toJson()).toList(),
+      }).eq('id', jobId);
+    } catch (e) {
+      throw Exception('Failed to delete application: $e');
+    }
+  }
+
   // --- Candidate Features ---
 
   Future<void> applyForJob(String jobId, String userId, String cvId) async {
@@ -504,7 +526,23 @@ class JobRepository {
                final cv = cvsMap[cvId];
                
                final Map<String, dynamic> result = Map.from(activity);
-               if (job != null) result['jobs'] = job;
+               if (job != null) {
+                 result['jobs'] = job;
+                 
+                 // Extract status from job applicants list
+                 if (job['applicants'] != null) {
+                   final applicants = job['applicants'] as List;
+                   final myApplication = applicants.firstWhere(
+                     (app) => app['user_id'] == userId,
+                     orElse: () => null,
+                   );
+                   
+                   if (myApplication != null && myApplication['status'] != null) {
+                     result['status'] = myApplication['status'];
+                     result['application_status'] = myApplication['status'];
+                   }
+                 }
+               }
                if (cv != null) result['cv_templates'] = cv;
                
                return result;

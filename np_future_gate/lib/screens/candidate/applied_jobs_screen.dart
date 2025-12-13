@@ -113,7 +113,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                               debugPrint('Error parsing job: $e');
                             }
 
-                            final status = activity['application_status'] ?? 'pending';
+                            final status = activity['status'] ?? 'unknown';
                             final appliedAt = activity['applied_at'] != null 
                                 ? DateTime.parse(activity['applied_at']) 
                                 : DateTime.now();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
 import '../../core/enums/vietnam_provinces.dart';
 import '../../core/enums/job_fields.dart';
 import '../../core/theme/app_main_colors.dart';
@@ -11,18 +10,20 @@ import 'widgets/job_selection_dialog.dart';
 import '../../core/repositories/candidate_repository.dart';
 import '../../core/services/supabase_service.dart';
 
-class SearchPageEmployer extends StatefulWidget {
-  const SearchPageEmployer({super.key});
+class SavedCandidatesScreen extends StatefulWidget {
+  const SavedCandidatesScreen({super.key});
 
   @override
-  State<SearchPageEmployer> createState() => _SearchPageEmployerState();
+  State<SavedCandidatesScreen> createState() => _SavedCandidatesScreenState();
 }
 
-class _SearchPageEmployerState extends State<SearchPageEmployer> {
+class _SavedCandidatesScreenState extends State<SavedCandidatesScreen> {
   final CVSupabaseService _cvService = CVSupabaseService();
   final _candidateRepository = CandidateRepository();
   final _supabaseService = SupabaseService.instance;
   List<String> _followedCandidateIds = [];
+  List<Profile> _allSavedProfiles = [];
+  bool _isLoading = true;
 
   // Filter values
   List<String> _selectedFields = [];
@@ -38,19 +39,38 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
   @override
   void initState() {
     super.initState();
-    _loadFollowedCandidates();
+    _loadData();
   }
 
-  Future<void> _loadFollowedCandidates() async {
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     final userId = _supabaseService.currentUserId;
     if (userId != null) {
-      final ids = await _candidateRepository.getFollowedCandidateIds(userId);
-      if (mounted) {
-        setState(() {
-          _followedCandidateIds = ids;
-        });
+      try {
+        // 1. Get followed IDs
+        final ids = await _candidateRepository.getFollowedCandidateIds(userId);
+        _followedCandidateIds = ids;
+
+        if (ids.isNotEmpty) {
+          // 2. Fetch profiles
+          final response = await _supabaseService.client
+              .from('profiles')
+              .select()
+              .filter('id', 'in', ids);
+          
+          _allSavedProfiles = (response as List).map((e) => Profile.fromJson(e)).toList();
+        } else {
+          _allSavedProfiles = [];
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lỗi tải dữ liệu: $e')),
+          );
+        }
       }
     }
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _toggleFollow(String candidateId) async {
@@ -62,8 +82,12 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
         await _candidateRepository.unfollowCandidate(userId, candidateId);
         setState(() {
           _followedCandidateIds.remove(candidateId);
+          // Remove from list immediately for better UX in "Saved" screen
+          _allSavedProfiles.removeWhere((p) => p.id == candidateId);
         });
       } else {
+        // This case shouldn't happen in "Saved Candidates" screen usually, 
+        // unless we implement undo or something, but for now let's keep logic consistent
         await _candidateRepository.followCandidate(userId, candidateId);
         setState(() {
           _followedCandidateIds.add(candidateId);
@@ -93,17 +117,18 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
       final query = _searchQuery.toLowerCase();
       final fields = (meta['interested_fields'] as List<dynamic>?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
       final tags = (meta['tags'] as List<dynamic>?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
+      final name = profile.fullName?.toLowerCase() ?? '';
       
       bool matchField = fields.any((f) => f.contains(query));
       bool matchTag = tags.any((t) => t.contains(query));
+      bool matchName = name.contains(query);
       
-      if (!matchField && !matchTag) return false;
+      if (!matchField && !matchTag && !matchName) return false;
     }
 
     // 3. Dropdown Filters
     if (_selectedFields.isNotEmpty) {
       final fields = (meta['interested_fields'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
-      // Check if any selected field matches candidate's fields
       bool match = _selectedFields.any((selected) => fields.contains(selected));
       if (!match) return false;
     }
@@ -114,15 +139,11 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
 
     if (_selectedLocation != 'Tất cả') {
       final locations = (meta['work_locations'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
-      // Simple check if selected location is in their preferred locations
-      // Or check address? Let's check work_locations
       bool matchLoc = locations.any((l) => l.toString().contains(_selectedLocation));
       if (!matchLoc) return false;
     }
 
     if (_selectedGender != 'Tất cả') {
-      // Assuming gender is in metadata or profile? Profile model doesn't have gender explicitly in top level usually
-      // Let's check metadata['gender'] if it exists, otherwise skip
       if (meta['gender'] != null && meta['gender'] != _selectedGender) return false;
     }
 
@@ -137,222 +158,173 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredProfiles = _allSavedProfiles.where(_checkFilter).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Tìm kiếm ứng viên',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Ứng viên đã lưu',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          // Search & Filter Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            color: Colors.white,
+            child: Column(
+              children: [
+                // Search Bar
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Tìm theo tên, lĩnh vực...',
+                      hintStyle: TextStyle(color: Colors.grey.shade500),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showFilters ? Icons.filter_alt : Icons.filter_alt_outlined,
+                          color: _showFilters ? AppMainColors.primary : Colors.grey.shade500,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _showFilters = !_showFilters;
+                          });
+                        },
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  // Search Bar
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 15,
-                          offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+          ),
+
+          // Filters Panel
+          if (_showFilters)
+            Container(
+              color: Colors.white,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.6,
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Divider(),
+                    const SizedBox(height: 10),
+                    _buildMultiSelectFilter(
+                      'Lĩnh vực',
+                      _selectedFields,
+                      JobField.valuesList,
+                      (values) => setState(() => _selectedFields = values),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDropdownFilter(
+                      'Bằng cấp',
+                      _selectedEducation,
+                      ['Tất cả', 'Trung học phổ thông', 'Cao đẳng', 'Đại học', 'Thạc sĩ', 'Tiến sĩ', 'Khác'],
+                      (value) => setState(() => _selectedEducation = value!),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDropdownFilter(
+                      'Địa điểm',
+                      _selectedLocation,
+                      ['Tất cả', ...VietnamProvince.valuesList],
+                      (value) => setState(() => _selectedLocation = value!),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildRangeFilter(
+                      'Độ tuổi',
+                      _ageRange,
+                      18,
+                      60,
+                      (values) => setState(() => _ageRange = values),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDropdownFilter(
+                      'Giới tính',
+                      _selectedGender,
+                      ['Tất cả', 'Nam', 'Nữ', 'Khác'],
+                      (value) => setState(() => _selectedGender = value!),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedFields = [];
+                                _selectedEducation = 'Tất cả';
+                                _selectedLocation = 'Tất cả';
+                                _ageRange = const RangeValues(18, 60);
+                                _selectedGender = 'Tất cả';
+                              });
+                            },
+                            child: const Text('Xóa bộ lọc'),
+                          ),
                         ),
                       ],
                     ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Tìm theo lĩnh vực, tags...',
-                        hintStyle: TextStyle(color: Colors.grey.shade500),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _showFilters ? Icons.filter_alt : Icons.filter_alt_outlined,
-                            color: _showFilters ? AppMainColors.primary : Colors.grey.shade500,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _showFilters = !_showFilters;
-                            });
-                          },
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Filters Panel
-            if (_showFilters)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 15,
-                      offset: const Offset(0, 3),
-                    ),
                   ],
                 ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Bộ lọc tìm kiếm',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildMultiSelectFilter(
-                        'Lĩnh vực',
-                        _selectedFields,
-                        JobField.valuesList,
-                        (values) => setState(() => _selectedFields = values),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDropdownFilter(
-                        'Bằng cấp',
-                        _selectedEducation,
-                        ['Tất cả', 'Trung học phổ thông', 'Cao đẳng', 'Đại học', 'Thạc sĩ', 'Tiến sĩ', 'Khác'],
-                        (value) => setState(() => _selectedEducation = value!),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDropdownFilter(
-                        'Địa điểm',
-                        _selectedLocation,
-                        ['Tất cả', ...VietnamProvince.valuesList],
-                        (value) => setState(() => _selectedLocation = value!),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildRangeFilter(
-                        'Độ tuổi',
-                        _ageRange,
-                        18,
-                        60,
-                        (values) => setState(() => _ageRange = values),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildDropdownFilter(
-                        'Giới tính',
-                        _selectedGender,
-                        ['Tất cả', 'Nam', 'Nữ', 'Khác'],
-                        (value) => setState(() => _selectedGender = value!),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _selectedFields = [];
-                                  _selectedEducation = 'Tất cả';
-                                  _selectedLocation = 'Tất cả';
-                                  _ageRange = const RangeValues(18, 60);
-                                  _selectedGender = 'Tất cả';
-                                });
-                              },
-                              child: const Text('Xóa bộ lọc'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showFilters = false;
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppMainColors.primary,
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text('Áp dụng'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-            // Results
-            Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: Supabase.instance.client
-                    .from('profiles')
-                    .stream(primaryKey: ['id'])
-                    .eq('role', 'candidate'),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Lỗi: ${snapshot.error}'));
-                  }
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final profiles = snapshot.data!.map((e) => Profile.fromJson(e)).where(_checkFilter).toList();
-                  
-                  if (profiles.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search_off, size: 64, color: Colors.grey.shade300),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Không tìm thấy ứng viên phù hợp',
-                            style: TextStyle(color: Colors.grey.shade500),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
-                    itemCount: profiles.length,
-                    itemBuilder: (context, index) {
-                      final profile = profiles[index];
-                      return _buildCandidateCard(profile);
-                    },
-                  );
-                },
               ),
             ),
-          ],
-        ),
+
+          // Results
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredProfiles.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.bookmark_border, size: 64, color: Colors.grey.shade300),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Chưa có ứng viên nào được lưu',
+                              style: TextStyle(color: Colors.grey.shade500),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: filteredProfiles.length,
+                        itemBuilder: (context, index) {
+                          final profile = filteredProfiles[index];
+                          return _buildCandidateCard(profile);
+                        },
+                      ),
+          ),
+        ],
       ),
     );
   }
@@ -736,7 +708,6 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                                     ),
                                     trailing: TextButton(
                                       onPressed: () {
-                                        // TODO: Navigate to CV View
                                         _showCVContent(context, cvData);
                                       },
                                       child: const Text('Xem'),
@@ -1066,5 +1037,3 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
     );
   }
 }
-
-
