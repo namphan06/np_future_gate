@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/supabase_service.dart';
 import 'screens/splash/splash_screen.dart';
@@ -8,6 +9,8 @@ void main() async {
   
   // Initialize Supabase
   await SupabaseService.initialize();
+
+  await initializeDateFormatting('vi', null);
   
   runApp(const MyApp());
 }

@@ -1,0 +1,41 @@
+-- Create interview_schedules table
+CREATE TABLE public.interview_schedules (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    candidate_id uuid NOT NULL REFERENCES public.profiles(id),
+    job_id uuid NOT NULL REFERENCES public.jobs(id),
+    employer_id uuid NOT NULL REFERENCES public.profiles(id),
+    cv_id text NULL, -- Can be UUID or string depending on CV type
+    interview_time timestamptz NOT NULL,
+    job_title text NOT NULL,
+    evaluation jsonb DEFAULT '{}'::jsonb, -- Stores notes, ratings, tags, etc.
+    status text DEFAULT 'scheduled', -- scheduled, completed, cancelled
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    CONSTRAINT interview_schedules_pkey PRIMARY KEY (id)
+);
+
+-- Enable RLS
+ALTER TABLE public.interview_schedules ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+-- Employer can view/edit their own interviews
+CREATE POLICY "Employers can view their own interviews" 
+ON public.interview_schedules FOR SELECT 
+USING (auth.uid() = employer_id);
+
+CREATE POLICY "Employers can insert their own interviews" 
+ON public.interview_schedules FOR INSERT 
+WITH CHECK (auth.uid() = employer_id);
+
+CREATE POLICY "Employers can update their own interviews" 
+ON public.interview_schedules FOR UPDATE 
+USING (auth.uid() = employer_id);
+
+CREATE POLICY "Employers can delete their own interviews" 
+ON public.interview_schedules FOR DELETE 
+USING (auth.uid() = employer_id);
+
+-- Candidates can view their own interviews
+CREATE POLICY "Candidates can view their own interviews" 
+ON public.interview_schedules FOR SELECT 
+USING (auth.uid() = candidate_id);

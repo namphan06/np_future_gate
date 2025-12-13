@@ -5,6 +5,7 @@ import '../../../core/models/profile_model.dart';
 import '../../../core/repositories/auth_repository.dart';
 import '../../../core/repositories/job_repository.dart';
 import '../../../core/repositories/candidate_repository.dart';
+import '../../../core/repositories/interview_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
 import '../../cv/cv_setting/cv_display_manager.dart';
 import '../../../core/theme/app_main_colors.dart';
@@ -27,11 +28,13 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   final AuthRepository _authRepository = AuthRepository();
   final JobRepository _jobRepository = JobRepository();
   final CandidateRepository _candidateRepository = CandidateRepository();
+  final InterviewRepository _interviewRepository = InterviewRepository();
   final CVSupabaseService _cvService = CVSupabaseService();
   
   Map<String, Profile> _profiles = {};
   bool _isLoading = true;
   late List<JobApplication> _currentApplicants;
+  String? _jobTitle;
   
   // Filters
   String _statusFilter = 'All';
@@ -42,6 +45,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
     super.initState();
     _currentApplicants = widget.applicants;
     _loadProfiles();
+    _loadJobDetails();
   }
 
   Future<void> _loadProfiles() async {
@@ -64,6 +68,19 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           SnackBar(content: Text('Error loading profiles: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _loadJobDetails() async {
+    try {
+      final job = await _jobRepository.getJobById(widget.jobId);
+      if (job != null) {
+        setState(() {
+          _jobTitle = job.metadata.title;
+        });
+      }
+    } catch (e) {
+      print('Error loading job details: $e');
     }
   }
 
@@ -156,6 +173,58 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   }
 
   Future<void> _updateStatus(String userId, String newStatus) async {
+    if (newStatus.toLowerCase() == 'accepted') {
+      final DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now().add(const Duration(days: 1)),
+        firstDate: DateTime.now(),
+        lastDate: DateTime.now().add(const Duration(days: 365)),
+        helpText: 'Chọn ngày phỏng vấn',
+      );
+
+      if (pickedDate == null) return;
+
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: const TimeOfDay(hour: 9, minute: 0),
+        helpText: 'Chọn giờ phỏng vấn',
+      );
+
+      if (pickedTime == null) return;
+
+      final interviewTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+
+      try {
+        // Find the applicant to get CV ID
+        final applicant = _currentApplicants.firstWhere((app) => app.userId == userId);
+        final employerId = _authRepository.currentUser?.id;
+
+        if (employerId != null && _jobTitle != null) {
+          await _interviewRepository.createInterview(
+            candidateId: userId,
+            jobId: widget.jobId,
+            employerId: employerId,
+            cvId: applicant.cvId,
+            interviewTime: interviewTime,
+            jobTitle: _jobTitle!,
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lỗi tạo lịch phỏng vấn: $e')),
+          );
+        }
+        return; // Stop if interview creation fails
+      }
+    }
+
     try {
       await _jobRepository.updateApplicationStatus(widget.jobId, userId, newStatus);
       

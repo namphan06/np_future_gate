@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'jobs/edit_job_screen.dart';
 import 'jobs/employer_jobs_screen.dart';
 import 'saved_candidates_screen.dart';
+import 'interview_schedule_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -244,6 +245,14 @@ class ToolsPageEmployer extends StatelessWidget {
                         title: 'Lịch phỏng vấn',
                         subtitle: 'Quản lý lịch hẹn',
                         color: Colors.teal,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const InterviewScheduleScreen(),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 10),
                       _buildToolListItem(
@@ -393,6 +402,7 @@ class ToolsPageEmployer extends StatelessWidget {
     required String title,
     required String subtitle,
     required Color color,
+    VoidCallback? onTap,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -410,7 +420,7 @@ class ToolsPageEmployer extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
+          onTap: onTap ?? () {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('$title - Đang phát triển')),
             );

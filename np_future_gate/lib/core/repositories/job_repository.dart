@@ -45,6 +45,21 @@ class JobRepository {
     }
   }
 
+  Future<JobModel?> getJobById(String jobId) async {
+    try {
+      final response = await _supabase
+          .from('jobs')
+          .select()
+          .eq('id', jobId)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return JobModel.fromJson(response);
+    } catch (e) {
+      throw Exception('Failed to fetch job: $e');
+    }
+  }
+
   Future<void> updateApplicationStatus(
       String jobId, String userId, String newStatus) async {
     try {
