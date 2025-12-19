@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../auth/login_screen.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/repositories/auth_repository.dart';
 import 'dashboard_page_admin.dart';
 import 'users_management_page_admin.dart';
 import 'content_management_page_admin.dart';
@@ -390,7 +392,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
@@ -402,15 +404,33 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi Admin Panel?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Hủy'),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
-              await supabaseService.client.auth.signOut();
+              Navigator.pop(dialogContext); // Close confirm
+              
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return const Center(child: CircularProgressIndicator());
+                },
+              );
+
+              try {
+                await AuthRepository().signOut();
+              } catch (e) {
+                print('Logout error: $e');
+              }
               if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                Navigator.pop(context); // Pop loading
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
               }
             },
             style: ElevatedButton.styleFrom(

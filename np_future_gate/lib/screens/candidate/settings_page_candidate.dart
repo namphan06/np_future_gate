@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/animated_avatar.dart';
 import '../auth/change_password_screen.dart';
+import '../auth/login_screen.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/models/profile_model.dart';
@@ -552,7 +553,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
@@ -564,15 +565,40 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
         content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Hủy'),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
-              await supabaseService.client.auth.signOut();
+              // 1. Close the confirmation dialog
+              Navigator.pop(dialogContext);
+
+              // 2. Show loading dialog
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return const Center(child: CircularProgressIndicator());
+                },
+              );
+              
+              // 3. Perform sign out with error handling
+              try {
+                await _authRepo.signOut();
+              } catch (e) {
+                print('Error during sign out: $e');
+              }
+
+              // 4. Close loading dialog and Navigate to LoginScreen
               if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                // Pop the loading dialog
+                Navigator.pop(context);
+                
+                // Navigate to Login
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
               }
             },
             style: ElevatedButton.styleFrom(

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "980709823238",
+    "project_id": "npfuturegate",
+    "storage_bucket": "npfuturegate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980709823238:android:311dc3de1e9ed0edb10487",
+        "android_client_info": {
+          "package_name": "com.example.np_future_gate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZG7eV6wKRBDbITzmLB_RV3_3-7H3z1Dw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

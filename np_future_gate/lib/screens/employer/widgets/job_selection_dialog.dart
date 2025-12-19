@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/models/profile_model.dart';
 import '../../../core/theme/app_main_colors.dart';
@@ -17,16 +20,22 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   List<JobModel> _jobs = [];
+  Profile? _employerProfile;
   bool _isLoading = true;
   String? _errorMessage;
+
+  // EmailJS Configuration
+  final String _emailJsServiceId = dotenv.get('EMAILJS_SERVICE_ID');
+  final String _emailJsTemplateId = dotenv.get('EMAILJS_TEMPLATE_ID');
+  final String _emailJsPublicKey = dotenv.get('EMAILJS_PUBLIC_KEY');
 
   @override
   void initState() {
     super.initState();
-    _loadJobs();
+    _loadData();
   }
 
-  Future<void> _loadJobs() async {
+  Future<void> _loadData() async {
     try {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) {
@@ -37,18 +46,19 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
         return;
       }
 
-      // Fetch jobs created by this employer
-      // We don't strictly need 'profiles' join if we just want the job details
-      // But if JobModel.fromJson expects it for creatorName, we keep it.
-      // However, if the relation is broken, it might fail. 
-      // Let's try fetching without profiles first if possible, or keep it if we are sure.
-      // Given the user said "not showing", let's try to be robust.
-      
+      // 1. Fetch Employer Profile
+      final profileResponse = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .single();
+      _employerProfile = Profile.fromJson(profileResponse);
+
+      // 2. Fetch Jobs
       final response = await Supabase.instance.client
           .from('jobs')
           .select('*')
           .eq('creator_id', userId)
-          // .eq('is_active', true) // Temporarily comment out is_active to see if that's the issue
           .order('created_at', ascending: false);
 
       final List<dynamic> data = response as List<dynamic>;
@@ -58,10 +68,10 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading jobs: $e');
+      debugPrint('Error loading data: $e');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Lỗi tải công việc: $e';
+        _errorMessage = 'Lỗi tải dữ liệu: $e';
       });
     }
   }
@@ -80,22 +90,124 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
     }).toList();
   }
 
-  Future<void> _onJobSelected(JobModel job) async {
-    // Placeholder for future action
-    Navigator.pop(context); // Close dialog
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Đã chọn công việc: ${job.metadata.title}'),
-        backgroundColor: AppMainColors.primary,
-      ),
-    );
+  String _formatSalary(dynamic salary) {
+    // Assuming salary is SalaryRange or similar struct in JobModel
+    // Based on previous code: job.metadata.salary.min
+    if (salary.min != null) {
+      return '${salary.min} - ${salary.max} triệu';
+    }
+    return 'Thỏa thuận';
   }
 
-  // Helper method removed as it was only used for email dialog
-  // Widget _buildDetailRow(String label, String value) { ... }
+  Future<void> _onJobSelected(JobModel job) async {
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gửi email mời ứng tuyển'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Bạn có chắc chắn muốn gửi email mời ứng tuyển cho:'),
+            const SizedBox(height: 8),
+            Text('Ứng viên: ${widget.candidate.fullName}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text('Công việc: ${job.metadata.title}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppMainColors.primary, foregroundColor: Colors.white),
+            child: const Text('Gửi Email'),
+          ),
+        ],
+      ),
+    );
 
+    if (confirm == true) {
+      await _sendEmail(job);
+    }
+  }
 
+  Future<void> _sendEmail(JobModel job) async {
+    if (_employerProfile == null) return;
+
+    // Show Loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+
+    try {
+      final body = {
+        'service_id': _emailJsServiceId,
+        'template_id': _emailJsTemplateId,
+        'user_id': _emailJsPublicKey,
+        'template_params': {
+          'job_name': job.metadata.title,
+          'candidate_name': widget.candidate.fullName ?? 'Ứng viên',
+          'job_field': job.metadata.fields.join(', '),
+          'job_salary': _formatSalary(job.metadata.salary),
+          'employer_name': _employerProfile!.fullName ?? 'Nhà tuyển dụng',
+          'company_name': _employerProfile!.metadata['company_name'] ?? 'Công ty',
+          'employer_mail': _employerProfile!.email ?? '',
+          'email_to': widget.candidate.email ?? '',
+        }
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      // Dismiss Loading
+      if (mounted) Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+       
+        if (mounted) {
+          Navigator.pop(context); // Close Job Dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Email đã được gửi thành công!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        print(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Gửi email thất bại: ${response.body}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Dismiss Loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Lỗi kết nối: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +289,7 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Lương: ${job.metadata.salary.min != null ? '${job.metadata.salary.min} - ${job.metadata.salary.max} triệu' : 'Thỏa thuận'}',
+                                          'Lương: ${_formatSalary(job.metadata.salary)}',
                                           style: TextStyle(color: Colors.green.shade700, fontSize: 12),
                                         ),
                                       ],
