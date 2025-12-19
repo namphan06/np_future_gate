@@ -45,6 +45,134 @@ class JobRepository {
     }
   }
 
+  Future<List<JobModel>> getRecentEmployerJobs(String creatorId, {int limit = 3}) async {
+    try {
+      final response = await _supabase
+          .from('jobs')
+          .select()
+          .eq('creator_id', creatorId)
+          .gt('deadline', DateTime.now().toIso8601String())
+          .order('created_at', ascending: false)
+          .limit(limit);
+
+      return (response as List).map((e) => JobModel.fromJson(e)).toList();
+    } catch (e) {
+      // Return empty list instead of throwing to avoid crashing UI
+      print('Failed to fetch recent employer jobs: $e');
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentApplications(String employerId, {int limit = 3}) async {
+    try {
+      // 1. Fetch jobs with applicants
+      final jobsResponse = await _supabase
+          .from('jobs')
+          .select()
+          .eq('creator_id', employerId);
+      
+      final jobs = jobsResponse as List<dynamic>;
+      List<Map<String, dynamic>> allApps = [];
+
+      // 2. Flatten applicants
+      for (var job in jobs) {
+        final Map<String, dynamic> jobMap = Map<String, dynamic>.from(job as Map);
+        final applicants = job['applicants'] as List?;
+        
+        if (applicants != null) {
+          for (var app in applicants) {
+             final appMap = Map<String, dynamic>.from(app as Map);
+             // Normalize fields
+             appMap['job_id'] = job['id'];
+             appMap['jobs'] = jobMap;
+             appMap['application_status'] = appMap['status']; // Map status
+             allApps.add(appMap);
+          }
+        }
+      }
+
+      // 3. Sort by applied_at desc
+      allApps.sort((a, b) {
+        final tA = DateTime.tryParse(a['applied_at']?.toString() ?? '') ?? DateTime(0);
+        final tB = DateTime.tryParse(b['applied_at']?.toString() ?? '') ?? DateTime(0);
+        return tB.compareTo(tA);
+      });
+
+      // 4. Limit
+      if (limit > 0 && allApps.length > limit) {
+        allApps = allApps.sublist(0, limit);
+      }
+
+      // 5. Fetch Profiles
+      final userIds = allApps.map((a) => a['user_id'] as String).toSet().toList();
+      if (userIds.isNotEmpty) {
+        final profilesResponse = await _supabase
+            .from('profiles')
+            .select()
+            .filter('id', 'in', userIds);
+        
+        final profileMap = { for (var p in (profilesResponse as List)) p['id']: p };
+        
+        for (var app in allApps) {
+          app['profiles'] = profileMap[app['user_id']];
+        }
+      }
+
+      return allApps;
+    } catch (e) {
+      print('Failed to fetch recent applications: $e');
+      return [];
+    }
+  }
+
+  Future<Map<String, int>> getEmployerStats(String employerId) async {
+    try {
+      // 1. Fetch jobs
+      final jobsResponse = await _supabase
+          .from('jobs')
+          .select('applicants')
+          .eq('creator_id', employerId);
+      
+      final jobs = jobsResponse as List;
+      int jobsCount = jobs.length;
+      int totalApplicantsCount = 0;
+      int newApplicantsCount = 0;
+      
+      final now = DateTime.now();
+      final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+      for (var job in jobs) {
+        final applicants = job['applicants'] as List?;
+        if (applicants != null) {
+          totalApplicantsCount += applicants.length;
+          
+          for (var app in applicants) {
+            final appliedAtStr = app['applied_at'] as String?;
+            if (appliedAtStr != null) {
+              final appliedAt = DateTime.tryParse(appliedAtStr);
+              if (appliedAt != null && appliedAt.isAfter(thirtyDaysAgo)) {
+                newApplicantsCount++;
+              }
+            }
+          }
+        }
+      }
+
+      return {
+        'jobsCount': jobsCount,
+        'newApplicantsCount': newApplicantsCount,
+        'totalApplicantsCount': totalApplicantsCount,
+      };
+    } catch (e) {
+      print('Failed to fetch stats: $e');
+      return {
+        'jobsCount': 0,
+        'newApplicantsCount': 0,
+        'totalApplicantsCount': 0,
+      };
+    }
+  }
+
   Future<JobModel?> getJobById(String jobId) async {
     try {
       final response = await _supabase

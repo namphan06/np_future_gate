@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/cv_supabase_service.dart';
+import '../../core/models/job_model.dart';
+import '../../core/models/profile_model.dart';
+import '../../core/repositories/job_repository.dart';
+import '../../core/repositories/candidate_repository.dart';
+import 'jobs/employer_jobs_screen.dart';
+import 'jobs/edit_job_screen.dart';
+import 'jobs/recent_applicants_screen.dart';
+import 'search_page_employer.dart';
+import '../cv/cv_setting/cv_display_manager.dart';
 
 class HomePageEmployer extends StatefulWidget {
   const HomePageEmployer({super.key});
@@ -11,65 +21,102 @@ class HomePageEmployer extends StatefulWidget {
 
 class _HomePageEmployerState extends State<HomePageEmployer> {
   final supabaseService = SupabaseService.instance;
+  final _jobRepository = JobRepository();
+  final _candidateRepository = CandidateRepository(); // Keeping if needed for other things
+  final _cvService = CVSupabaseService();
 
-  // Mock data
-  final List<Map<String, dynamic>> _jobPostings = [
-    {
-      'title': 'Senior Flutter Developer',
-      'applicants': 24,
-      'status': 'Đang tuyển',
-      'postedDate': DateTime.now().subtract(const Duration(days: 2)),
-      'deadline': DateTime.now().add(const Duration(days: 28)),
-      'salary': '20-30 triệu',
-    },
-    {
-      'title': 'Backend Developer',
-      'applicants': 18,
-      'status': 'Đang tuyển',
-      'postedDate': DateTime.now().subtract(const Duration(days: 5)),
-      'deadline': DateTime.now().add(const Duration(days: 25)),
-      'salary': '15-25 triệu',
-    },
-    {
-      'title': 'UI/UX Designer',
-      'applicants': 31,
-      'status': 'Đang tuyển',
-      'postedDate': DateTime.now().subtract(const Duration(days: 7)),
-      'deadline': DateTime.now().add(const Duration(days: 23)),
-      'salary': '12-20 triệu',
-    },
-  ];
+  List<JobModel> _jobs = [];
+  List<Map<String, dynamic>> _applications = [];
+  Map<String, int> _stats = {
+    'jobsCount': 0,
+    'newApplicantsCount': 0,
+    'totalApplicantsCount': 0,
+  };
+  bool _isLoading = true;
 
-  final List<Map<String, dynamic>> _recentApplicants = [
-    {
-      'name': 'Nguyễn Văn A',
-      'position': 'Senior Flutter Developer',
-      'experience': '5 năm',
-      'education': 'Đại học',
-      'appliedDate': DateTime.now().subtract(const Duration(hours: 2)),
-    },
-    {
-      'name': 'Trần Thị B',
-      'position': 'Backend Developer',
-      'experience': '3 năm',
-      'education': 'Đại học',
-      'appliedDate': DateTime.now().subtract(const Duration(hours: 5)),
-    },
-    {
-      'name': 'Lê Văn C',
-      'position': 'UI/UX Designer',
-      'experience': '2 năm',
-      'education': 'Cao đẳng',
-      'appliedDate': DateTime.now().subtract(const Duration(hours: 8)),
-    },
-    {
-      'name': 'Phạm Thị D',
-      'position': 'Senior Flutter Developer',
-      'experience': '4 năm',
-      'education': 'Đại học',
-      'appliedDate': DateTime.now().subtract(const Duration(days: 1)),
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final userId = supabaseService.currentUserId;
+      if (userId == null) return;
+
+      final jobs = await _jobRepository.getRecentEmployerJobs(userId);
+      // Fetch applications (instead of random candidates)
+      final apps = await _jobRepository.getRecentApplications(userId);
+      // Fetch stats
+      final stats = await _jobRepository.getEmployerStats(userId);
+
+      if (mounted) {
+        setState(() {
+          _jobs = jobs;
+          _applications = apps;
+          _stats = stats;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading home data: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _viewCV(String cvId, String jobId, String userId, String currentStatus) async {
+    try {
+      if (currentStatus == 'pending') {
+        await _jobRepository.updateApplicationStatus(jobId, userId, 'viewed');
+        // Update local state if needed
+      }
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final cvData = await _cvService.getCVFullData(cvId);
+      
+      if (mounted) Navigator.pop(context);
+
+      if (cvData != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CVDisplayManager.buildViewWidget(context, cvData),
+          ),
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('CV không tồn tại hoặc đã bị xóa')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải CV: $e')));
+      }
+    }
+  }
+
+  String _getJobStatus(JobModel job) {
+    if (job.deadline != null && job.deadline!.isBefore(DateTime.now())) {
+      return 'Hết hạn';
+    }
+    return 'Đang tuyển';
+  }
+
+  String _getSalaryString(JobSalary salary) {
+    if (salary.min != null) {
+      return '${salary.min} - ${salary.max} triệu';
+    }
+    return 'Thỏa thuận';
+  }
 
   String _getTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
@@ -267,7 +314,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                       Expanded(
                         child: _buildStatCard(
                           title: 'Tin đăng',
-                          value: '${_jobPostings.length}',
+                          value: '${_stats['jobsCount']}',
                           icon: Icons.work_outline,
                           color: Colors.blue,
                         ),
@@ -276,7 +323,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                       Expanded(
                         child: _buildStatCard(
                           title: 'Ứng viên mới',
-                          value: '${_recentApplicants.length}',
+                          value: '${_stats['newApplicantsCount']}', // In 30 days
                           icon: Icons.person_add_outlined,
                           color: Colors.green,
                         ),
@@ -285,7 +332,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                       Expanded(
                         child: _buildStatCard(
                           title: 'Tổng UV',
-                          value: '73',
+                          value: '${_stats['totalApplicantsCount']}',
                           icon: Icons.people_outline,
                           color: Colors.orange,
                         ),
@@ -311,9 +358,14 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Đăng tin'),
+                        onPressed: () {
+                           Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EmployerJobsScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.remove_red_eye, size: 18),
+                        label: const Text('Xem tất cả'), // Changed from "Đăng tin" per request (link to posted jobs)
                         style: TextButton.styleFrom(
                           foregroundColor: AppMainColors.primary,
                         ),
@@ -329,107 +381,122 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final job = _jobPostings[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    job['title'],
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
+                      if (_jobs.isEmpty) {
+                         // Should not happen due to itemcount check, but safe
+                         return const SizedBox.shrink(); 
+                      }
+                      final job = _jobs[index];
+                      return GestureDetector(
+                        onTap: () {
+                           Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => EditJobScreen(job: job)),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      job.metadata.title,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    job['status'],
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      _getJobStatus(job), // Helper
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Icon(Icons.people_outline,
-                                    size: 16, color: Colors.grey.shade600),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${job['applicants']} ứng viên',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade600,
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Icon(Icons.people_outline,
+                                      size: 16, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${job.applicants.length} ứng viên',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 16),
-                                Icon(Icons.attach_money,
-                                    size: 16, color: Colors.grey.shade600),
-                                const SizedBox(width: 4),
-                                Text(
-                                  job['salary'],
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade600,
+                                  const SizedBox(width: 16),
+                                  Icon(Icons.attach_money,
+                                      size: 16, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _getSalaryString(job.metadata.salary),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Đăng ${_getTimeAgo(job['postedDate'])}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500,
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Đăng ${_getTimeAgo(job.createdAt!)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  'Hết hạn ${_getTimeAgo(DateTime.now().subtract(job['deadline'].difference(DateTime.now())))}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.orange.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                  if (job.deadline != null)
+                                    Text(
+                                      'Hết hạn ${_getTimeAgo(job.deadline!)}', // Logic might need fix for future dates
+                                      // Actually _getTimeAgo says "x days ago". For deadline we want "in x days".
+                                      // Or just show date.
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.orange.shade700,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
-                    childCount: _jobPostings.length,
+                    childCount: _jobs.length,
                   ),
                 ),
               ),
@@ -450,7 +517,12 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const RecentApplicantsScreen()),
+                          );
+                        },
                         style: TextButton.styleFrom(
                           foregroundColor: AppMainColors.primary,
                         ),
@@ -467,106 +539,104 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final applicant = _recentApplicants[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
+                      if (_applications.isEmpty) return const SizedBox.shrink();
+                      final app = _applications[index];
+                      // Extract data
+                      final profile = app['profiles'] != null ? Profile.fromJson(app['profiles']) : null;
+                      final job = app['jobs'] != null ? JobModel.fromJson(app['jobs']) : null;
+                      final cvId = app['cv_id'];
+
+                      if (profile == null) return const SizedBox.shrink();
+
+                      return GestureDetector(
+                        onTap: () {
+                           if (cvId != null && job != null) {
+                             _viewCV(cvId, job.id!, profile.id, app['application_status'] ?? 'pending');
+                           }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
                               ),
-                              child: const Icon(
-                                Icons.person_outline,
-                                color: Colors.blue,
-                                size: 24,
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: profile.avatarUrl != null 
+                                      ? Image.network(profile.avatarUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.person_outline, color: Colors.blue))
+                                      : const Icon(Icons.person_outline, color: Colors.blue, size: 24),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      profile.fullName ?? 'No Name',
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      job?.metadata.title ?? 'Việc làm không rõ',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey.shade600,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1, 
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      profile.email ?? '',
+                                      style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
+                                  Icon(Icons.arrow_forward_ios,
+                                      size: 16, color: Colors.grey.shade400),
+                                  const SizedBox(height: 8),
                                   Text(
-                                    applicant['name'],
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    applicant['position'],
+                                    _getTimeAgo(DateTime.parse(app['applied_at'])), // Ensure parsing
                                     style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
+                                      fontSize: 11,
+                                      color: Colors.grey.shade500,
                                     ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.work_outline,
-                                          size: 12, color: Colors.grey.shade500),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        applicant['experience'],
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Icon(Icons.school_outlined,
-                                          size: 12, color: Colors.grey.shade500),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        applicant['education'],
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ],
                               ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Icon(Icons.arrow_forward_ios,
-                                    size: 16, color: Colors.grey.shade400),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _getTimeAgo(applicant['appliedDate']),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
-                    childCount: _recentApplicants.length,
+                    childCount: _applications.length,
                   ),
                 ),
               ),

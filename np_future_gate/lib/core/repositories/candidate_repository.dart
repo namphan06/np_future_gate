@@ -53,4 +53,21 @@ class CandidateRepository {
       rethrow;
     }
   }
+
+  /// Lấy danh sách ứng viên mới nhất
+  Future<List<Profile>> getRecentCandidates({int limit = 3}) async {
+    try {
+      final response = await _client
+          .from('profiles')
+          .select()
+          .eq('role', 'candidate')
+          .order('created_at', ascending: false)
+          .limit(limit);
+
+      return (response as List).map((e) => Profile.fromJson(e)).toList();
+    } catch (e) {
+      print('Error fetching recent candidates: $e');
+      return [];
+    }
+  }
 }
