@@ -4,6 +4,7 @@ import 'cv_setting/cv_display_manager.dart';
 import 'cv_input/cv1_input_screen.dart';
 import 'cv_input/cv2_input_screen.dart';
 import 'cv_input/cv3_input_screen.dart';
+import 'cv_upload_screen.dart';
 
 /// CV Management Screen - Quản lý danh sách CV của người dùng
 class CVManagementScreen extends StatefulWidget {
@@ -66,6 +67,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
         _filteredCVList = cvs; // Initialize filtered list
       });
       debugPrint('Loaded ${cvs.length} CVs');
+      debugPrint('All loaded CVs: $cvs');
     } catch (e) {
       _showError('Không thể tải danh sách CV: $e');
       debugPrint('Error loading CVs: $e');
@@ -201,7 +203,12 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
               subtitle: const Text('Upload file PDF hoặc ảnh'),
               onTap: () {
                 Navigator.pop(ctx);
-                _showUploadDialog();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CVUploadScreen()),
+                ).then((res) {
+                  if (res == true) _loadCVs();
+                });
               },
             ),
           ],
@@ -210,72 +217,17 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
     );
   }
 
+  /* 
+   * Replaced by CVUploadScreen
+   * 
   void _showUploadDialog() {
-    final titleController = TextEditingController();
-    final urlController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Upload CV'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Tên CV'),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: urlController,
-              decoration: const InputDecoration(labelText: 'Đường dẫn file (URL)'),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Lưu ý: Hiện tại chỉ hỗ trợ lưu đường dẫn file.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleController.text.isEmpty || urlController.text.isEmpty) {
-                return;
-              }
-              Navigator.pop(ctx);
-              await _createUploadedCV(titleController.text, urlController.text);
-            },
-            child: const Text('Lưu'),
-          ),
-        ],
-      ),
-    );
+    // ...
   }
 
   Future<void> _createUploadedCV(String title, String url) async {
-    setState(() => _isLoading = true);
-    try {
-      final cvData = {
-        'title': title,
-        'type': 'upload',
-        'mcv': null, // No template code for uploads
-        'file_url': url,
-        'data': {}, // Empty data structure
-      };
-      await _cvService.createCV(cvData);
-      _showSuccess('Đã upload CV thành công');
-      _loadCVs();
-    } catch (e) {
-      _showError('Lỗi khi upload CV: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    // ...
   }
+  */
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

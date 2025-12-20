@@ -50,6 +50,7 @@ dependencies:
   url_launcher: ^6.3.2
   share_plus: ^12.0.1
   http: ^1.6.0
+  syncfusion_flutter_pdfviewer: ^32.1.19
 
 dev_dependencies:
   flutter_test:

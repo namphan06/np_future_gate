@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/cv_model.dart';
 
 /// CV Supabase Service - Quản lý lưu trữ và truy xuất CV từ Supabase
@@ -14,22 +16,38 @@ class CVSupabaseService {
         throw Exception('Người dùng chưa đăng nhập');
       }
 
+      debugPrint('Creating CV Record for user $userId');
+      debugPrint('CV Data Payload: $cvData');
+
+      // Insert and select ALL columns to verify what was saved
       final response = await _supabase.from('cv_templates').insert({
-        'mcv': cvData['mcv'], // Allow null if not provided
-        'title': cvData['personal_info']?['full_name'] ?? 'Untitled CV',
-        'description': cvData['summary'] ?? '',
+        'mcv': cvData['mcv'], 
+        'title': cvData['title'] ?? cvData['personal_info']?['full_name'] ?? 'Untitled CV',
+        'description': cvData['description'] ?? cvData['summary'] ?? '',
         'tags': _extractTags(cvData),
         'data': cvData,
-        'type': cvData['type'] ?? 'general', // Use type from data or default to general
+        'type': cvData['type'] ?? 'general',
         'user_create': userId,
-      }).select('id').single();
+      }).select().single();
 
-      return response['id'] as String;
+      debugPrint('✅ CV Created successfully. Inserted Record: $response');
+      
+      final newId = response['id'] as String;
+
+      // IMMEDIATE VERIFICATION: Try to read it back
+      debugPrint('🔍 Verifying storage by reading back ID: $newId ...');
+      final verifyRead = await _supabase.from('cv_templates').select().eq('id', newId).maybeSingle();
+      
+      if (verifyRead != null) {
+        debugPrint('✅ Verification Success: Record found in DB.');
+      } else {
+        debugPrint('❌ Verification FAILED: Record NOT found immediately after insert!');
+      }
+
+      return newId;
     } catch (e, st) {
-      // Log to terminal for debugging
-      debugPrint('CVSupabaseService.createCV error: $e');
+      debugPrint('❌ CVSupabaseService.createCV error: $e');
       debugPrintStack(stackTrace: st, label: 'createCV stacktrace');
-      // Re-throw with message for UI
       throw Exception('Không thể tạo CV: $e');
     }
   }
@@ -37,12 +55,14 @@ class CVSupabaseService {
   /// Cập nhật CV
   Future<void> updateCVData(String cvId, Map<String, dynamic> cvData) async {
     try {
+      debugPrint('Updating CV $cvId with data: $cvData');
       await _supabase.from('cv_templates').update({
         'title': cvData['personal_info']?['full_name'] ?? 'Untitled CV',
         'description': cvData['summary'] ?? '',
         'tags': _extractTags(cvData),
         'data': cvData,
       }).eq('id', cvId);
+      debugPrint('✅ CV Updated successfully.');
     } catch (e, st) {
       debugPrint('CVSupabaseService.updateCVData error: $e');
       debugPrintStack(stackTrace: st, label: 'updateCVData stacktrace');
@@ -53,17 +73,52 @@ class CVSupabaseService {
   /// Lấy dữ liệu CV theo ID
   Future<Map<String, dynamic>?> getCVData(String cvId) async {
     try {
+      debugPrint('Getting CV Data for ID: $cvId');
       final response = await _supabase
           .from('cv_templates')
           .select('data')
           .eq('id', cvId)
           .single();
 
+      debugPrint('✅ GetCVData success. Found data keys: ${(response['data'] as Map).keys.toList()}');
       return response['data'] as Map<String, dynamic>?;
     } catch (e, st) {
       debugPrint('CVSupabaseService.getCVData error: $e');
       debugPrintStack(stackTrace: st, label: 'getCVData stacktrace');
       throw Exception('Không thể tải CV: $e');
+    }
+  }
+  
+  // ... (Lines 70-168 remain mostly the same, skipping to uploadCVFile) 
+
+  /// Upload CV file to Storage
+  Future<String> uploadCVFile(File file, String userId) async {
+    try {
+      if (!file.existsSync()) {
+        throw Exception('File does not exist at path: ${file.path}');
+      }
+      
+      final fileExt = file.path.split('.').last;
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final path = '$userId/$fileName';
+      
+      debugPrint('📂 Preparing to upload file:');
+      debugPrint('   - Local Path: ${file.path}');
+      debugPrint('   - Size: ${await file.length()} bytes');
+      debugPrint('   - Target Supabase Path: $path');
+
+      await _supabase.storage.from('cv_upload').upload(
+        path,
+        file,
+        fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+      );
+      
+      final publicUrl = _supabase.storage.from('cv_upload').getPublicUrl(path);
+      debugPrint('✅ File uploaded successfully. Public URL: $publicUrl');
+      return publicUrl;
+    } catch (e) {
+      debugPrint('❌ Error uploading file: $e');
+      throw Exception('Lỗi khi upload file: $e');
     }
   }
 
@@ -166,8 +221,17 @@ class CVSupabaseService {
     }
   }
 
+
+
   /// Trích xuất tags từ CV data
   List<String> _extractTags(Map<String, dynamic> cvData) {
+    // If tags are already provided in cvData, prioritize them
+    if (cvData['tags'] != null) {
+        if (cvData['tags'] is List) {
+            return List<String>.from(cvData['tags']);
+        }
+    }
+
     final tags = <String>[];
     
     // Thêm tags dựa trên dữ liệu có sẵn
@@ -291,8 +355,133 @@ class _CVOutputWidgetState extends State<CVOutputWidget> {
         return _buildCV2Output(data);
       case 'CV003':
         return _buildCV3Output(data);
+      case 'UPLOAD':
+        return _buildUploadOutput(data);
       default:
+        // Fallback for upload type if mcv is missing but type is upload
+        if (data['type'] == 'upload') {
+          return _buildUploadOutput(data);
+        }
         return _buildCV1Output(data);
+    }
+  }
+
+  Widget _buildUploadOutput(Map<String, dynamic> data) {
+    final fileUrl = data['file_url'] ?? '';
+    final title = data['title'] ?? 'CV Upload';
+    final fileName = data['file_name'] ?? 'Tài liệu CV';
+    
+    final lowerUrl = fileUrl.toString().toLowerCase();
+    final isImage = lowerUrl.endsWith('.jpg') || 
+                    lowerUrl.endsWith('.png') || 
+                    lowerUrl.endsWith('.jpeg') ||
+                    lowerUrl.endsWith('.webp');
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 800),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            if (isImage && fileUrl.isNotEmpty)
+              Image.network(
+                fileUrl,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const CircularProgressIndicator();
+                },
+                errorBuilder: (_, __, ___) => const Column(
+                  children: [
+                    Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                    Text('Không thể tải ảnh'),
+                  ],
+                ),
+              )
+            else
+              Column(
+                children: [
+                  Icon(
+                    fileName.toString().toLowerCase().endsWith('.pdf') 
+                        ? Icons.picture_as_pdf 
+                        : Icons.description, 
+                    size: 80, 
+                    color: Colors.blue[700]
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    fileName,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () => _launchCVUrl(fileUrl),
+                    child: Text(
+                      'Nhấn để mở file',
+                      style: TextStyle(
+                        color: Colors.blue[700], 
+                        decoration: TextDecoration.underline,
+                        fontStyle: FontStyle.italic
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () => _launchCVUrl(fileUrl),
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('Mở tài liệu'),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchCVUrl(String url) async {
+    if (url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không có đường dẫn file')),
+      );
+      return;
+    }
+
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        // Fallback to platform default
+        if (!await launchUrl(uri, mode: LaunchMode.platformDefault)) {
+           throw 'Could not launch $url';
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Không thể mở file: $e')),
+        );
+      }
+      debugPrint('Error launching URL: $e');
     }
   }
 
