@@ -6,6 +6,7 @@ import '../../core/repositories/job_repository.dart';
 import 'job_detail_screen.dart';
 import 'data/filter_data.dart';
 import '../../widgets/cards/job_card.dart';
+import '../../widgets/speech_text_field.dart';
 
 class SearchPageCandidate extends StatefulWidget {
   const SearchPageCandidate({super.key});
@@ -194,16 +195,11 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                               ),
                             ],
                           ),
-                          child: TextField(
+                          child: SpeechTextField(
                             controller: _searchController,
-                            onChanged: (value) => _applyFilters(),
-                            decoration: InputDecoration(
-                              hintText: 'Tên công việc, công ty...',
-                              hintStyle: TextStyle(color: Colors.grey.shade400),
-                              prefixIcon: Icon(Icons.search, color: AppMainColors.primary),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                            ),
+                            hint: 'Tìm tên công việc, công ty... (hoặc nói)',
+                            prefixIcon: Icons.search,
+                            maxLines: 1,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -304,27 +300,11 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                           Row(
                             children: [
                               Expanded(
-                                child: TextField(
+                                child: SpeechTextField(
                                   controller: _minSalaryController,
+                                  hint: 'Từ (triệu)',
+                                  maxLines: 1,
                                   keyboardType: TextInputType.number,
-                                  onChanged: (value) => _applyFilters(),
-                                  decoration: InputDecoration(
-                                    hintText: 'Từ',
-                                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: Colors.grey.shade300),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: Colors.grey.shade300),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: AppMainColors.primary),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                  ),
                                 ),
                               ),
                               const Padding(
@@ -332,27 +312,11 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                                 child: Text('-', style: TextStyle(fontSize: 18)),
                               ),
                               Expanded(
-                                child: TextField(
+                                child: SpeechTextField(
                                   controller: _maxSalaryController,
+                                  hint: 'Đến (triệu)',
+                                  maxLines: 1,
                                   keyboardType: TextInputType.number,
-                                  onChanged: (value) => _applyFilters(),
-                                  decoration: InputDecoration(
-                                    hintText: 'Đến',
-                                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: Colors.grey.shade300),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: Colors.grey.shade300),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      borderSide: BorderSide(color: AppMainColors.primary),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                  ),
                                 ),
                               ),
                             ],

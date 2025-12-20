@@ -7,6 +7,7 @@ import '../../core/repositories/auth_repository.dart';
 import '../../core/services/cv_supabase_service.dart';
 import '../../core/enums/job_fields.dart';
 import '../../core/enums/employment_types.dart';
+import '../../widgets/speech_text_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Profile profile;
@@ -367,22 +368,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Row(
             children: [
               Expanded(
-                child: TextField(
+                child: SpeechTextField(
                   controller: _tagController,
-                  decoration: InputDecoration(
-                    hintText: 'VD: Flutter, Dart...',
-                    filled: true,
-                    fillColor: Colors.grey[50],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey[200]!),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
+                  hint: 'VD: Flutter, Dart... (hoặc nói)',
+                  maxLines: 1,
                 ),
               ),
               const SizedBox(width: 8),
@@ -519,38 +508,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700])),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            keyboardType: keyboardType,
-            validator: validator,
-            style: const TextStyle(fontSize: 16),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey[400]),
-              filled: true,
-              fillColor: Colors.grey[50],
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey[200]!),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.blue, width: 1.5),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-          ),
-        ],
+      child: SpeechTextField(
+        controller: controller,
+        label: label,
+        hint: hint ?? label,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        validator: validator,
       ),
     );
   }

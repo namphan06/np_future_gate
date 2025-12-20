@@ -5,6 +5,7 @@ import 'cv_input/cv1_input_screen.dart';
 import 'cv_input/cv2_input_screen.dart';
 import 'cv_input/cv3_input_screen.dart';
 import 'cv_upload_screen.dart';
+import '../../widgets/speech_text_field.dart';
 
 /// CV Management Screen - Quản lý danh sách CV của người dùng
 class CVManagementScreen extends StatefulWidget {
@@ -323,22 +324,11 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
                         ),
                       ],
                     ),
-                    child: TextField(
+                    child: SpeechTextField(
                       controller: _searchController,
-                      onChanged: (value) => setState(() => _searchText = value),
-                      decoration: InputDecoration(
-                        hintText: 'Tìm kiếm CV...',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        prefixIcon: Icon(Icons.search, color: Colors.blue[400]),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                        suffixIcon: _searchText.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () => setState(() => _searchText = ''),
-                              )
-                            : null,
-                      ),
+                      hint: 'Tìm kiếm CV... (hoặc nói)',
+                      prefixIcon: Icons.search,
+                      maxLines: 1,
                     ),
                   ),
                 ),

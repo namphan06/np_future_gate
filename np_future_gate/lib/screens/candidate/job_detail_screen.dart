@@ -4,6 +4,7 @@ import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
 import '../../../core/theme/app_main_colors.dart';
+import 'cv_selection_screen.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final JobModel job;
@@ -78,38 +79,47 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Apply for Job'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: cvs.isEmpty
-                ? const Text('You need to create a CV first.')
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: cvs.length,
-                    itemBuilder: (context, index) {
-                      final cv = cvs[index];
-                      return ListTile(
-                        title: Text(cv.name),
-                        subtitle: Text(cv.updatedAt.toString().split(' ')[0]),
-                        onTap: () => _applyForJob(cv.id),
-                      );
-                    },
-                  ),
+      if (cvs.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            icon: const Icon(Icons.description_outlined, size: 64, color: Colors.orange),
+            title: const Text('Chưa có CV'),
+            content: const Text('Bạn cần tạo CV trước khi ứng tuyển.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Đóng'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to CV creation
+                },
+                child: const Text('Tạo CV'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-          ],
+        );
+        return;
+      }
+
+      // Navigate to CV Selection Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CVSelectionScreen(
+            cvs: cvs,
+            onCVSelected: (cvId) {
+              Navigator.pop(context); // Close selection screen
+              _applyForJob(cvId);
+            },
+          ),
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading CVs: $e')),
+        SnackBar(content: Text('Lỗi tải CV: $e')),
       );
     }
   }

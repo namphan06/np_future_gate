@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/cv_supabase_service.dart';
+import '../../core/enums/job_fields.dart';
 
 class CVUploadEditScreen extends StatefulWidget {
   final String cvId;
@@ -26,18 +27,7 @@ class _CVUploadEditScreenState extends State<CVUploadEditScreen> {
   bool _isLoading = false;
   final CVSupabaseService _cvService = CVSupabaseService();
 
-  final List<String> _jobFields = [
-    'Công nghệ thông tin',
-    'Kinh doanh / Bán hàng', 
-    'Marketing / Truyền thông',
-    'Thiết kế / Sáng tạo',
-    'Kỹ thuật / Cơ khí',
-    'Tài chính / Kế toán',
-    'Hành chính / Nhân sự',
-    'Y tế / Sức khỏe',
-    'Giáo dục / Đào tạo',
-    'Khác'
-  ];
+
 
   @override
   void initState() {
@@ -53,7 +43,7 @@ class _CVUploadEditScreenState extends State<CVUploadEditScreen> {
     
     // Check typeField or info['field']
     _selectedField = data['typeField'] ?? info['field'];
-    if (_selectedField != null && !_jobFields.contains(_selectedField)) {
+    if (_selectedField != null && !JobField.valuesList.contains(_selectedField)) {
         _selectedField = null; // Reset if invalid
     }
   }
@@ -162,7 +152,7 @@ class _CVUploadEditScreenState extends State<CVUploadEditScreen> {
                 label: 'Lĩnh vực / Ngành nghề',
                 hint: 'Chọn lĩnh vực',
                 value: _selectedField,
-                items: _jobFields,
+                items: JobField.valuesList,
                 onChanged: (v) => setState(() => _selectedField = v),
               ),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'cv_setting/cv_general_templates_screen.dart';
 import 'cv_setting/cv_field_templates_screen.dart';
+import 'cv_upload_screen.dart';
 
 /// Main CV Creation Screen with 3 options:
 /// 1. Use general CV templates
@@ -161,8 +162,18 @@ class CVCreationScreen extends StatelessWidget {
                     'Giữ nguyên định dạng',
                     'Nhanh chóng và tiện lợi',
                   ],
-                  onTap: () async {
-                    await _handleUploadCV(context);
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CVUploadScreen(),
+                      ),
+                    ).then((result) {
+                      // Reload CV list if upload was successful
+                      if (result == true && context.mounted) {
+                        Navigator.pop(context, true);
+                      }
+                    });
                   },
                 ),
 

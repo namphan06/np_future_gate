@@ -6,6 +6,7 @@ import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/animated_avatar.dart';
 import 'company_detail_screen.dart';
+import '../../widgets/speech_text_field.dart';
 
 class CompaniesListScreen extends StatefulWidget {
   const CompaniesListScreen({super.key});
@@ -172,19 +173,11 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
             // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
+              child: SpeechTextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Tìm kiếm công ty, lĩnh vực...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
+                hint: 'Tìm kiếm công ty, lĩnh vực... (hoặc nói)',
+                prefixIcon: Icons.search,
+                maxLines: 1,
               ),
             ),
             const SizedBox(height: 16),

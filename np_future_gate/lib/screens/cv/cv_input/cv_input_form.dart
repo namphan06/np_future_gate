@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widgets/speech_text_field.dart';
 
 /// CV Input Form - Form nhập liệu cho từng section của CV
 class CV1InputForm extends StatefulWidget {
@@ -1114,7 +1115,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
     );
   }
 
-  // Helper: Build TextField
+  // Helper: Build TextField with Speech-to-Text
   Widget _buildTextField({
     required String label,
     dynamic value,
@@ -1133,15 +1134,12 @@ class _CV1InputFormState extends State<CV1InputForm> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: TextField(
+      child: SpeechTextField(
         controller: ctrl ?? TextEditingController(text: value?.toString() ?? ''),
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: icon != null ? Icon(icon) : null,
-          border: const OutlineInputBorder(),
-        ),
+        label: label,
+        hint: 'Nhập hoặc nói $label',
+        prefixIcon: icon,
         maxLines: maxLines,
-        onChanged: onChanged,
       ),
     );
   }

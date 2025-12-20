@@ -3,6 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cv_supabase_service.dart';
+import '../../core/enums/job_fields.dart';
+import '../../widgets/speech_text_field.dart';
 
 class CVUploadScreen extends StatefulWidget {
   const CVUploadScreen({super.key});
@@ -33,20 +35,39 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     'IT', 'Marketing', 'Business', 'Design', 'Engineer', 'Manager', 'Fresher', 'Junior', 'Senior'
   ];
   
-  final List<String> _jobFields = [
-    'Công nghệ thông tin',
-    'Kinh doanh / Bán hàng', 
-    'Marketing / Truyền thông',
-    'Thiết kế / Sáng tạo',
-    'Kỹ thuật / Cơ khí',
-    'Tài chính / Kế toán',
-    'Hành chính / Nhân sự',
-    'Y tế / Sức khỏe',
-    'Giáo dục / Đào tạo',
-    'Khác'
-  ];
 
-  final Set<String> _selectedTags = {};
+
+  final TextEditingController _currentTagController = TextEditingController();
+  final List<String> _addedTags = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      setState(() {
+        // Auto-fill email from auth
+        if (_emailController.text.isEmpty && user.email != null) {
+          _emailController.text = user.email!;
+        }
+        
+        // Try to get phone from user metadata
+        final userMetadata = user.userMetadata;
+        if (userMetadata != null) {
+          if (_phoneController.text.isEmpty && userMetadata['phone'] != null) {
+            _phoneController.text = userMetadata['phone'].toString();
+          }
+          if (_nameController.text.isEmpty && userMetadata['full_name'] != null) {
+            _nameController.text = userMetadata['full_name'].toString();
+          }
+        }
+      });
+    }
+  }
 
   Future<void> _pickFile() async {
     try {
@@ -79,14 +100,24 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     }
   }
 
-  void _toggleTag(String tag) {
+  void _addTag() {
+    final tag = _currentTagController.text.trim();
+    if (tag.isNotEmpty && !_addedTags.contains(tag)) {
+      setState(() {
+        _addedTags.add(tag);
+        _currentTagController.clear();
+      });
+    }
+  }
+
+  void _removeTag(String tag) {
     setState(() {
-      if (_selectedTags.contains(tag)) {
-        _selectedTags.remove(tag);
-      } else {
-        _selectedTags.add(tag);
-      }
+      _addedTags.remove(tag);
     });
+  }
+
+  List<String> _parseTags() {
+    return _addedTags;
   }
 
   Future<void> _uploadCV() async {
@@ -114,7 +145,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
         'typeField': _selectedField, // Support field filtering
         'title': _titleController.text,
         'description': _descriptionController.text,
-        'tags': _selectedTags.toList(),
+        'tags': _parseTags(),
         'file_url': fileUrl,
         'file_name': _fileName,
         'uploaded_at': DateTime.now().toIso8601String(),
@@ -153,6 +184,17 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _currentTagController.dispose();
+    super.dispose();
   }
 
   @override
@@ -235,7 +277,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                             label: 'Lĩnh vực / Ngành nghề',
                             hint: 'Chọn lĩnh vực',
                             value: _selectedField,
-                            items: _jobFields,
+                            items: JobField.valuesList,
                             onChanged: (v) => setState(() => _selectedField = v),
                           ),
 
@@ -256,32 +298,57 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                               color: Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: _availableTags.map((tag) {
-                              final isSelected = _selectedTags.contains(tag);
-                              return FilterChip(
-                                label: Text(tag),
-                                selected: isSelected,
-                                onSelected: (_) => _toggleTag(tag),
-                                selectedColor: Colors.blue[100],
-                                checkmarkColor: Colors.blue[700],
-                                labelStyle: TextStyle(
-                                  color: isSelected ? Colors.blue[900] : Colors.grey[700],
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                ),
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(
-                                    color: isSelected ? Colors.blue : Colors.grey[300]!,
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _currentTagController,
+                                  decoration: InputDecoration(
+                                    hintText: 'Nhập tag và nhấn nút +',
+                                    prefixIcon: const Icon(Icons.tag),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
+                                  onSubmitted: (_) => _addTag(),
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[700],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: IconButton(
+                                  onPressed: _addTag,
+                                  icon: const Icon(Icons.add, color: Colors.white),
+                                  tooltip: 'Thêm tag',
+                                ),
+                              ),
+                            ],
                           ),
+                          if (_addedTags.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: _addedTags.map((tag) {
+                                return Chip(
+                                  label: Text(tag),
+                                  deleteIcon: const Icon(Icons.close, size: 18),
+                                  onDeleted: () => _removeTag(tag),
+                                  backgroundColor: Colors.blue[50],
+                                  labelStyle: TextStyle(
+                                    color: Colors.blue[900],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  deleteIconColor: Colors.blue[700],
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ],
                       ],
                     ),

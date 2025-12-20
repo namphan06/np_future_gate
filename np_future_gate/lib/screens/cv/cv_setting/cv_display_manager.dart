@@ -111,6 +111,7 @@ class CVDisplayManager {
     
     final fileUrl = innerData['file_url'] ?? cvData['file_url'] ?? '';
     final fileName = innerData['file_name'] ?? cvData['file_name'] ?? 'Tài liệu CV';
+    final cvTitle = cvData['title'] ?? 'Xem CV';
     
     // Check extension
     final lowerUrl = fileUrl.toString().toLowerCase();
@@ -121,99 +122,418 @@ class CVDisplayManager {
     final isPdf = lowerUrl.endsWith('.pdf');
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(cvData['title'] ?? 'Xem CV'),
-        backgroundColor: Colors.blue[700],
-        actions: [
-            // Button to open externally if needed
-            IconButton(
-                icon: const Icon(Icons.open_in_new),
-                onPressed: () async {
-                    if (fileUrl.isNotEmpty) {
-                        try {
-                           final uri = Uri.parse(fileUrl);
-                           await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        } catch (e) {
-                           // ignore or show toast
-                        }
-                    }
-                },
-                tooltip: 'Mở bằng ứng dụng ngoài',
-            )
-        ],
-      ),
-      body: Center(
-        child: Builder(
-            builder: (ctx) {
-                if (fileUrl.isEmpty) {
-                    return const Text('Không tìm thấy nội dung file.');
-                }
-
-                if (isImage) {
-                    return InteractiveViewer(
-                        minScale: 0.5,
-                        maxScale: 4.0,
-                        child: Image.network(
-                        fileUrl,
-                        loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(child: CircularProgressIndicator());
-                        },
-                        errorBuilder: (context, error, stackTrace) => const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Icon(Icons.broken_image, size: 64, color: Colors.grey),
-                            Text('Không thể tải ảnh'),
+      body: Container(
+        color: const Color(0xFFF5F7FA), // Light grey-blue background instead of gradient
+        child: Stack(
+          children: [
+            // Main Content with Card/Border
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 72, // Space for floating bar
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
+                ),
+                child: Builder(
+                  builder: (ctx) {
+                    if (fileUrl.isEmpty) {
+                      return Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(32),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
                             ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Không tìm thấy nội dung file',
+                                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
                         ),
-                        ),
-                    );
-                } else if (isPdf) {
-                    return SfPdfViewer.network(
-                        fileUrl,
-                        onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
-                           debugPrint('PDF Load Error: ${details.error}');
-                           debugPrint('PDF Load Desc: ${details.description}');
-                        },
-                    );
-                } else {
-                    // Fallback for Word/Other docs
-                    return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                        Icon(
-                            Icons.description, 
-                            size: 80, 
-                            color: Colors.blue[700]
-                        ),
-                        const SizedBox(height: 24),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 40),
-                            child: Text(
-                            fileName,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                      );
+                    }
+
+                    // Content card wrapper
+                    Widget contentWidget;
+
+                    if (isImage) {
+                      contentWidget = Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 4),
                             ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        const Text(
-                             'Không hỗ trợ xem trực tiếp định dạng này.\nVui lòng mở bằng ứng dụng bên ngoài.',
-                             textAlign: TextAlign.center,
-                             style: TextStyle(color: Colors.grey),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: InteractiveViewer(
+                            minScale: 0.5,
+                            maxScale: 4.0,
+                            child: Image.network(
+                              fileUrl,
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color: Colors.white,
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                              : null,
+                                          color: Colors.blue[700],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Đang tải ảnh...',
+                                          style: TextStyle(color: Colors.grey[600]),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: Colors.white,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.broken_image, size: 64, color: Colors.grey[400]),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Không thể hiển thị ảnh',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 32),
-                        ElevatedButton.icon(
-                            onPressed: () async {
-                                final uri = Uri.parse(fileUrl);
-                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      );
+                    } else if (isPdf) {
+                      // PDF Viewer optimized for multi-page documents
+                      contentWidget = Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: SfPdfViewer.network(
+                            fileUrl,
+                            canShowScrollHead: true,
+                            canShowScrollStatus: true,
+                            enableDoubleTapZooming: true,
+                            pageLayoutMode: PdfPageLayoutMode.continuous, // Enable multi-page scrolling
+                            scrollDirection: PdfScrollDirection.vertical, // Vertical scroll for pages
+                            onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+                              debugPrint('PDF Load Error: ${details.error}');
+                              debugPrint('PDF Load Description: ${details.description}');
                             },
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Mở file'),
+                          ),
                         ),
+                      );
+                    } else {
+                      // Fallback for Word/Other docs
+                      contentWidget = Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[50],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.description,
+                                  size: 64,
+                                  color: Colors.blue[700],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              Text(
+                                fileName,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Định dạng này không hỗ trợ xem trực tiếp',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  try {
+                                    final uri = Uri.parse(fileUrl);
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Không thể mở file: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.open_in_new),
+                                label: const Text('Mở bằng ứng dụng khác'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue[700],
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return contentWidget;
+                  },
+                ),
+              ),
+            ),
+            
+            // Floating Top Bar
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 12,
+                  right: 12,
+                  bottom: 16,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFFF5F7FA),
+                      const Color(0xFFF5F7FA).withOpacity(0.9),
+                      const Color(0xFFF5F7FA).withOpacity(0),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Back Button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
                         ],
-                    );
-                }
-            },
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => Navigator.pop(context),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            child: Icon(Icons.arrow_back, size: 24, color: Colors.blue[700]),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Title
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          cvTitle,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // More Options Button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: PopupMenuButton(
+                        icon: Icon(Icons.more_vert, size: 24, color: Colors.blue[700]),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        offset: const Offset(0, 50),
+                        elevation: 8,
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(Icons.open_in_new, size: 20, color: Colors.blue[700]),
+                                const SizedBox(width: 12),
+                                const Text('Mở bằng ứng dụng khác'),
+                              ],
+                            ),
+                            onTap: () async {
+                              if (fileUrl.isNotEmpty) {
+                                try {
+                                  final uri = Uri.parse(fileUrl);
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } catch (e) {
+                                  // Ignore
+                                }
+                              }
+                            },
+                          ),
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline, size: 20, color: Colors.blue[700]),
+                                const SizedBox(width: 12),
+                                const Text('Thông tin file'),
+                              ],
+                            ),
+                            onTap: () {
+                              Future.delayed(Duration.zero, () {
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: const Text('Thông tin file'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.insert_drive_file, size: 20, color: Colors.blue[700]),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                fileName,
+                                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text('Đường dẫn:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                        const SizedBox(height: 4),
+                                        SelectableText(
+                                          fileUrl,
+                                          style: const TextStyle(fontSize: 11, color: Colors.blue),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text('Đóng'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

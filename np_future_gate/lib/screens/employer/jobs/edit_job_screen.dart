@@ -7,6 +7,7 @@ import '../../../core/enums/job_fields.dart';
 import '../../../core/enums/employment_types.dart';
 import '../../../core/enums/experience_levels.dart';
 import '../../../core/theme/app_main_colors.dart';
+import '../../../widgets/speech_text_field.dart';
 
 class EditJobScreen extends StatefulWidget {
   final JobModel? job;
@@ -432,30 +433,14 @@ class _EditJobScreenState extends State<EditJobScreen> {
     bool enabled = true,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return SpeechTextField(
       controller: controller,
+      label: label,
+      hint: hint ?? label,
       keyboardType: keyboardType,
       enabled: enabled,
       validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        filled: true,
-        fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppMainColors.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+      maxLines: 1,
     );
   }
 
@@ -726,13 +711,9 @@ class _EditJobScreenState extends State<EditJobScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Thêm $title'),
-        content: TextField(
+        content: SpeechTextField(
           controller: controller,
-          decoration: InputDecoration(
-            hintText: hint ?? 'Nhập nội dung...',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          autofocus: true,
+          hint: hint ?? 'Nhập nội dung... (hoặc nói)',
           maxLines: isLongText ? 3 : 1,
         ),
         actions: [

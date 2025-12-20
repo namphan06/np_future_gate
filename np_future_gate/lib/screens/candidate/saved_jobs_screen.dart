@@ -6,6 +6,7 @@ import '../../core/theme/app_main_colors.dart';
 import 'job_detail_screen.dart';
 import 'data/filter_data.dart';
 import '../../widgets/cards/job_card.dart';
+import '../../widgets/speech_text_field.dart';
 
 class SavedJobsScreen extends StatefulWidget {
   const SavedJobsScreen({super.key});
@@ -154,19 +155,11 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
             child: Column(
               children: [
                 // Search Bar
-                TextField(
+                SpeechTextField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Tìm kiếm việc làm đã lưu...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
+                  hint: 'Tìm kiếm việc làm đã lưu... (hoặc nói)',
+                  prefixIcon: Icons.search,
+                  maxLines: 1,
                 ),
                 
                 // Filter Toggle
