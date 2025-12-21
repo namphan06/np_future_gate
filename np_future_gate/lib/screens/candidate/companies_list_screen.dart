@@ -3,8 +3,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/repositories/company_repository.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/chat_service.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/animated_avatar.dart';
+import '../chat/chat_list_screen.dart';
+import '../chat/chat_detail_screen.dart';
 import 'company_detail_screen.dart';
 import '../../widgets/speech_text_field.dart';
 
@@ -18,6 +21,7 @@ class CompaniesListScreen extends StatefulWidget {
 class _CompaniesListScreenState extends State<CompaniesListScreen> {
   final _companyRepository = CompanyRepository();
   final _supabaseService = SupabaseService.instance;
+  final _chatService = ChatService();
   final _searchController = TextEditingController();
   
   // bool _isLoading = true; // Removed
@@ -121,6 +125,45 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
     }
   }
 
+  void _openChatList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ChatListScreen()),
+    );
+  }
+
+  Future<void> _openChatWithCompany(Profile company) async {
+    final conversation = await _chatService.getOrCreateConversation(
+      otherUserId: company.id,
+      otherUserType: 'employer',
+    );
+
+    if (conversation != null && mounted) {
+      final companyName = company.metadata['company_name'] ?? company.fullName ?? 'Công ty';
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatDetailScreen(
+            conversation: conversation,
+            otherUserName: companyName,
+            otherUserAvatar: company.avatarUrl ?? '',
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể tạo cuộc trò chuyện')),
+      );
+    }
+  }
+
+  void _handleChatbotPressed() {
+    // TODO: Implement chatbot functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Chatbot AI sẽ được triển khai sau')),
+    );
+  }
+
   void _navigateToDetail(Profile company) {
     Navigator.push(
       context,
@@ -138,125 +181,130 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // Custom Header
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
+            Column(
+              children: [
+                // Custom Header
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      InkWell(
+                        onTap: () => Navigator.pop(context),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: const Icon(Icons.arrow_back, size: 20),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Text(
-                    'Danh sách công ty',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SpeechTextField(
-                controller: _searchController,
-                hint: 'Tìm kiếm công ty, lĩnh vực... (hoặc nói)',
-                prefixIcon: Icons.search,
-                maxLines: 1,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Content
-            Expanded(
-              child: StreamBuilder<List<Profile>>(
-                stream: _companyRepository.companiesStream,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  
-                  final allCompanies = snapshot.data ?? [];
-                  final query = _searchController.text.toLowerCase();
-                  final filteredCompanies = allCompanies.where((company) {
-                    final name = (company.metadata['company_name'] ?? company.fullName ?? '').toLowerCase();
-                    final fields = (company.metadata['fields'] as List?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
-                    return name.contains(query) || fields.any((f) => f.contains(query));
-                  }).toList();
-
-                  final followedCompanies = filteredCompanies.where((c) => _followedCompanyIds.contains(c.id)).toList();
-                  final otherCompanies = filteredCompanies.where((c) => !_followedCompanyIds.contains(c.id)).toList();
-
-                  return RefreshIndicator(
-                      onRefresh: _loadFollowedIds,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (followedCompanies.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: _buildSectionTitle('Công ty đang theo dõi (${followedCompanies.length})'),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                height: 180,
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: followedCompanies.length,
-                                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                                  itemBuilder: (context, index) => _buildCompanyCardHorizontal(followedCompanies[index], true),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                            ],
-
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: _buildSectionTitle('Gợi ý công ty (${otherCompanies.length})'),
-                            ),
-                            const SizedBox(height: 12),
-                            if (otherCompanies.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: Text('Không tìm thấy công ty nào.'),
-                              )
-                            else
-                              SizedBox(
-                                height: 180,
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: otherCompanies.length,
-                                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                                  itemBuilder: (context, index) => _buildCompanyCardHorizontal(otherCompanies[index], false),
-                                ),
-                              ),
-                            
-                            const SizedBox(height: 20),
-                          ],
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: const Icon(Icons.arrow_back, size: 20),
                         ),
                       ),
-                    );
-                },
-              ),
+                      const SizedBox(width: 16),
+                      const Text(
+                        'Danh sách công ty',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SpeechTextField(
+                    controller: _searchController,
+                    hint: 'Tìm kiếm công ty, lĩnh vực... (hoặc nói)',
+                    prefixIcon: Icons.search,
+                    maxLines: 1,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Content
+                Expanded(
+                  child: StreamBuilder<List<Profile>>(
+                    stream: _companyRepository.companiesStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      
+                      final allCompanies = snapshot.data ?? [];
+                      final query = _searchController.text.toLowerCase();
+                      final filteredCompanies = allCompanies.where((company) {
+                        final name = (company.metadata['company_name'] ?? company.fullName ?? '').toLowerCase();
+                        final fields = (company.metadata['fields'] as List?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
+                        return name.contains(query) || fields.any((f) => f.contains(query));
+                      }).toList();
+
+                      final followedCompanies = filteredCompanies.where((c) => _followedCompanyIds.contains(c.id)).toList();
+                      final otherCompanies = filteredCompanies.where((c) => !_followedCompanyIds.contains(c.id)).toList();
+
+                      return RefreshIndicator(
+                          onRefresh: _loadFollowedIds,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (followedCompanies.isNotEmpty) ...[
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: _buildSectionTitle('Công ty đang theo dõi (${followedCompanies.length})'),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: 180,
+                                    child: ListView.separated(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: followedCompanies.length,
+                                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                      itemBuilder: (context, index) => _buildCompanyCardHorizontal(followedCompanies[index], true),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
+
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: _buildSectionTitle('Gợi ý công ty (${otherCompanies.length})'),
+                                ),
+                                const SizedBox(height: 12),
+                                if (otherCompanies.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 16),
+                                    child: Text('Không tìm thấy công ty nào.'),
+                                  )
+                                else
+                                  SizedBox(
+                                    height: 180,
+                                    child: ListView.separated(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: otherCompanies.length,
+                                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                      itemBuilder: (context, index) => _buildCompanyCardHorizontal(otherCompanies[index], false),
+                                    ),
+                                  ),
+                                
+                                const SizedBox(height: 20),
+                              ],
+                            ),
+                          ),
+                        );
+                    },
+                  ),
+                ),
+              ],
             ),
+
           ],
         ),
       ),

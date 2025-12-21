@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/supabase_service.dart';
 import 'screens/splash/splash_screen.dart';
+import 'widgets/chat_floating_overlay.dart';
+
+// Global navigator key để access navigator từ bất kỳ đâu
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +16,14 @@ void main() async {
   await SupabaseService.initialize();
 
   await initializeDateFormatting('vi', null);
+  
+  // Debug: Check current auth session
+  final session = Supabase.instance.client.auth.currentSession;
+  final user = Supabase.instance.client.auth.currentUser;
+  print('🔐 Auth Debug:');
+  print('  Session: ${session != null ? "Active" : "None"}');
+  print('  User ID: ${user?.id}');
+  print('  User Email: ${user?.email}');
   
   runApp(const MyApp());
 }
@@ -21,12 +34,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey, // Set global navigator key
       title: 'NP FutureGate',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       home: const SplashScreen(),
+      builder: (context, child) {
+        // Wrap toàn bộ app với ChatFloatingOverlay
+        // để nút chat hiển thị trên mọi màn hình
+        return ChatFloatingOverlay(
+          navigatorKey: navigatorKey,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

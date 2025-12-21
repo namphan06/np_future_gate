@@ -3,7 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
+import '../../../core/services/chat_service.dart';
 import '../../../core/theme/app_main_colors.dart';
+import '../chat/chat_list_screen.dart';
+import '../chat/chat_detail_screen.dart';
 import 'cv_selection_screen.dart';
 
 class JobDetailScreen extends StatefulWidget {
@@ -18,6 +21,7 @@ class JobDetailScreen extends StatefulWidget {
 class _JobDetailScreenState extends State<JobDetailScreen> {
   final JobRepository _jobRepository = JobRepository();
   final CVSupabaseService _cvService = CVSupabaseService();
+  final ChatService _chatService = ChatService();
   
   bool _isSaved = false;
   bool _isApplying = false;
@@ -148,6 +152,53 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       if (mounted) setState(() => _isApplying = false);
     }
   }
+
+  void _openChatList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ChatListScreen()),
+    );
+  }
+
+  Future<void> _openChatWithEmployer() async {
+    if (widget.job.creatorId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể chat với nhà tuyển dụng')),
+      );
+      return;
+    }
+
+    final conversation = await _chatService.getOrCreateConversation(
+      otherUserId: widget.job.creatorId!,
+      otherUserType: 'employer',
+      jobId: widget.job.id,
+    );
+
+    if (conversation != null && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatDetailScreen(
+            conversation: conversation,
+            otherUserName: widget.job.creatorName ?? 'Nhà tuyển dụng',
+            otherUserAvatar: widget.job.creatorAvatarUrl ?? '',
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể tạo cuộc trò chuyện')),
+      );
+    }
+  }
+
+  void _handleChatbotPressed() {
+    // TODO: Implement chatbot functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Chatbot AI sẽ được triển khai sau')),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -338,10 +389,20 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                     icon: Icons.arrow_back,
                     onTap: () => Navigator.pop(context),
                   ),
-                  _buildCircleButton(
-                    icon: _isSaved ? Icons.bookmark : Icons.bookmark_border,
-                    color: _isSaved ? AppMainColors.primary : Colors.black87,
-                    onTap: _toggleSave,
+                  Row(
+                    children: [
+                      _buildCircleButton(
+                        icon: Icons.chat_bubble_outline,
+                        color: AppMainColors.primary,
+                        onTap: _openChatWithEmployer,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildCircleButton(
+                        icon: _isSaved ? Icons.bookmark : Icons.bookmark_border,
+                        color: _isSaved ? AppMainColors.primary : Colors.black87,
+                        onTap: _toggleSave,
+                      ),
+                    ],
                   ),
                 ],
               ),
