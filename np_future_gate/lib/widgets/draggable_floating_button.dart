@@ -113,9 +113,9 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
           setState(() {
             _position = Offset(
               (_position.dx + details.delta.dx)
-                  .clamp(0, screenWidth - (_buttonState == FloatingButtonState.minimized ? 20 : 60)),
+                  .clamp(0, screenWidth - (_buttonState == FloatingButtonState.minimized ? 16 : 48)),
               (_position.dy + details.delta.dy)
-                  .clamp(0, screenHeight - (_buttonState == FloatingButtonState.minimized ? 120 : 60)),
+                  .clamp(0, screenHeight - (_buttonState == FloatingButtonState.minimized ? 80 : 48)),
             );
           });
         },
@@ -134,24 +134,19 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     return GestureDetector(
       onTap: _toggleMinimize,
       child: Container(
-        width: 6,
-        height: 100,
+        width: 4,  // Giảm từ 6 → 4
+        height: 60,// Giảm từ 100 → 80
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: _currentMode == FloatingButtonMode.chat
-                ? [Colors.blue.shade400, Colors.blue.shade600]
-                : [Colors.purple.shade400, Colors.purple.shade600],
+            colors: [Colors.blue.shade300, Colors.blue.shade500], // Màu nhẹ hơn
           ),
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(2),
           boxShadow: [
             BoxShadow(
-              color: (_currentMode == FloatingButtonMode.chat
-                      ? Colors.blue
-                      : Colors.purple)
-                  .withOpacity(0.4),
-              blurRadius: 8,
+              color: Colors.blue.withOpacity(0.3),
+              blurRadius: 6,
               spreadRadius: 1,
             ),
           ],
@@ -172,91 +167,63 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    spreadRadius: 2,
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 16,
+                    spreadRadius: 1,
                   ),
                 ],
               ),
               child: Column(
                 children: [
                   _buildMenuItem(
-                    icon: Icons.chat,
+                    icon: Icons.chat_bubble_outline,
                     label: 'Chat',
                     isSelected: _currentMode == FloatingButtonMode.chat,
                     onTap: () => _switchMode(FloatingButtonMode.chat),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue.shade400,
-                        Colors.blue.shade600,
-                      ],
-                    ),
+                    color: Colors.blue,
                   ),
-                  Container(
-                    height: 1,
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    color: Colors.grey.shade200,
-                  ),
+                  Divider(height: 1, color: Colors.grey.shade200),
                   _buildMenuItem(
-                    icon: Icons.smart_toy,
+                    icon: Icons.smart_toy_outlined,
                     label: 'Chatbot AI',
                     isSelected: _currentMode == FloatingButtonMode.chatbot,
                     onTap: () => _switchMode(FloatingButtonMode.chatbot),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.purple.shade400,
-                        Colors.purple.shade600,
-                      ],
-                    ),
+                    color: Colors.purple,
                   ),
-                  Container(
-                    height: 1,
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    color: Colors.grey.shade200,
-                  ),
+                  Divider(height: 1, color: Colors.grey.shade200),
                   _buildMenuItem(
-                    icon: Icons.horizontal_rule,
+                    icon: Icons.remove,
                     label: 'Thu nhỏ',
                     isSelected: false,
                     onTap: _toggleMinimize,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.grey.shade400,
-                        Colors.grey.shade600,
-                      ],
-                    ),
+                    color: Colors.grey,
                   ),
                 ],
               ),
             ),
           ),
         
-        // Main button
+        // Main button - Nhỏ gọn hơn
         GestureDetector(
           onTap: _toggleExpand,
           child: Container(
-            width: 60,
-            height: 60,
+            width: 48,  // Giảm từ 60 → 48
+            height: 48, // Giảm từ 60 → 48
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: _currentMode == FloatingButtonMode.chat
-                    ? [Colors.blue.shade400, Colors.blue.shade600]
-                    : [Colors.purple.shade400, Colors.purple.shade600],
+                colors: [Colors.blue.shade400, Colors.blue.shade600],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: (_currentMode == FloatingButtonMode.chat
-                          ? Colors.blue
-                          : Colors.purple)
-                      .withOpacity(0.4),
-                  blurRadius: 15,
-                  spreadRadius: 3,
+                  color: Colors.blue.withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 2,
                 ),
               ],
             ),
@@ -265,14 +232,10 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
               child: Icon(
                 _buttonState == FloatingButtonState.expanded
                     ? Icons.close
-                    : _currentMode == FloatingButtonMode.chat
-                        ? Icons.chat_bubble
-                        : Icons.smart_toy,
-                key: ValueKey(_buttonState == FloatingButtonState.expanded 
-                    ? 'close' 
-                    : _currentMode.toString()),
+                    : Icons.forum, // Icon chung cho cả chat & chatbot
+                key: ValueKey(_buttonState == FloatingButtonState.expanded),
                 color: Colors.white,
-                size: 28,
+                size: 24, // Giảm từ 28 → 24
               ),
             ),
           ),
@@ -286,40 +249,42 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
-    required Gradient gradient,
+    required Color color,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(30),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      borderRadius: BorderRadius.circular(24),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                gradient: isSelected ? gradient : null,
-                color: isSelected ? null : Colors.grey.shade200,
+                color: isSelected ? color.withOpacity(0.1) : Colors.grey.shade100,
                 shape: BoxShape.circle,
+                border: isSelected 
+                    ? Border.all(color: color, width: 2)
+                    : null,
               ),
               child: Icon(
                 icon,
-                size: 20,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
+                size: 18,
+                color: isSelected ? color : Colors.grey.shade600,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.blue.shade700 : Colors.grey.shade700,
+                color: isSelected ? color : Colors.grey.shade700,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
           ],
         ),
       ),

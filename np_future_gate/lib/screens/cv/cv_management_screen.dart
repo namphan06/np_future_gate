@@ -355,31 +355,74 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
 
                 const SizedBox(height: 16),
 
-                // Custom Tab Bar
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
+                // Modern Tabs - Segmented Control Style
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: TabBar(
+                      labelColor: Colors.blue[700],
+                      unselectedLabelColor: Colors.grey.shade600,
+                      indicator: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: TabBar(
-                    labelColor: Colors.blue[700],
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: Colors.blue[700],
-                    indicatorWeight: 3,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    tabs: const [
-                      Tab(text: 'CV Chung'),
-                      Tab(text: 'Theo lĩnh vực'),
-                      Tab(text: 'Upload'),
-                    ],
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        letterSpacing: 0.2,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                      tabs: const [
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.description_outlined, size: 18),
+                              SizedBox(width: 6),
+                              Text('CV Chung'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.work_outline, size: 18),
+                              SizedBox(width: 4),
+                              Text('Lĩnh vực'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.upload_file_outlined, size: 18),
+                              SizedBox(width: 6),
+                              Text('Upload'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
