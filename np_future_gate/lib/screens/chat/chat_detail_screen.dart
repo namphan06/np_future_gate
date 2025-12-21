@@ -289,14 +289,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
               child: InkWell(
                 onTap: () async {
-                  // Navigate to job detail
-                  if (widget.conversation.jobId != null) {
+                  // Navigate to job detail - DÙNG _currentJobId thay vì widget.conversation.jobId
+                  if (_currentJobId != null) {
                     try {
                       // Load job without join (no foreign key relationship)
                       final jobData = await Supabase.instance.client
                           .from('jobs')
                           .select('*')
-                          .eq('id', widget.conversation.jobId!)
+                          .eq('id', _currentJobId!)  // ← Sử dụng _currentJobId
                           .single();
                       
                       // Load creator profile separately
