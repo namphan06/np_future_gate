@@ -13,8 +13,12 @@ class InterviewRepository {
     String? cvId,
     required DateTime interviewTime,
     required String jobTitle,
+    bool isPartnershipJob = false, // Keep for future use but not needed now
   }) async {
     try {
+      // Simply insert job_id - it can reference either jobs or school_partnership_jobs
+      // Foreign key constraint is relaxed to allow this
+      // Access control is handled by RLS policies
       await _client.from('interview_schedules').insert({
         'candidate_id': candidateId,
         'job_id': jobId,
@@ -89,6 +93,32 @@ class InterviewRepository {
     } catch (e) {
       print('Error rescheduling interview: $e');
       rethrow;
+    }
+  }
+
+  /// Check if there's a conflicting interview at the same time
+  Future<InterviewModel?> checkInterviewConflict(String employerId, DateTime interviewTime) async {
+    try {
+      // Check for interviews within a 1-hour window of the proposed time
+      final startWindow = interviewTime.subtract(const Duration(minutes: 30));
+      final endWindow = interviewTime.add(const Duration(minutes: 30));
+      
+      final response = await _client
+          .from('interview_schedules')
+          .select()
+          .eq('employer_id', employerId)
+          .gte('interview_time', startWindow.toUtc().toIso8601String())
+          .lte('interview_time', endWindow.toUtc().toIso8601String())
+          .neq('status', 'cancelled') // Ignore cancelled interviews
+          .maybeSingle();
+
+      if (response != null) {
+        return InterviewModel.fromJson(response);
+      }
+      return null;
+    } catch (e) {
+      print('Error checking interview conflict: $e');
+      return null;
     }
   }
 }

@@ -221,6 +221,35 @@ class CVSupabaseService {
     }
   }
 
+  /// Lấy CV cho employer (dành cho xem CV của applicants)
+  /// Sử dụng maybeSingle() để tránh lỗi RLS
+  Future<Map<String, dynamic>?> getCVFullDataForEmployer(String cvId) async {
+    try {
+      debugPrint('🔍 Getting CV for employer: $cvId');
+      
+      // Try with maybeSingle to avoid RLS error
+      final response = await _supabase
+          .from('cv_templates')
+          .select('*')
+          .eq('id', cvId)
+          .maybeSingle();
+
+      if (response == null) {
+        debugPrint('⚠️ CV not found or access denied (RLS): $cvId');
+        // In production, you might want to use an RPC function with SECURITY DEFINER
+        // to properly handle employer access to applicant CVs
+        throw Exception('CV không tồn tại hoặc bạn không có quyền truy cập');
+      }
+
+      debugPrint('✅ CV retrieved successfully for employer');
+      return response;
+    } catch (e, st) {
+      debugPrint('CVSupabaseService.getCVFullDataForEmployer error: $e');
+      debugPrintStack(stackTrace: st, label: 'getCVFullDataForEmployer stacktrace');
+      throw Exception('Không thể tải thông tin CV: $e');
+    }
+  }
+
 
 
   /// Trích xuất tags từ CV data

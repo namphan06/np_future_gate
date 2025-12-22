@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/models/auth_models.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/models/profile_model.dart';
@@ -13,11 +14,13 @@ import '../../../core/theme/app_main_colors.dart';
 class JobApplicantsScreen extends StatefulWidget {
   final String jobId;
   final List<JobApplication> applicants;
+  final bool isPartnershipJob;
 
   const JobApplicantsScreen({
     super.key,
     required this.jobId,
     required this.applicants,
+    this.isPartnershipJob = false,
   });
 
   @override
@@ -73,7 +76,11 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
 
   Future<void> _loadJobDetails() async {
     try {
-      final job = await _jobRepository.getJobById(widget.jobId);
+      // Use appropriate method based on job type
+      final job = widget.isPartnershipJob
+          ? await _jobRepository.getPartnershipJobById(widget.jobId)
+          : await _jobRepository.getJobById(widget.jobId);
+          
       if (job != null) {
         setState(() {
           _jobTitle = job.metadata.title;
@@ -206,6 +213,82 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
         final employerId = _authRepository.currentUser?.id;
 
         if (employerId != null && _jobTitle != null) {
+          // Check for interview conflicts
+          final conflictingInterview = await _interviewRepository.checkInterviewConflict(
+            employerId,
+            interviewTime,
+          );
+
+          if (conflictingInterview != null) {
+            // Show conflict warning
+            if (mounted) {
+              final shouldContinue = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                      SizedBox(width: 12),
+                      Text('Trùng lịch phỏng vấn'),
+                    ],
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Bạn đã có lịch phỏng vấn vào thời gian này:'),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              conflictingInterview.jobTitle,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Thời gian: ${DateFormat('dd/MM/yyyy HH:mm').format(conflictingInterview.interviewTime)}',
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text('Vui lòng chọn thời gian khác.'),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Đóng'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppMainColors.primary,
+                      ),
+                      child: const Text('Chọn lại giờ'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldContinue == true) {
+                // Recursively call _updateStatus to pick new time
+                return _updateStatus(userId, newStatus);
+              }
+            }
+            return; // Stop if user doesn't want to pick new time
+          }
+
+          // No conflict - proceed with creating interview
           await _interviewRepository.createInterview(
             candidateId: userId,
             jobId: widget.jobId,
@@ -213,6 +296,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
             cvId: applicant.cvId,
             interviewTime: interviewTime,
             jobTitle: _jobTitle!,
+            isPartnershipJob: widget.isPartnershipJob,
           );
         }
       } catch (e) {
@@ -226,7 +310,12 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
     }
 
     try {
-      await _jobRepository.updateApplicationStatus(widget.jobId, userId, newStatus);
+      // Use appropriate method based on job type
+      if (widget.isPartnershipJob) {
+        await _jobRepository.updatePartnershipApplicationStatus(widget.jobId, userId, newStatus);
+      } else {
+        await _jobRepository.updateApplicationStatus(widget.jobId, userId, newStatus);
+      }
       
       setState(() {
         final index = _currentApplicants.indexWhere((app) => app.userId == userId);
@@ -256,7 +345,12 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
 
   Future<void> _deleteApplication(String userId) async {
     try {
-      await _jobRepository.deleteApplication(widget.jobId, userId);
+      // Use appropriate method based on job type
+      if (widget.isPartnershipJob) {
+        await _jobRepository.deletePartnershipApplication(widget.jobId, userId);
+      } else {
+        await _jobRepository.deleteApplication(widget.jobId, userId);
+      }
       
       setState(() {
         _currentApplicants.removeWhere((app) => app.userId == userId);
@@ -290,7 +384,8 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      final cvData = await _cvService.getCVFullData(cvId);
+      // Use getCVFullDataForEmployer for employer access
+      final cvData = await _cvService.getCVFullDataForEmployer(cvId);
       
       // Hide loading indicator
       if (mounted) Navigator.pop(context);

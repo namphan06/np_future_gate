@@ -226,7 +226,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
     }
 
     try {
-      final cvData = await _cvService.getCVFullData(widget.interview.cvId!);
+      final cvData = await _cvService.getCVFullDataForEmployer(widget.interview.cvId!);
       if (cvData != null && mounted) {
         Navigator.push(
           context,

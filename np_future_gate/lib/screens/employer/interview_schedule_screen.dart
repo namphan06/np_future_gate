@@ -82,7 +82,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
   }
 
   List<InterviewModel> _getFilteredInterviews() {
-    return _allInterviews.where((interview) {
+    final filtered = _allInterviews.where((interview) {
       // Search
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
@@ -120,6 +120,11 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
 
       return true;
     }).toList();
+    
+    // Sort by interview time - earliest first
+    filtered.sort((a, b) => a.interviewTime.compareTo(b.interviewTime));
+    
+    return filtered;
   }
 
   Map<String, Map<String, List<InterviewModel>>> _groupInterviews(List<InterviewModel> interviews) {
@@ -149,7 +154,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
     final filteredInterviews = _getFilteredInterviews();
     final groupedInterviews = _groupInterviews(filteredInterviews);
     final sortedDates = groupedInterviews.keys.toList()
-      ..sort((a, b) => b.compareTo(a)); // Newest first
+      ..sort((a, b) => a.compareTo(b)); // Earliest first (ascending order)
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),

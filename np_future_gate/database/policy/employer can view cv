@@ -1,0 +1,30 @@
+-- Drop policy cũ
+DROP POLICY IF EXISTS "Employers can view applicant CVs" ON public.cv_templates;
+
+-- Tạo policy mới check cả jobs và school_partnership_jobs
+CREATE POLICY "Employers can view applicant CVs" 
+ON public.cv_templates 
+FOR SELECT 
+TO public
+USING (
+  -- Check if CV owner allows it (security setting)
+  (user_create = auth.uid())
+  OR
+  -- Check if employer owns a job that has this CV in applicants (regular jobs)
+  (EXISTS (
+    SELECT 1
+    FROM jobs j
+    CROSS JOIN LATERAL jsonb_array_elements(j.applicants) app
+    WHERE j.creator_id = auth.uid() 
+    AND (app.value->>'cv_id')::uuid = cv_templates.id
+  ))
+  OR
+  -- Check if employer owns a partnership job that has this CV in applicants
+  (EXISTS (
+    SELECT 1
+    FROM school_partnership_jobs spj
+    CROSS JOIN LATERAL jsonb_array_elements(spj.applicants) app
+    WHERE spj.company_id = auth.uid() 
+    AND (app.value->>'cv_id')::uuid = cv_templates.id
+  ))
+);

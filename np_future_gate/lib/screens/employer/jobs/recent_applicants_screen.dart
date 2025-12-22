@@ -86,7 +86,7 @@ class _RecentApplicantsScreenState extends State<RecentApplicantsScreen> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
-      final cvData = await _cvService.getCVFullData(cvId);
+      final cvData = await _cvService.getCVFullDataForEmployer(cvId);
       
       if (mounted) Navigator.pop(context);
 

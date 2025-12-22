@@ -699,6 +699,32 @@ class JobRepository {
 
   // --- Partnership Jobs ---
   
+  Future<List<JobModel>> getEmployerPartnershipJobs(String companyId) async {
+    try {
+      final response = await _supabase
+          .from('school_partnership_jobs')
+          .select()
+          .eq('company_id', companyId)
+          .eq('company_status', 'accepted')
+          .eq('admin_status', 'approved')
+          .order('created_at', ascending: false);
+
+      // Map school_partnership_jobs to JobModel format
+      // school_partnership_jobs uses company_id, but JobModel expects creator_id
+      // school_partnership_jobs uses admin_status, but JobModel expects status
+      return (response as List).map((e) {
+        final jobData = Map<String, dynamic>.from(e);
+        // Map company_id to creator_id for JobModel compatibility
+        jobData['creator_id'] = e['company_id'];
+        // Map admin_status to status for JobModel compatibility
+        jobData['status'] = e['admin_status'] ?? 'pending';
+        return JobModel.fromJson(jobData);
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch employer partnership jobs: $e');
+    }
+  }
+
   Future<void> applyForPartnershipJob(String jobId, String userId, String cvId) async {
     try {
       await _supabase.rpc('apply_to_partnership_job', params: {
@@ -727,6 +753,92 @@ class JobRepository {
       return applicants.any((app) => app['user_id'] == userId);
     } catch (e) {
       return false;
+    }
+  }
+
+  /// Update application status for partnership jobs
+  Future<void> updatePartnershipApplicationStatus(
+      String jobId, String userId, String newStatus) async {
+    try {
+      // 1. Fetch current partnership job to get applicants list
+      final response = await _supabase
+          .from('school_partnership_jobs')
+          .select('applicants')
+          .eq('id', jobId)
+          .single();
+      
+      final List<dynamic> currentApplicantsJson = response['applicants'] ?? [];
+      final List<JobApplication> applicants =
+          currentApplicantsJson.map((e) => JobApplication.fromJson(e)).toList();
+
+      // 2. Find and update the specific application
+      final index = applicants.indexWhere((app) => app.userId == userId);
+      if (index != -1) {
+        final updatedApp = JobApplication(
+          userId: applicants[index].userId,
+          cvId: applicants[index].cvId,
+          appliedAt: applicants[index].appliedAt,
+          status: newStatus,
+        );
+        applicants[index] = updatedApp;
+
+        // 3. Save back to DB
+        await _supabase.from('school_partnership_jobs').update({
+          'applicants': applicants.map((e) => e.toJson()).toList(),
+        }).eq('id', jobId);
+      } else {
+        throw Exception('Application not found');
+      }
+    } catch (e) {
+      throw Exception('Failed to update partnership application status: $e');
+    }
+  }
+
+  /// Delete application from partnership jobs
+  Future<void> deletePartnershipApplication(String jobId, String userId) async {
+    try {
+      // 1. Fetch current partnership job to get applicants list
+      final response = await _supabase
+          .from('school_partnership_jobs')
+          .select('applicants')
+          .eq('id', jobId)
+          .single();
+      
+      final List<dynamic> currentApplicantsJson = response['applicants'] ?? [];
+      final List<JobApplication> applicants =
+          currentApplicantsJson.map((e) => JobApplication.fromJson(e)).toList();
+
+      // 2. Remove the application
+      applicants.removeWhere((app) => app.userId == userId);
+
+      // 3. Save back to DB
+      await _supabase.from('school_partnership_jobs').update({
+        'applicants': applicants.map((e) => e.toJson()).toList(),
+      }).eq('id', jobId);
+    } catch (e) {
+      throw Exception('Failed to delete partnership application: $e');
+    }
+  }
+
+  /// Get partnership job by ID
+  Future<JobModel?> getPartnershipJobById(String jobId) async {
+    try {
+      final response = await _supabase
+          .from('school_partnership_jobs')
+          .select()
+          .eq('id', jobId)
+          .maybeSingle();
+
+      if (response == null) return null;
+      
+      // Map fields for JobModel compatibility
+      final jobData = Map<String, dynamic>.from(response);
+      jobData['creator_id'] = response['company_id'];
+      jobData['status'] = response['admin_status'] ?? 'pending';
+      
+      return JobModel.fromJson(jobData);
+    } catch (e) {
+      throw Exception('Failed to fetch partnership job: $e');
     }
   }
 }
