@@ -1,0 +1,6 @@
+-- Thêm cột email vào bảng school_partnership_jobs
+ALTER TABLE public.school_partnership_jobs 
+ADD COLUMN email text;
+-- Tạo index cho email để tăng tốc độ tìm kiếm (optional)
+CREATE INDEX school_partnership_jobs_email_idx 
+ON public.school_partnership_jobs (email);

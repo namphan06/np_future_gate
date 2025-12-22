@@ -1,0 +1,74 @@
+-- Function để ứng tuyển vào tin tuyển dụng liên kết nhà trường - công ty
+create or replace function public.apply_to_partnership_job(
+  p_job_id uuid,
+  p_user_id uuid,
+  p_cv_id uuid
+)
+returns void
+language plpgsql
+security definer
+as $$
+declare
+  v_applicants jsonb;
+  v_new_applicant jsonb;
+  v_company_status text;
+  v_admin_status text;
+begin
+  -- 1. Kiểm tra xem tin tuyển dụng có được cả công ty và admin duyệt chưa
+  select company_status, admin_status into v_company_status, v_admin_status
+  from public.school_partnership_jobs
+  where id = p_job_id;
+
+  if v_company_status is null or v_admin_status is null then
+    raise exception 'Job not found';
+  end if;
+
+  -- Chỉ cho phép ứng tuyển nếu tin đã được cả công ty và admin duyệt
+  if v_company_status <> 'accepted' then
+    raise exception 'This job has not been accepted by the company yet';
+  end if;
+
+  if v_admin_status <> 'approved' then
+    raise exception 'This job has not been approved by admin yet';
+  end if;
+
+  -- 2. Get current applicants
+  select applicants into v_applicants
+  from public.school_partnership_jobs
+  where id = p_job_id;
+
+  if v_applicants is null then
+    v_applicants := '[]'::jsonb;
+  end if;
+
+  -- 3. Check if already applied
+  if exists (
+    select 1
+    from jsonb_array_elements(v_applicants) as app
+    where (app->>'user_id')::uuid = p_user_id
+  ) then
+    raise exception 'You have already applied for this job';
+  end if;
+
+  -- 4. Construct new applicant object
+  v_new_applicant := jsonb_build_object(
+    'user_id', p_user_id,
+    'cv_id', p_cv_id,
+    'applied_at', now(),
+    'status', 'pending'
+  );
+
+  -- 5. Update the job applicants column directly
+  update public.school_partnership_jobs
+  set applicants = v_applicants || v_new_applicant
+  where id = p_job_id;
+  
+  -- 6. (Optional: Sync to user_job_activities if you still want to use it for "Saved Jobs" feature)
+  -- Note: Bạn có thể tạo bảng riêng cho partnership jobs hoặc thêm cột type vào user_job_activities
+  -- Tạm thời comment để quyết định sau
+  -- insert into public.user_job_activities (user_id, job_id, is_applied, cv_id, application_status, applied_at)
+  -- values (p_user_id, p_job_id, true, p_cv_id, 'pending', now())
+  -- on conflict (user_id, job_id) do update
+  -- set is_applied = true, cv_id = p_cv_id, application_status = 'pending', applied_at = now();
+end;
+$$;

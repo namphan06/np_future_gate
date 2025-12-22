@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/navigation/custom_bottom_nav_bar.dart';
-import '../test/test_home_page.dart';
-import '../test/test_search_page.dart';
-import '../test/test_tools_page.dart';
-import '../test/test_settings_page.dart';
+import 'home_page_school.dart';
+import 'search_page_school.dart';
+import 'tools_page_school.dart';
+import 'settings_page_school.dart';
 
 class SchoolHomeScreen extends StatefulWidget {
   const SchoolHomeScreen({super.key});
@@ -17,10 +17,10 @@ class _SchoolHomeScreenState extends State<SchoolHomeScreen> {
   int _currentIndex = 0;
   
   final List<Widget> _pages = const [
-    TestHomePage(),
-    TestSearchPage(),
-    TestToolsPage(),
-    TestSettingsPage(),
+    HomePageSchool(),
+    SearchPageSchool(),
+    ToolsPageSchool(),
+    SettingsPageSchool(),
   ];
 
   @override

@@ -5,6 +5,7 @@ import '../../core/theme/app_main_colors.dart';
 import 'applied_jobs_screen.dart';
 import 'saved_jobs_screen.dart';
 import 'companies_list_screen.dart';
+import 'school_jobs_screen.dart';
 
 class ToolsPageCandidate extends StatelessWidget {
   const ToolsPageCandidate({super.key});
@@ -134,11 +135,18 @@ class ToolsPageCandidate extends StatelessWidget {
                             ),
                             _buildToolCard(
                               context,
-                              icon: Icons.notifications_active,
-                              title: 'Việc từ công ty',
-                              subtitle: '3 việc mới',
-                              color: Colors.indigo,
-                              onTap: () => _showComingSoon(context, 'Việc từ công ty theo dõi'),
+                              icon: Icons.school,
+                              title: 'Việc từ trường',
+                              subtitle: 'Xem tin liên kết',
+                              color: Colors.purple,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SchoolJobsForCandidateScreen(),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),

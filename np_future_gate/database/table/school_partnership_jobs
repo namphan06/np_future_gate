@@ -1,0 +1,163 @@
+-- 1. Tạo bảng school_partnership_jobs
+-- Bảng này quản lý các tin tuyển dụng do nhà trường tạo cho công ty
+-- Quy trình: Nhà trường tạo -> Công ty duyệt -> Admin duyệt -> Xuất bản
+create table public.school_partnership_jobs (
+  id uuid not null default gen_random_uuid() primary key,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+
+  -- Nhà trường tạo tin (Liên kết với bảng auth.users)
+  school_id uuid not null references auth.users(id) on delete cascade,
+
+  -- Công ty được chỉ định (Liên kết với bảng auth.users)
+  company_id uuid not null references auth.users(id) on delete cascade,
+
+  -- Trạng thái duyệt của công ty
+  company_status text default 'pending' check (company_status in ('pending', 'accepted', 'rejected')),
+  company_reviewed_at timestamp with time zone, -- Thời điểm công ty duyệt
+  company_rejection_reason text, -- Lý do từ chối của công ty (nếu có)
+
+  -- Trạng thái duyệt của admin
+  admin_status text default 'pending' check (admin_status in ('pending', 'approved', 'rejected')),
+  admin_reviewed_at timestamp with time zone, -- Thời điểm admin duyệt
+  admin_rejection_reason text, -- Lý do từ chối của admin (nếu có)
+
+  -- Trạng thái tin tuyển dụng
+  is_active boolean default true,
+
+  -- Thời hạn nộp hồ sơ
+  deadline timestamp with time zone,
+
+  -- Cột Metadata chứa toàn bộ thông tin chi tiết về việc làm
+  -- Cấu trúc JSON giống hệt bảng jobs:
+  -- {
+  --   "title": "Tên công việc",
+  --   "working_regions": ["Hà Nội", "Remote"],
+  --   "experience_required": "1 năm",
+  --   "fields": ["IT Phần mềm", "Mobile App"],
+  --   "requirements_tags": ["Flutter", "Dart", "Supabase"],
+  --   "salary": {
+  --     "min": 1000,
+  --     "max": 2000,
+  --     "currency": "USD",
+  --     "is_negotiable": false,
+  --     "type": "monthly"
+  --   },
+  --   "employment_types": ["Full-time", "Remote"],
+  --   "work_locations": ["Tòa nhà A, Cầu Giấy", "Tòa nhà B, Q1"],
+  --   "job_description": ["Gạch đầu dòng 1", "Gạch đầu dòng 2"],
+  --   "candidate_requirements": ["Gạch đầu dòng 1", "Gạch đầu dòng 2"],
+  --   "benefits": ["Bảo hiểm", "Laptop"]
+  -- }
+  metadata jsonb default '{}'::jsonb,
+
+  -- Danh sách người ứng tuyển
+  -- Cấu trúc JSON giống bảng jobs:
+  -- [
+  --   { "user_id": "uuid...", "cv_id": "uuid...", "applied_at": "timestamp..." }
+  -- ]
+  applicants jsonb default '[]'::jsonb,
+
+  -- Đếm lượt xem
+  view_count integer default 0
+);
+
+-- 2. Tạo Index để tìm kiếm nhanh hơn
+create index school_partnership_jobs_metadata_gin on public.school_partnership_jobs using gin (metadata);
+create index school_partnership_jobs_school_id_idx on public.school_partnership_jobs (school_id);
+create index school_partnership_jobs_company_id_idx on public.school_partnership_jobs (company_id);
+create index school_partnership_jobs_company_status_idx on public.school_partnership_jobs (company_status);
+create index school_partnership_jobs_admin_status_idx on public.school_partnership_jobs (admin_status);
+
+-- 3. Bật Row Level Security (RLS)
+alter table public.school_partnership_jobs enable row level security;
+
+-- 4. Tạo Policies (Quyền truy cập)
+
+-- Ai cũng có thể xem các tin đã được cả công ty và admin duyệt
+create policy "Public approved partnership jobs are viewable by everyone"
+on public.school_partnership_jobs for select
+using ( 
+  is_active = true 
+  and company_status = 'accepted' 
+  and admin_status = 'approved' 
+);
+
+-- Nhà trường có thể xem tin của chính mình
+create policy "Schools can view own partnership jobs"
+on public.school_partnership_jobs for select
+using ( auth.uid() = school_id );
+
+-- Công ty có thể xem các tin được gửi cho mình
+create policy "Companies can view partnership jobs assigned to them"
+on public.school_partnership_jobs for select
+using ( auth.uid() = company_id );
+
+-- Chỉ nhà trường đã đăng nhập mới được tạo tin
+create policy "Schools can insert partnership jobs"
+on public.school_partnership_jobs for insert
+with check ( auth.uid() = school_id );
+
+-- Nhà trường có thể cập nhật tin của mình (trước khi công ty duyệt)
+create policy "Schools can update own partnership jobs before company review"
+on public.school_partnership_jobs for update
+using ( 
+  auth.uid() = school_id 
+  and company_status = 'pending' 
+);
+
+-- Công ty có thể cập nhật trạng thái duyệt của mình
+create policy "Companies can update their review status"
+on public.school_partnership_jobs for update
+using ( auth.uid() = company_id )
+with check ( 
+  auth.uid() = company_id 
+  -- Chỉ cho phép cập nhật các cột liên quan đến duyệt của công ty
+);
+
+-- Admin có thể xem tất cả tin
+-- Note: Cần thêm cột role vào bảng users hoặc tạo bảng admin riêng
+-- Tạm thời comment policy này, sẽ thêm sau khi có hệ thống phân quyền rõ ràng
+-- create policy "Admins can view all partnership jobs"
+-- on public.school_partnership_jobs for select
+-- using ( auth.uid() in (select id from admin_users) );
+
+-- Admin có thể cập nhật trạng thái duyệt
+-- create policy "Admins can update admin review status"
+-- on public.school_partnership_jobs for update
+-- using ( auth.uid() in (select id from admin_users) );
+
+-- Nhà trường có thể xóa tin của mình (chỉ khi chưa được công ty chấp nhận)
+create policy "Schools can delete own partnership jobs before company acceptance"
+on public.school_partnership_jobs for delete
+using ( 
+  auth.uid() = school_id 
+  and company_status = 'pending' 
+);
+
+-- 5. Trigger để tự động cập nhật updated_at
+create trigger on_school_partnership_jobs_updated
+  before update on public.school_partnership_jobs
+  for each row execute procedure public.handle_updated_at();
+
+-- 6. Trigger để tự động cập nhật thời gian duyệt
+create or replace function public.handle_partnership_job_review()
+returns trigger as $$
+begin
+  -- Cập nhật thời gian duyệt của công ty
+  if old.company_status <> new.company_status and new.company_status <> 'pending' then
+    new.company_reviewed_at = now();
+  end if;
+
+  -- Cập nhật thời gian duyệt của admin
+  if old.admin_status <> new.admin_status and new.admin_status <> 'pending' then
+    new.admin_reviewed_at = now();
+  end if;
+
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger on_partnership_job_review_status_changed
+  before update on public.school_partnership_jobs
+  for each row execute procedure public.handle_partnership_job_review();

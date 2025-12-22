@@ -3,6 +3,7 @@ import 'jobs/edit_job_screen.dart';
 import 'jobs/employer_jobs_screen.dart';
 import 'saved_candidates_screen.dart';
 import 'interview_schedule_screen.dart';
+import 'partnership_requests_employer_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -118,10 +119,18 @@ class ToolsPageEmployer extends StatelessWidget {
                           ),
                           _buildToolCard(
                             context,
-                            icon: Icons.archive_outlined,
-                            title: 'Tin đã lưu',
-                            subtitle: '5 tin',
+                            icon: Icons.handshake_outlined,
+                            title: 'Yêu cầu từ trường',
+                            subtitle: 'Tin liên kết',
                             color: Colors.purple,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PartnershipRequestsEmployerScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

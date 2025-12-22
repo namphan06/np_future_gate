@@ -696,4 +696,37 @@ class JobRepository {
           }
         });
   }
+
+  // --- Partnership Jobs ---
+  
+  Future<void> applyForPartnershipJob(String jobId, String userId, String cvId) async {
+    try {
+      await _supabase.rpc('apply_to_partnership_job', params: {
+        'p_job_id': jobId,
+        'p_user_id': userId,
+        'p_cv_id': cvId,
+      });
+    } catch (e) {
+      throw Exception('Failed to apply for partnership job: $e');
+    }
+  }
+
+  Future<bool> hasAppliedToPartnershipJob(String userId, String jobId) async {
+    try {
+      final response = await _supabase
+          .from('school_partnership_jobs')
+          .select('applicants')
+          .eq('id', jobId)
+          .maybeSingle();
+
+      if (response == null) return false;
+
+      final applicants = response['applicants'] as List?;
+      if (applicants == null) return false;
+
+      return applicants.any((app) => app['user_id'] == userId);
+    } catch (e) {
+      return false;
+    }
+  }
 }
