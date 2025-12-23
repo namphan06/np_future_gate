@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/supabase_service.dart';
+import 'core/services/fcm_service.dart';
+import 'core/repositories/auth_repository.dart';
 import 'screens/splash/splash_screen.dart';
 import 'widgets/chat_floating_overlay.dart';
 
@@ -12,10 +16,31 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  print('🚀 Initializing app...');
+  
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized');
+  } catch (e) {
+    print('❌ Firebase initialization error: $e');
+  }
+  
   // Initialize Supabase
   await SupabaseService.initialize();
 
+  // Initialize date formatting
   await initializeDateFormatting('vi', null);
+  
+  // Initialize FCM
+  try {
+    await FCMService().initialize();
+    print('✅ FCM Service initialized');
+  } catch (e) {
+    print('⚠️ FCM initialization error: $e');
+  }
   
   // Debug: Check current auth session
   final session = Supabase.instance.client.auth.currentSession;
@@ -25,7 +50,37 @@ void main() async {
   print('  User ID: ${user?.id}');
   print('  User Email: ${user?.email}');
   
+  // Nếu user đã đăng nhập, lưu device token
+  if (user != null) {
+    _saveDeviceTokenForCurrentUser();
+  }
+  
   runApp(const MyApp());
+}
+
+/// Lưu device token cho user hiện tại (nếu đã đăng nhập)
+Future<void> _saveDeviceTokenForCurrentUser() async {
+  try {
+    final authRepo = AuthRepository();
+    final profile = await authRepo.getCurrentUserProfile();
+    final fcmToken = FCMService().fcmToken;
+    
+    if (profile != null && fcmToken != null) {
+      print('💾 Saving device token for existing session...');
+      await authRepo.saveDeviceToken(
+        deviceToken: fcmToken,
+        userId: profile.id,
+        role: profile.role.value,
+      );
+      print('✅ Device token saved on app startup');
+    } else {
+      if (fcmToken == null) {
+        print('⚠️ FCM token not available yet');
+      }
+    }
+  } catch (e) {
+    print('⚠️ Error saving device token on startup: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {

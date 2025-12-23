@@ -4,11 +4,13 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../services/supabase_service.dart';
 import '../models/auth_models.dart';
 import '../models/profile_model.dart';
+import 'device_token_repository.dart';
 
 /// Auth Repository
 /// Xử lý tất cả logic liên quan đến authentication
 class AuthRepository {
   final SupabaseService _supabaseService = SupabaseService.instance;
+  final DeviceTokenRepository _deviceTokenRepository = DeviceTokenRepository();
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
   );
@@ -178,8 +180,20 @@ class AuthRepository {
   }
 
   /// Sign out
-  Future<AuthResult> signOut() async {
+  Future<AuthResult> signOut({String? deviceToken}) async {
     try {
+      // Remove device token if provided
+      if (deviceToken != null && _supabaseService.currentUserId != null) {
+        try {
+          await _deviceTokenRepository.removeDeviceToken(
+            deviceToken: deviceToken,
+            userId: _supabaseService.currentUserId!,
+          );
+        } catch (e) {
+          print('⚠️ Error removing device token: $e');
+        }
+      }
+      
       await _client.auth.signOut();
       await _googleSignIn.signOut();
       return AuthResult.success(message: 'Đăng xuất thành công!');
@@ -347,4 +361,28 @@ class AuthRepository {
       return [];
     }
   }
+
+  /// Save device token for push notifications
+  /// Call this method after successful login/signup
+  Future<void> saveDeviceToken({
+    required String deviceToken,
+    required String userId,
+    required String role,
+  }) async {
+    try {
+      await _deviceTokenRepository.saveDeviceToken(
+        deviceToken: deviceToken,
+        userId: userId,
+        role: role,
+      );
+      print('✅ Device token saved successfully');
+    } catch (e) {
+      print('⚠️ Error saving device token: $e');
+      // Don't throw, just log the error
+      // Push notification registration shouldn't block user flow
+    }
+  }
+
+  /// Get device token repository
+  DeviceTokenRepository get deviceTokenRepository => _deviceTokenRepository;
 }

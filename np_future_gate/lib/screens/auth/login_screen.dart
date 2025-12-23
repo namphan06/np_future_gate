@@ -7,6 +7,7 @@ import '../../widgets/buttons/gradient_button.dart';
 import '../../widgets/inputs/gradient_text_field.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/models/auth_models.dart';
+import '../../core/services/fcm_service.dart';
 import '../candidate/candidate_home_screen.dart';
 import '../employer/employer_home_screen.dart';
 import '../school/school_home_screen.dart';
@@ -61,6 +62,23 @@ class _LoginScreenState extends State<LoginScreen> {
           final profile = await _authRepository.getCurrentUserProfile();
           
           if (profile != null && mounted) {
+            // Lưu FCM token thật (không phải dummy)
+            try {
+              final fcmToken = FCMService().fcmToken;
+              if (fcmToken != null) {
+                await _authRepository.saveDeviceToken(
+                  deviceToken: fcmToken,
+                  userId: profile.id,
+                  role: profile.role.value,
+                );
+                print('✅ Real FCM token saved: ${fcmToken.substring(0, 20)}...');
+              } else {
+                print('⚠️ FCM token not available yet');
+              }
+            } catch (e) {
+              print('⚠️ Failed to save FCM token: $e');
+            }
+
             // Điều hướng theo role
             Widget homeScreen;
             switch (profile.role) {
@@ -111,6 +129,23 @@ class _LoginScreenState extends State<LoginScreen> {
         final profile = await _authRepository.getCurrentUserProfile();
         
         if (profile != null && mounted) {
+          // Lưu FCM token thật
+          try {
+            final fcmToken = FCMService().fcmToken;
+            if (fcmToken != null) {
+              await _authRepository.saveDeviceToken(
+                deviceToken: fcmToken,
+                userId: profile.id,
+                role: profile.role.value,
+              );
+              print('✅ Real FCM token saved (Google login): ${fcmToken.substring(0, 20)}...');
+            } else {
+              print('⚠️ FCM token not available yet');
+            }
+          } catch (e) {
+            print('⚠️ Failed to save FCM token: $e');
+          }
+
           // Điều hướng theo role
           Widget homeScreen;
           switch (profile.role) {

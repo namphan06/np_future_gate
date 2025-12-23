@@ -7,6 +7,7 @@ import 'dashboard_page_admin.dart';
 import 'users_management_page_admin.dart';
 import 'content_management_page_admin.dart';
 import 'reports_page_admin.dart';
+import 'test_page_admin.dart';
 import 'settings_page_admin.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     UsersManagementPageAdmin(),
     ContentManagementPageAdmin(),
     ReportsPageAdmin(),
+    TestPageAdmin(),
     SettingsPageAdmin(),
   ];
 
@@ -52,6 +54,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       'activeIcon': Icons.analytics,
       'title': 'Báo cáo',
       'subtitle': 'Reports & Analytics',
+    },
+    {
+      'icon': Icons.science_outlined,
+      'activeIcon': Icons.science,
+      'title': 'Test',
+      'subtitle': 'Testing & Debugging',
     },
     {
       'icon': Icons.settings_outlined,
