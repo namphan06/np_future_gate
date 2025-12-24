@@ -1,7 +1,51 @@
 import 'package:flutter/material.dart';
+import 'job_approval_page_admin.dart';
+import '../../core/repositories/job_repository.dart';
 
-class DashboardPageAdmin extends StatelessWidget {
+class DashboardPageAdmin extends StatefulWidget {
   const DashboardPageAdmin({super.key});
+
+  @override
+  State<DashboardPageAdmin> createState() => _DashboardPageAdminState();
+}
+
+class _DashboardPageAdminState extends State<DashboardPageAdmin> {
+  final JobRepository _jobRepository = JobRepository();
+  int _pendingJobsCount = 0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      // Load from BOTH tables
+      final results = await Future.wait([
+        _jobRepository.getPendingJobs(),
+        _jobRepository.getPendingPartnershipJobs(),
+      ]);
+      
+      final regularJobs = results[0];
+      final partnershipJobs = results[1];
+      
+      if (mounted) {
+        setState(() {
+          // Total count from both tables
+          _pendingJobsCount = regularJobs.length + partnershipJobs.length;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +91,11 @@ class DashboardPageAdmin extends StatelessWidget {
                 color: Colors.blue,
               ),
               _buildStatCard(
-                title: 'Việc làm',
-                value: '3,842',
-                change: '+8.2%',
-                isPositive: true,
-                icon: Icons.work,
+                title: 'Việc chờ duyệt',
+                value: _isLoading ? '...' : '$_pendingJobsCount',
+                change: _pendingJobsCount > 0 ? 'Cần xử lý' : 'Hoàn tất',
+                isPositive: _pendingJobsCount == 0,
+                icon: Icons.pending_actions,
                 color: Colors.orange,
               ),
               _buildStatCard(
@@ -101,7 +145,15 @@ class DashboardPageAdmin extends StatelessWidget {
                   title: 'Duyệt việc làm',
                   icon: Icons.approval,
                   color: Colors.orange,
-                  onTap: () {},
+                  badge: _pendingJobsCount > 0 ? _pendingJobsCount : null,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const JobApprovalPageAdmin(),
+                      ),
+                    ).then((_) => _loadStats()); // Refresh stats when coming back
+                  },
                 ),
               ),
             ],
@@ -263,6 +315,7 @@ class DashboardPageAdmin extends StatelessWidget {
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    int? badge,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -285,13 +338,43 @@ class DashboardPageAdmin extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: color, size: 24),
+                    ),
+                    if (badge != null && badge > 0)
+                      Positioned(
+                        right: -6,
+                        top: -6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Text(
+                            badge > 99 ? '99+' : '$badge',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 12),
                 Expanded(

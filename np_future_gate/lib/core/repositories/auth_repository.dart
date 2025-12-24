@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/supabase_service.dart';
+import '../services/test_account_guard.dart';
 import '../models/auth_models.dart';
 import '../models/profile_model.dart';
 import 'device_token_repository.dart';
@@ -112,6 +113,19 @@ class AuthRepository {
       }
 
       print('✅ Đăng nhập thành công: ${response.user!.id}');
+      
+      // Initialize Test Account Guard
+      try {
+        final profile = await getCurrentUserProfile();
+        TestAccountGuard.instance.initialize(
+          email,
+          profile?.metadata,
+        );
+      } catch (e) {
+        // If profile fetch fails, still initialize with email only
+        TestAccountGuard.instance.initialize(email, null);
+      }
+      
       return AuthResult.success(
         message: 'Đăng nhập thành công!',
         data: response.user,
@@ -193,6 +207,9 @@ class AuthRepository {
           print('⚠️ Error removing device token: $e');
         }
       }
+      
+      // Clear test account guard
+      TestAccountGuard.instance.clear();
       
       await _client.auth.signOut();
       await _googleSignIn.signOut();

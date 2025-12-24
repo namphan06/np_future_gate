@@ -841,4 +841,172 @@ class JobRepository {
       throw Exception('Failed to fetch partnership job: $e');
     }
   }
+
+  // --- Admin Features ---
+
+  /// Get all pending jobs for admin approval
+  Future<List<JobModel>> getPendingJobs() async {
+    try {
+      // 1. Fetch pending jobs
+      final jobsResponse = await _supabase
+          .from('jobs')
+          .select()
+          .eq('status', 'pending')
+          .order('created_at', ascending: false);
+
+      final jobsList = jobsResponse as List<dynamic>;
+      if (jobsList.isEmpty) return [];
+
+      // 2. Extract creator IDs
+      final creatorIds = jobsList
+          .map((job) => job['creator_id'] as String)
+          .toSet()
+          .toList();
+
+      // 3. Fetch profiles for these creators
+      final profilesResponse = await _supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, metadata, email, phone')
+          .filter('id', 'in', creatorIds);
+      
+      final profilesList = profilesResponse as List<dynamic>;
+      
+      // 4. Create a map of profiles for easy lookup
+      final profilesMap = {
+        for (var profile in profilesList) 
+          profile['id'] as String: profile
+      };
+
+      // 5. Merge data and create JobModels
+      return jobsList.map((jobData) {
+        final creatorId = jobData['creator_id'];
+        final profile = profilesMap[creatorId];
+        
+        // Create a mutable copy of jobData to inject profile
+        final Map<String, dynamic> jobWithProfile = Map.from(jobData);
+        
+        if (profile != null) {
+          jobWithProfile['profiles'] = profile;
+        }
+        
+        return JobModel.fromJson(jobWithProfile);
+      }).toList();
+
+    } catch (e) {
+      throw Exception('Failed to fetch pending jobs: $e');
+    }
+  }
+
+  /// Approve a job (Admin only)
+  Future<void> approveJob(String jobId) async {
+    try {
+      await _supabase
+          .from('jobs')
+          .update({'status': 'approved'})
+          .eq('id', jobId);
+    } catch (e) {
+      throw Exception('Failed to approve job: $e');
+    }
+  }
+
+  /// Reject a job (Admin only)
+  Future<void> rejectJob(String jobId) async {
+    try {
+      await _supabase
+          .from('jobs')
+          .update({'status': 'rejected'})
+          .eq('id', jobId);
+    } catch (e) {
+      throw Exception('Failed to reject job: $e');
+    }
+  }
+
+  /// Get all pending partnership jobs for admin approval
+  Future<List<Map<String, dynamic>>> getPendingPartnershipJobs() async {
+    try {
+      // Fetch pending partnership jobs
+      final response = await _supabase
+          .from('school_partnership_jobs')
+          .select()
+          .eq('admin_status', 'pending')
+          .order('created_at', ascending: false);
+
+      final jobsList = response as List<dynamic>;
+      if (jobsList.isEmpty) return [];
+
+      // Extract school and company IDs
+      final schoolIds = jobsList
+          .map((job) => job['school_id'] as String?)
+          .where((id) => id != null)
+          .toSet()
+          .toList();
+      
+      final companyIds = jobsList
+          .map((job) => job['company_id'] as String?)
+          .where((id) => id != null)
+          .toSet()
+          .toList();
+
+      // Fetch profiles for schools and companies
+      Map<String, dynamic> profilesMap = {};
+      
+      final allIds = {...schoolIds, ...companyIds}.toList();
+      if (allIds.isNotEmpty) {
+        final profilesResponse = await _supabase
+            .from('profiles')
+            .select('id, full_name, avatar_url, metadata, email, phone, role')
+            .filter('id', 'in', allIds);
+        
+        final profilesList = profilesResponse as List<dynamic>;
+        profilesMap = {
+          for (var profile in profilesList) 
+            profile['id'] as String: profile
+        };
+      }
+
+      // Merge data
+      return jobsList.map((jobData) {
+        final job = Map<String, dynamic>.from(jobData);
+        
+        final schoolId = job['school_id'];
+        final companyId = job['company_id'];
+        
+        if (schoolId != null) {
+          job['school_profile'] = profilesMap[schoolId];
+        }
+        if (companyId != null) {
+          job['company_profile'] = profilesMap[companyId];
+        }
+        
+        return job;
+      }).toList();
+
+    } catch (e) {
+      throw Exception('Failed to fetch pending partnership jobs: $e');
+    }
+  }
+
+  /// Approve a partnership job (Admin only)
+  Future<void> approvePartnershipJob(String jobId) async {
+    try {
+      await _supabase
+          .from('school_partnership_jobs')
+          .update({'admin_status': 'approved'})
+          .eq('id', jobId);
+    } catch (e) {
+      throw Exception('Failed to approve partnership job: $e');
+    }
+  }
+
+  /// Reject a partnership job (Admin only)
+  Future<void> rejectPartnershipJob(String jobId) async {
+    try {
+      await _supabase
+          .from('school_partnership_jobs')
+          .update({'admin_status': 'rejected'})
+          .eq('id', jobId);
+    } catch (e) {
+      throw Exception('Failed to reject partnership job: $e');
+    }
+  }
 }

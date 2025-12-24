@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../auth/login_screen.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/demo_mode_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import 'dashboard_page_admin.dart';
 import 'users_management_page_admin.dart';
@@ -9,6 +10,7 @@ import 'content_management_page_admin.dart';
 import 'reports_page_admin.dart';
 import 'test_page_admin.dart';
 import 'settings_page_admin.dart';
+import '../candidate/candidate_home_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -308,32 +310,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       icon: Icons.person_outline,
                       title: 'Candidate View',
                       color: Colors.blue,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/candidate');
-                      },
+                      onTap: () => _enterDemoMode(context, 'candidate'),
                     ),
                     _buildPreviewTile(
                       icon: Icons.business_outlined,
                       title: 'Employer View',
                       color: Colors.orange,
-                      onTap: () {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Employer view - Coming soon')),
-                        );
-                      },
+                      onTap: () => _enterDemoMode(context, 'employer'),
                     ),
                     _buildPreviewTile(
                       icon: Icons.school_outlined,
                       title: 'School View',
                       color: Colors.green,
-                      onTap: () {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('School view - Coming soon')),
-                        );
-                      },
+                      onTap: () => _enterDemoMode(context, 'school'),
                     ),
                   ],
                 ),
@@ -395,6 +384,198 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         onTap: onTap,
       ),
     );
+  }
+
+  void _enterDemoMode(BuildContext context, String role) async {
+    final roleNames = {
+      'candidate': 'Ứng viên',
+      'employer': 'Nhà tuyển dụng',
+      'school': 'Nhà trường',
+    };
+
+    final roleColors = {
+      'candidate': Colors.blue,
+      'employer': Colors.orange,
+      'school': Colors.green,
+    };
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: roleColors[role]!.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                role == 'candidate'
+                    ? Icons.person
+                    : role == 'employer'
+                        ? Icons.business
+                        : Icons.school,
+                color: roleColors[role],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text('Chế độ ${roleNames[role]}'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bạn sẽ đăng nhập vào tài khoản demo ${roleNames[role]}.',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Lưu ý',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade900,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '• Xem giao diện như user thật\n• Không thể tạo, sửa, xóa dữ liệu\n• Để quay lại Admin: Đăng xuất → Đăng nhập lại',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue.shade800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: roleColors[role],
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Tiếp tục'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    // Close drawer
+    Navigator.pop(context);
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    try {
+      // Store admin email
+      final currentEmail = supabaseService.currentUser?.email;
+      if (currentEmail != null) {
+        DemoModeService.instance.storeAdminCredentials(currentEmail);
+      }
+
+      // Sign out from admin
+      await AuthRepository().signOut();
+
+      // Get test account credentials
+      final testEmail = DemoModeService.instance.getTestEmail(role);
+      final testPassword = DemoModeService.testPassword;
+
+      // Sign in to test account
+      await AuthRepository().signInWithEmail(
+        email: testEmail,
+        password: testPassword,
+      );
+
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading
+        
+        // Navigate to appropriate screen based on role
+        if (role == 'candidate') {
+          // Navigate to actual Candidate Home Screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const CandidateHomeScreen()),
+            (route) => false,
+          );
+        } else if (role == 'employer') {
+          // Navigate to employer home when ready
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đã đăng nhập vào tài khoản demo Employer'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          // TODO: Navigate to employer home
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        } else if (role == 'school') {
+          // Navigate to school home when ready
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Đã đăng nhập vào tài khoản demo School'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // TODO: Navigate to school home
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showLogoutDialog(BuildContext context) {

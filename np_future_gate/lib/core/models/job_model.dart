@@ -12,6 +12,7 @@ class JobModel {
   final String status; // 'pending', 'approved', 'rejected', 'closed'
   final String? creatorName;
   final String? creatorAvatarUrl;
+  final Map<String, dynamic>? creatorProfile; // Full profile data for admin
 
 
   JobModel({
@@ -27,6 +28,7 @@ class JobModel {
     this.status = 'pending',
     this.creatorName,
     this.creatorAvatarUrl,
+    this.creatorProfile,
    
   });
 
@@ -39,7 +41,7 @@ class JobModel {
         profile = profileData.first as Map<String, dynamic>;
       }
     } else if (profileData is Map) {
-      profile = profileData as Map<String, dynamic>;
+      profile = Map<String, dynamic>.from(profileData as Map);
     }
 
     return JobModel(
@@ -58,6 +60,7 @@ class JobModel {
       status: json['status'] ?? 'pending',
       creatorName: profile?['full_name'],
       creatorAvatarUrl: profile?['avatar_url'],
+      creatorProfile: profile, // Store full profile
       
     );
   }
