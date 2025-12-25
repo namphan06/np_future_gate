@@ -8,6 +8,7 @@ import 'data/filter_data.dart';
 import '../../widgets/cards/job_card.dart';
 import '../../widgets/speech_text_field.dart';
 
+
 class SearchPageCandidate extends StatefulWidget {
   const SearchPageCandidate({super.key});
 
@@ -55,6 +56,8 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
   }
 
   Future<void> _toggleSaveJob(String jobId) async {
+
+
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) return;
 
