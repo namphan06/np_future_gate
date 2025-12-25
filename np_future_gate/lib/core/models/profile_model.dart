@@ -10,6 +10,7 @@ class Profile {
   final String? phone;
   final UserRole role;
   final Map<String, dynamic> metadata;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -21,6 +22,7 @@ class Profile {
     this.phone,
     required this.role,
     required this.metadata,
+    this.isActive = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -35,6 +37,7 @@ class Profile {
       phone: json['phone'] as String?,
       role: UserRole.fromString(json['role'] as String? ?? 'candidate'),
       metadata: (json['metadata'] as Map<String, dynamic>?) ?? {},
+      isActive: json['is_active'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -50,6 +53,7 @@ class Profile {
       'phone': phone,
       'role': role.value,
       'metadata': metadata,
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -64,6 +68,7 @@ class Profile {
     String? phone,
     UserRole? role,
     Map<String, dynamic>? metadata,
+    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -75,6 +80,7 @@ class Profile {
       phone: phone ?? this.phone,
       role: role ?? this.role,
       metadata: metadata ?? this.metadata,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

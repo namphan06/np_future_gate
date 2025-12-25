@@ -8,9 +8,53 @@ class JobRepository {
 
   Future<void> createJob(JobModel job) async {
     try {
+      // Check post limit for employer/school
+      await _checkPostLimit(job.creatorId);
+      
       await _supabase.from('jobs').insert(job.toJson());
     } catch (e) {
       throw Exception('Failed to create job: $e');
+    }
+  }
+  
+  /// Check if user has reached their post limit
+  Future<void> _checkPostLimit(String userId) async {
+    try {
+      // Get user profile to check limit
+      final profileResponse = await _supabase
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .single();
+      
+      final metadata = profileResponse['metadata'] as Map<String, dynamic>?;
+      final limitPost = metadata?['limit_post'] as int?;
+      
+      // If no limit set, allow unlimited posts
+      if (limitPost == null) return;
+      
+      // Count current active jobs by this user
+      final jobsResponse = await _supabase
+          .from('jobs')
+          .select('id')
+          .eq('creator_id', userId);
+      
+      final currentCount = (jobsResponse as List).length;
+      
+      // Check if limit reached
+      if (currentCount >= limitPost) {
+        throw Exception(
+          'Bạn đã đạt giới hạn đăng tin ($limitPost tin). '
+          'Vui lòng xóa bớt tin cũ hoặc liên hệ quản trị viên để tăng giới hạn.'
+        );
+      }
+    } catch (e) {
+      // If error contains our custom message, rethrow it
+      if (e.toString().contains('Bạn đã đạt giới hạn')) {
+        rethrow;
+      }
+      // Otherwise, log and allow (fail-safe)
+      print('⚠️ Could not check post limit: $e');
     }
   }
 

@@ -58,6 +58,7 @@ class AuthRepository {
           'phone': phone,
           'role': role.value,
           'metadata': {},
+          'is_active': false, // Mặc định tài khoản chưa kích hoạt
         });
         print('✅ Profile đã tạo thành công');
       } catch (profileError) {
@@ -113,6 +114,25 @@ class AuthRepository {
 
       print('✅ Đăng nhập thành công: ${response.user!.id}');
       
+      // Check if account is active
+      try {
+        final profile = await getCurrentUserProfile();
+        if (profile != null && !profile.isActive) {
+          print('⚠️ Tài khoản bị ngừng hoạt động: ${response.user!.id}');
+          
+          // Sign out immediately
+          await _client.auth.signOut();
+          
+          return AuthResult.failure(
+            'Tài khoản của bạn đã bị ngừng hoạt động. '
+            'Vui lòng liên hệ quản trị viên để được hỗ trợ.'
+          );
+        }
+      } catch (e) {
+        print('⚠️ Không thể kiểm tra trạng thái tài khoản: $e');
+        // Allow login to continue if can't check status
+      }
+      
       return AuthResult.success(
         message: 'Đăng nhập thành công!',
         data: response.user,
@@ -167,6 +187,27 @@ class AuthRepository {
       }
 
       print('✅ Đăng nhập Google thành công: ${response.user!.id}');
+      
+      // Check if account is active
+      try {
+        final profile = await getCurrentUserProfile();
+        if (profile != null && !profile.isActive) {
+          print('⚠️ Tài khoản bị ngừng hoạt động: ${response.user!.id}');
+          
+          // Sign out immediately
+          await _client.auth.signOut();
+          await _googleSignIn.signOut();
+          
+          return AuthResult.failure(
+            'Tài khoản của bạn đã bị ngừng hoạt động. '
+            'Vui lòng liên hệ quản trị viên để được hỗ trợ.'
+          );
+        }
+      } catch (e) {
+        print('⚠️ Không thể kiểm tra trạng thái tài khoản: $e');
+        // Allow login to continue if can't check status
+      }
+      
       return AuthResult.success(
         message: 'Đăng nhập Google thành công!',
         data: response.user,

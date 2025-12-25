@@ -317,7 +317,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
   }
 
   Future<void> _savePartnershipJob(String schoolId, JobMetadata metadata) async {
-    // Get school email from profile metadata
+    // Check partnership limit
     final profileData = await Supabase.instance.client
         .from('profiles')
         .select('metadata')
@@ -326,6 +326,24 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
 
     final profileMetadata = profileData['metadata'] as Map<String, dynamic>? ?? {};
     final schoolEmail = profileMetadata['school_email'] as String?;
+    final limitPartnership = profileMetadata['limit_partnership'] as int?;
+    
+    // Check if partnership limit is reached
+    if (limitPartnership != null) {
+      final partnershipJobs = await Supabase.instance.client
+          .from('school_partnership_jobs')
+          .select('id')
+          .eq('school_id', schoolId);
+      
+      final currentCount = (partnershipJobs as List).length;
+      
+      if (currentCount >= limitPartnership) {
+        throw Exception(
+          'Bạn đã đạt giới hạn tin liên kết ($limitPartnership tin). '
+          'Vui lòng xóa bớt tin cũ hoặc liên hệ quản trị viên để tăng giới hạn.'
+        );
+      }
+    }
 
     await Supabase.instance.client.from('school_partnership_jobs').insert({
       'school_id': schoolId,

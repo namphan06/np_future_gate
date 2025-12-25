@@ -1,0 +1,32 @@
+-- Xóa policy cũ
+DROP POLICY IF EXISTS "profiles_update_own" ON "public"."profiles";
+
+-- Tạo policy mới cho phép:
+-- 1. User update profile của chính họ
+-- 2. Admin update bất kỳ profile nào
+CREATE POLICY "profiles_update_own_or_admin" 
+ON "public"."profiles"
+FOR UPDATE 
+TO authenticated
+USING (
+  (auth.uid() = id) OR 
+  (
+    EXISTS (
+      SELECT 1 
+      FROM profiles 
+      WHERE id = auth.uid() 
+      AND role = 'admin'
+    )
+  )
+)
+WITH CHECK (
+  (auth.uid() = id) OR 
+  (
+    EXISTS (
+      SELECT 1 
+      FROM profiles 
+      WHERE id = auth.uid() 
+      AND role = 'admin'
+    )
+  )
+);
