@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
 import 'jobs/school_jobs_screen.dart';
 import 'jobs/create_school_job_screen.dart';
 import 'partnership/partnership_requests_screen.dart';
@@ -10,208 +9,432 @@ class ToolsPageSchool extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Công cụ',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  children: [
-                    _buildToolCard(
-                      context,
-                      title: 'Quản lý tin',
-                      subtitle: 'Tất cả tin tuyển dụng',
-                      icon: Icons.work_outline,
-                      gradient: LinearGradient(
-                        colors: [AppMainColors.primary, AppMainColors.primary.withOpacity(0.7)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+    return Stack(
+      children: [
+        SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              // Header
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Công cụ',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SchoolJobsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildToolCard(
-                      context,
-                      title: 'Tạo tin thường',
-                      subtitle: 'Đăng tin trực tiếp',
-                      icon: Icons.add_circle_outline,
-                      gradient: const LinearGradient(
-                        colors: [Colors.green, Color(0xFF4CAF50)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      SizedBox(height: 4),
+                      Text(
+                        'Quản lý tuyển dụng của trường',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CreateSchoolJobScreen(isPartnership: false),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildToolCard(
-                      context,
-                      title: 'Tin liên kết',
-                      subtitle: 'Kết nối doanh nghiệp',
-                      icon: Icons.handshake_outlined,
-                      gradient: const LinearGradient(
-                        colors: [Colors.purple, Color(0xFF9C27B0)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CreateSchoolJobScreen(isPartnership: true),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildToolCard(
-                      context,
-                      title: 'Yêu cầu liên kết',
-                      subtitle: 'Theo dõi trạng thái',
-                      icon: Icons.pending_actions_outlined,
-                      gradient: const LinearGradient(
-                        colors: [Colors.orange, Color(0xFFFF9800)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PartnershipRequestsScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildToolCard(
-                      context,
-                      title: 'Danh sách DN',
-                      subtitle: 'Tìm đối tác',
-                      icon: Icons.business_outlined,
-                      gradient: const LinearGradient(
-                        colors: [Colors.blue, Color(0xFF2196F3)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CompaniesListScreen(),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildToolCard(
-                      context,
-                      title: 'Thống kê',
-                      subtitle: 'Báo cáo & phân tích',
-                      icon: Icons.analytics_outlined,
-                      gradient: const LinearGradient(
-                        colors: [Colors.teal, Color(0xFF009688)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Chức năng đang phát triển')),
-                        );
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+
+              // Recruitment Management Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.work, color: Colors.blue, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Quản lý tuyển dụng',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.1,
+                        children: [
+                          _buildToolCard(
+                            context,
+                            icon: Icons.add_circle_outline,
+                            title: 'Đăng tin thường',
+                            subtitle: 'Đăng tin trực tiếp',
+                            color: Colors.green,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CreateSchoolJobScreen(isPartnership: false),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildToolCard(
+                            context,
+                            icon: Icons.list_alt,
+                            title: 'Tin đã đăng',
+                            subtitle: 'Quản lý tin',
+                            color: Colors.blue,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SchoolJobsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Partnership Management Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.handshake, color: Colors.purple, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Quản lý liên kết',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.1,
+                        children: [
+                          _buildToolCard(
+                            context,
+                            icon: Icons.add_business,
+                            title: 'Tạo tin liên kết',
+                            subtitle: 'Kết nối DN',
+                            color: Colors.purple,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CreateSchoolJobScreen(isPartnership: true),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildToolCard(
+                            context,
+                            icon: Icons.pending_actions_outlined,
+                            title: 'Yêu cầu liên kết',
+                            subtitle: 'Theo dõi trạng thái',
+                            color: Colors.orange,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PartnershipRequestsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildToolCard(
+                            context,
+                            icon: Icons.business_outlined,
+                            title: 'Danh sách DN',
+                            subtitle: 'Tìm đối tác',
+                            color: Colors.indigo,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CompaniesListScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Utilities Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.teal.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.dashboard, color: Colors.teal, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Tiện ích',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildToolListItem(
+                        context,
+                        icon: Icons.analytics_outlined,
+                        title: 'Thống kê',
+                        subtitle: 'Báo cáo tuyển dụng',
+                        color: Colors.indigo,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildToolListItem(
+                        context,
+                        icon: Icons.people_outline,
+                        title: 'Quản lý ứng viên',
+                        subtitle: 'Danh sách ứng viên',
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildToolListItem(
+                        context,
+                        icon: Icons.notifications_active,
+                        title: 'Thông báo tự động',
+                        subtitle: 'Cài đặt thông báo',
+                        color: Colors.red,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ),
             ],
+          ),
+        ),
+
+        // Gradient overlay
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: Container(
+              height: 150,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(0),
+                    Colors.white.withOpacity(0.6),
+                    Colors.white.withOpacity(0.85),
+                    Colors.white,
+                  ],
+                  stops: const [0.0, 0.2, 0.4, 1.0],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _buildToolCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap ??
+              () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('$title - Đang phát triển')),
+                );
+              },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildToolCard(
+  static Widget _buildToolListItem(
     BuildContext context, {
+    required IconData icon,
     required String title,
     required String subtitle,
-    required IconData icon,
-    required Gradient gradient,
-    required VoidCallback onTap,
+    required Color color,
+    VoidCallback? onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap ?? () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$title - Đang phát triển')),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
-                child: Icon(icon, color: Colors.white, size: 32),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+                Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16),
+              ],
+            ),
           ),
         ),
       ),

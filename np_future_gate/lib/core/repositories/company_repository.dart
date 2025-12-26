@@ -21,14 +21,14 @@ class CompanyRepository {
     }
   }
 
-  /// Lấy danh sách ID các công ty mà candidate đang theo dõi
-  Future<List<String>> getFollowedCompanyIds(String candidateId) async {
+  /// Lấy danh sách ID các công ty mà user đang theo dõi (flexible cho cả candidate và school)
+  Future<List<String>> getFollowedCompanyIds(String userId, {String userRole = 'candidate'}) async {
     try {
       final response = await _client
           .from('company_followers')
           .select('employer_id')
-          .eq('candidate_id', candidateId)
-          .eq('followed_by', 'candidate');
+          .eq('candidate_id', userId)
+          .eq('followed_by', userRole);
 
       return (response as List)
           .map((e) => e['employer_id'] as String)
@@ -39,13 +39,13 @@ class CompanyRepository {
     }
   }
 
-  /// Theo dõi công ty
-  Future<void> followCompany(String candidateId, String employerId) async {
+  /// Theo dõi công ty (flexible cho cả candidate và school)
+  Future<void> followCompany(String userId, String employerId, {String userRole = 'candidate'}) async {
     try {
       await _client.from('company_followers').insert({
-        'candidate_id': candidateId,
+        'candidate_id': userId,
         'employer_id': employerId,
-        'followed_by': 'candidate',
+        'followed_by': userRole,
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
@@ -54,15 +54,15 @@ class CompanyRepository {
     }
   }
 
-  /// Bỏ theo dõi công ty
-  Future<void> unfollowCompany(String candidateId, String employerId) async {
+  /// Bỏ theo dõi công ty (flexible cho cả candidate và school)
+  Future<void> unfollowCompany(String userId, String employerId, {String userRole = 'candidate'}) async {
     try {
       await _client
           .from('company_followers')
           .delete()
-          .eq('candidate_id', candidateId)
+          .eq('candidate_id', userId)
           .eq('employer_id', employerId)
-          .eq('followed_by', 'candidate');
+          .eq('followed_by', userRole);
     } catch (e) {
       print('Error unfollowing company: $e');
       rethrow;

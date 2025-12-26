@@ -6,6 +6,7 @@ import '../../core/services/supabase_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../widgets/animated_avatar.dart';
 import 'edit_company_profile_screen.dart';
+import 'email_notification_settings_screen.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -309,10 +310,15 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                         const SizedBox(height: 12),
                         _buildSettingCard(
                           icon: Icons.email_outlined,
-                          title: 'Thông báo Email',
-                          subtitle: 'Nhận thông báo qua email',
+                          title: 'Cài đặt thông báo Email',
+                          subtitle: 'Quản lý thông báo qua email',
                           color: Colors.teal,
-                          onTap: () => _showComingSoon(context, 'Thông báo Email'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const EmailNotificationSettingsScreen(),
+                            ),
+                          ),
                         ),
                       ],
                     ),

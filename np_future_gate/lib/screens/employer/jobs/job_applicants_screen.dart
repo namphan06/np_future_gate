@@ -8,6 +8,8 @@ import '../../../core/repositories/job_repository.dart';
 import '../../../core/repositories/candidate_repository.dart';
 import '../../../core/repositories/interview_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
+import '../../../core/services/emailjs_service.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../cv/cv_setting/cv_display_manager.dart';
 import '../../../core/theme/app_main_colors.dart';
 
@@ -33,6 +35,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   final CandidateRepository _candidateRepository = CandidateRepository();
   final InterviewRepository _interviewRepository = InterviewRepository();
   final CVSupabaseService _cvService = CVSupabaseService();
+  final EmailJsService _emailService = EmailJsService();
   
   Map<String, Profile> _profiles = {};
   bool _isLoading = true;
@@ -334,6 +337,11 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           SnackBar(content: Text('Đã cập nhật trạng thái thành ${_getStatusText(newStatus)}')),
         );
       }
+      
+      // Send rejection email if status is 'rejected'
+      if (newStatus.toLowerCase() == 'rejected') {
+        await _sendRejectionEmail(userId);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -413,6 +421,100 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           SnackBar(content: Text('Lỗi tải CV: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _sendRejectionEmail(String userId) async {
+    try {
+      final profile = _profiles[userId];
+      if (profile == null || profile.email == null) {
+        print('Cannot send rejection email: profile or email not found for user $userId');
+        return;
+      }
+
+      final candidateName = profile.fullName ?? 'Ứng viên';
+      final candidateEmail = profile.email!;
+      final jobTitle = _jobTitle ?? 'Vị trí ứng tuyển';
+      
+      // Get employer profile to get the full name
+      final employerProfile = await _authRepository.getCurrentUserProfile();
+      final employerId = employerProfile?.id;
+      final employerName = employerProfile?.fullName ?? 'Nhà tuyển dụng';
+      final companyName = employerProfile?.metadata['company_name'] ?? employerName;
+
+      if (employerId == null) {
+        print('Cannot send rejection email: employer not found');
+        return;
+      }
+
+      // Load template from database
+      final templateResponse = await SupabaseService.instance.client
+          .from('email_templates')
+          .select()
+          .eq('employer_id', employerId)
+          .eq('response_type', 'rejected')
+          .maybeSingle();
+
+      String subject;
+      String messageBody;
+
+      if (templateResponse != null) {
+        // Use template from database
+        subject = templateResponse['subject'] as String? ?? 'Thông báo kết quả ứng tuyển';
+        messageBody = templateResponse['body'] as String? ?? '';
+
+        // Replace variables in subject
+        subject = subject
+            .replaceAll('{{candidate_name}}', candidateName)
+            .replaceAll('{{job_title}}', jobTitle)
+            .replaceAll('{{company_name}}', companyName);
+
+        // Replace variables in body
+        messageBody = messageBody
+            .replaceAll('{{candidate_name}}', candidateName)
+            .replaceAll('{{candidate_email}}', candidateEmail)
+            .replaceAll('{{candidate_phone}}', profile.phone ?? '')
+            .replaceAll('{{job_title}}', jobTitle)
+            .replaceAll('{{company_name}}', companyName)
+            .replaceAll('{{employer_email}}', employerProfile?.email ?? '')
+            .replaceAll('{{employer_phone}}', employerProfile?.phone ?? '');
+
+        print('📧 Using custom template for rejection email');
+      } else {
+        // Fallback to default template
+        subject = 'Thông báo kết quả ứng tuyển - $jobTitle';
+        messageBody = '''
+Kính gửi $candidateName,
+
+Cảm ơn bạn đã quan tâm và ứng tuyển vào vị trí "$jobTitle" tại công ty chúng tôi.
+
+Sau khi xem xét hồ sơ của bạn, chúng tôi rất tiếc phải thông báo rằng hồ sơ của bạn chưa phù hợp với yêu cầu của vị trí này tại thời điểm hiện tại.
+
+Chúng tôi đánh giá cao sự quan tâm của bạn và hy vọng sẽ có cơ hội hợp tác trong tương lai.
+
+Chúc bạn thành công trong sự nghiệp!
+
+Trân trọng,
+$employerName
+''';
+        print('📧 Using default rejection email template');
+      }
+
+      final success = await _emailService.sendEmployerResponse(
+        toEmail: candidateEmail,
+        toName: candidateName,
+        subject: subject,
+        messageBody: messageBody,
+      );
+
+      if (success) {
+        print('✅ Rejection email sent successfully to $candidateEmail');
+      } else {
+        print('⚠️ Failed to send rejection email to $candidateEmail');
+      }
+    } catch (e) {
+      print('❌ Error sending rejection email: $e');
+      // Don't show error to user as this is a background operation
     }
   }
 

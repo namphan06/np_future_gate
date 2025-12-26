@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/repositories/auth_repository.dart';
+import '../../core/repositories/company_repository.dart';
+import '../candidate/company_detail_screen.dart';
 
 class SearchPageSchool extends StatefulWidget {
   const SearchPageSchool({super.key});
@@ -14,9 +16,11 @@ class SearchPageSchool extends StatefulWidget {
 class _SearchPageSchoolState extends State<SearchPageSchool> {
   final TextEditingController _searchController = TextEditingController();
   final AuthRepository _authRepository = AuthRepository();
+  final CompanyRepository _companyRepository = CompanyRepository();
   
   List<Profile> _allEmployers = [];
   List<Profile> _filteredEmployers = [];
+  Set<String> _followedCompanyIds = {};
   bool _isLoading = true;
   String _searchQuery = '';
 
@@ -24,6 +28,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   void initState() {
     super.initState();
     _loadEmployers();
+    _loadFollowedCompanies();
   }
 
   @override
@@ -57,6 +62,54 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi tải dữ liệu: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadFollowedCompanies() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return;
+      
+      final followedIds = await _companyRepository.getFollowedCompanyIds(userId, userRole: 'school');
+      if (mounted) {
+        setState(() {
+          _followedCompanyIds = followedIds.toSet();
+        });
+      }
+    } catch (e) {
+      print('Error loading followed companies: $e');
+    }
+  }
+
+  Future<void> _toggleFollowCompany(String companyId) async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng đăng nhập')),
+        );
+        return;
+      }
+      
+      final isFollowing = _followedCompanyIds.contains(companyId);
+      
+      if (isFollowing) {
+        await _companyRepository.unfollowCompany(userId, companyId, userRole: 'school');
+        setState(() {
+          _followedCompanyIds.remove(companyId);
+        });
+      } else {
+        await _companyRepository.followCompany(userId, companyId, userRole: 'school');
+        setState(() {
+          _followedCompanyIds.add(companyId);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e')),
         );
       }
     }
@@ -278,11 +331,17 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
                 ),
               ),
               
-              // Arrow
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
+              // Bookmark button
+              IconButton(
+                onPressed: () => _toggleFollowCompany(employer.id),
+                icon: Icon(
+                  _followedCompanyIds.contains(employer.id) 
+                      ? Icons.bookmark 
+                      : Icons.bookmark_border,
+                  color: _followedCompanyIds.contains(employer.id)
+                      ? AppMainColors.primary
+                      : Colors.grey.shade400,
+                ),
               ),
             ],
           ),
@@ -316,110 +375,18 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
     );
   }
 
-  void _showEmployerDetails(Profile employer) {
-    final metadata = employer.metadata ?? {};
-    final companyName = metadata['company_name']?.toString() ?? 'Công ty';
-    final industry = metadata['industry']?.toString();
-    final companySize = metadata['company_size']?.toString();
-    final address = metadata['address']?.toString();
-    final description = metadata['description']?.toString();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: employer.avatarUrl != null
-                  ? NetworkImage(employer.avatarUrl!)
-                  : null,
-              backgroundColor: AppMainColors.primary.withOpacity(0.1),
-              child: employer.avatarUrl == null
-                  ? const Icon(Icons.business, color: AppMainColors.primary)
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                companyName,
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
+  void _showEmployerDetails(Profile employer) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CompanyDetailScreen(
+          company: employer,
+          userRole: 'school',
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (employer.fullName != null) ...[
-                _buildDetailRow('Người đại diện', employer.fullName!),
-                const SizedBox(height: 12),
-              ],
-              if (employer.email != null) ...[
-                _buildDetailRow('Email', employer.email!),
-                const SizedBox(height: 12),
-              ],
-              if (industry != null) ...[
-                _buildDetailRow('Ngành nghề', industry),
-                const SizedBox(height: 12),
-              ],
-              if (companySize != null) ...[
-                _buildDetailRow('Quy mô', companySize),
-                const SizedBox(height: 12),
-              ],
-              if (address != null) ...[
-                _buildDetailRow('Địa chỉ', address),
-                const SizedBox(height: 12),
-              ],
-              if (description != null) ...[
-                const Text(
-                  'Mô tả',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
-          ),
-        ],
       ),
     );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black87,
-          ),
-        ),
-      ],
-    );
+    
+    // Reload followed companies when coming back
+    _loadFollowedCompanies();
   }
 }

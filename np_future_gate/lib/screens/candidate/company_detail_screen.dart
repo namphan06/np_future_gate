@@ -8,39 +8,36 @@ import '../../core/repositories/job_repository.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/animated_avatar.dart';
+import '../school/jobs/create_school_job_screen.dart';
+import 'job_detail_screen.dart';
 
 
 class CompanyDetailScreen extends StatefulWidget {
   final Profile company;
+  final String? userRole; // 'school', 'candidate', null
 
-  const CompanyDetailScreen({super.key, required this.company});
+  const CompanyDetailScreen({
+    super.key, 
+    required this.company,
+    this.userRole,
+  });
 
   @override
   State<CompanyDetailScreen> createState() => _CompanyDetailScreenState();
 }
 
-class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTickerProviderStateMixin {
+class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   final _companyRepository = CompanyRepository();
   final _jobRepository = JobRepository();
   final _supabaseService = SupabaseService.instance;
 
-  late TabController _tabController;
+  int _selectedTabIndex = 0;
   bool _isFollowing = false;
-  // bool _isLoadingJobs = true; // Removed
-  // List<JobModel> _activeJobs = []; // Removed
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _checkFollowStatus();
-    // _loadCompanyJobs(); // Removed
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _checkFollowStatus() async {
@@ -48,7 +45,8 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
     if (userId == null) return;
 
     try {
-      final followedIds = await _companyRepository.getFollowedCompanyIds(userId);
+      final role = widget.userRole ?? 'candidate';
+      final followedIds = await _companyRepository.getFollowedCompanyIds(userId, userRole: role);
       if (mounted) {
         setState(() {
           _isFollowing = followedIds.contains(widget.company.id);
@@ -70,10 +68,11 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
     }
 
     try {
+      final role = widget.userRole ?? 'candidate';
       if (_isFollowing) {
-        await _companyRepository.unfollowCompany(userId, widget.company.id);
+        await _companyRepository.unfollowCompany(userId, widget.company.id, userRole: role);
       } else {
-        await _companyRepository.followCompany(userId, widget.company.id);
+        await _companyRepository.followCompany(userId, widget.company.id, userRole: role);
       }
       setState(() {
         _isFollowing = !_isFollowing;
@@ -115,6 +114,30 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
     }
   }
 
+  void _createPartnershipJob() async {
+    final companyName = widget.company.metadata['company_name'] ?? 
+                       widget.company.fullName ?? 
+                       'Công ty';
+    
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateSchoolJobScreen(
+          isPartnership: true,
+          preselectedCompanyId: widget.company.id,
+          preselectedCompanyName: companyName,
+        ),
+      ),
+    );
+
+    // Optionally refresh or show success message
+    if (result == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã tạo yêu cầu liên kết')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final companyName = widget.company.metadata['company_name'] ?? widget.company.fullName ?? 'Công ty';
@@ -125,15 +148,58 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
     final linkedin = widget.company.metadata['linkedin'] as String?;
 
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 280,
-              pinned: true,
-              backgroundColor: Colors.white,
-              elevation: 0,
-              leading: Container(
+      backgroundColor: Colors.grey.shade50,
+      body: CustomScrollView(
+        slivers: [
+          // App Bar with Company Header
+          SliverAppBar(
+            expandedHeight: 280,
+            pinned: true,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+            actions: [
+              // Create Partnership Job button for school
+              if (widget.userRole == 'school') ...[
+                Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.purple,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    onPressed: _createPartnershipJob,
+                    icon: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    tooltip: 'Tạo tin liên kết',
+                  ),
+                ),
+              ],
+              Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
@@ -146,284 +212,435 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
                   ],
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: _toggleFollow,
+                  icon: Icon(
+                    _isFollowing ? Icons.bookmark : Icons.bookmark_border,
+                    color: _isFollowing ? AppMainColors.primary : Colors.black87,
+                  ),
                 ),
               ),
-              actions: [
-                Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    onPressed: _toggleFollow,
-                    icon: Icon(
-                      _isFollowing ? Icons.bookmark : Icons.bookmark_border,
-                      color: _isFollowing ? AppMainColors.primary : Colors.black87,
-                    ),
-                  ),
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  children: [
-                    // Cover Image (Gradient placeholder)
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppMainColors.primary.withOpacity(0.8),
-                            AppMainColors.primaryDark,
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Content
-                    Positioned(
-                      top: 120,
-                      left: 0,
-                      right: 0,
-                      child: Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(4),
-                            child: AnimatedAvatar(
-                              avatarUrl: widget.company.avatarUrl,
-                              width: 100,
-                              height: 100,
-                              borderRadius: 16,
-                              placeholderIcon: Icons.business,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              companyName,
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                children: [
+                  // Cover Image (Gradient placeholder)
+                  Container(
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF42A5F5),
+                          Color(0xFF1E88E5),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            SliverPersistentHeader(
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: AppMainColors.primary,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: AppMainColors.primary,
-                  tabs: const [
-                    Tab(text: 'Giới thiệu'),
-                    Tab(text: 'Tuyển dụng'),
-                  ],
-                ),
-              ),
-              pinned: true,
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            // Tab 1: Giới thiệu
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (fields.isNotEmpty) ...[
-                    _buildSectionTitle('Lĩnh vực hoạt động'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: fields.map((f) => Chip(
-                        label: Text(f),
-                        backgroundColor: AppMainColors.primary.withOpacity(0.1),
-                        labelStyle: const TextStyle(color: AppMainColors.primary),
-                      )).toList(),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-
-                  _buildSectionTitle('Thông tin liên hệ'),
-                  const SizedBox(height: 16),
-                  
-                  // Map Preview
-                  if (address != null && address.isNotEmpty)
-                    GestureDetector(
-                      onTap: _openMap,
-                      child: Container(
-                        height: 150,
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  // Content
+                  Positioned(
+                    top: 120,
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: AnimatedAvatar(
+                            avatarUrl: widget.company.avatarUrl,
+                            width: 100,
+                            height: 100,
+                            borderRadius: 16,
+                            placeholderIcon: Icons.business,
+                          ),
                         ),
-                        child: Stack(
-                          children: [
-                            // Placeholder pattern if no image
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Icon(Icons.map_outlined, size: 48, color: Colors.grey.shade400),
-                              ),
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            companyName,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
                             ),
-                            Center(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.location_on, color: Colors.red, size: 20),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Xem trên bản đồ',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Custom Tab Selector
+          SliverToBoxAdapter(
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildTabButton('Giới thiệu', 0, Icons.info_outline),
+                    ),
+                    Expanded(
+                      child: _buildTabButton('Tuyển dụng', 1, Icons.work_outline),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Tab Content
+          SliverToBoxAdapter(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeInOut,
+              switchOutCurve: Curves.easeInOut,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.1, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: _selectedTabIndex == 0
+                  ? _buildAboutTab(fields, address, website, facebook, linkedin)
+                  : _buildJobsTab(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String label, int index, IconData icon) {
+    final isSelected = _selectedTabIndex == index;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTabIndex = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppMainColors.primary : Colors.grey.shade600,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? AppMainColors.primary : Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAboutTab(
+    List<String> fields,
+    String? address,
+    String? website,
+    String? facebook,
+    String? linkedin,
+  ) {
+    return Container(
+      key: const ValueKey('about'),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (fields.isNotEmpty) ...[
+            _buildSectionTitle('Lĩnh vực hoạt động'),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: fields.map((f) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF42A5F5),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF42A5F5).withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  f,
+                  style: const TextStyle(
+                    color: Color(0xFF1E88E5),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )).toList(),
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          _buildSectionTitle('Thông tin liên hệ'),
+          const SizedBox(height: 16),
+          
+          // Map Preview
+          if (address != null && address.isNotEmpty)
+            GestureDetector(
+              onTap: _openMap,
+              child: Container(
+                height: 150,
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Stack(
+                  children: [
+                    // Placeholder pattern if no image
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Icon(Icons.map_outlined, size: 48, color: Colors.grey.shade400),
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.red, size: 20),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Xem trên bản đồ',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
                       ),
                     ),
-
-                  _buildContactItem(
-                    icon: Icons.location_on,
-                    text: address ?? 'Chưa cập nhật địa chỉ',
-                    onTap: _openMap,
-                    isLink: true,
-                  ),
-                  if (widget.company.phone != null)
-                    _buildContactItem(
-                      icon: Icons.phone,
-                      text: widget.company.phone!,
-                      onTap: _makePhoneCall,
-                      isLink: true,
-                    ),
-                  
-                  // Social Links
-                  if (website != null || facebook != null || linkedin != null) ...[
-                    const SizedBox(height: 12),
-                    const Text('Liên kết:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        if (website != null && website.isNotEmpty)
-                          _buildSocialButton(Icons.language, 'Website', () => _openUrl(website)),
-                        if (facebook != null && facebook.isNotEmpty)
-                          _buildSocialButton(Icons.facebook, 'Facebook', () => _openUrl(facebook)),
-                        if (linkedin != null && linkedin.isNotEmpty)
-                          _buildSocialButton(Icons.work, 'LinkedIn', () => _openUrl(linkedin)),
-                      ],
-                    ),
                   ],
-                  
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Giới thiệu công ty'),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.company.metadata['description'] ?? 'Chưa có mô tả.',
-                    style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black87),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Quy mô'),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.company.metadata['company_size'] ?? 'Chưa cập nhật',
-                    style: const TextStyle(fontSize: 15, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+                ),
               ),
             ),
 
-            // Tab 2: Tuyển dụng
-            StreamBuilder<List<JobModel>>(
-              stream: _jobRepository.getEmployerJobsStream(widget.company.id),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                final activeJobs = snapshot.data ?? [];
-                
-                if (activeJobs.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.work_off_outlined, size: 64, color: Colors.grey),
-                        SizedBox(height: 16),
-                        Text('Chưa có tin tuyển dụng nào đang mở'),
-                      ],
-                    ),
-                  );
-                }
-                
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: activeJobs.length,
-                  itemBuilder: (context, index) {
-                    return JobCard(job: activeJobs[index]);
-                  },
-                );
-              }
+          _buildContactItem(
+            icon: Icons.location_on,
+            text: address ?? 'Chưa cập nhật địa chỉ',
+            onTap: _openMap,
+            isLink: true,
+          ),
+          if (widget.company.phone != null)
+            _buildContactItem(
+              icon: Icons.phone,
+              text: widget.company.phone!,
+              onTap: _makePhoneCall,
+              isLink: true,
+            ),
+          
+          // Social Links
+          if (website != null || facebook != null || linkedin != null) ...[
+            const SizedBox(height: 12),
+            const Text('Liên kết:', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (website != null && website.isNotEmpty)
+                  _buildSocialButton(Icons.language, 'Website', () => _openUrl(website)),
+                if (facebook != null && facebook.isNotEmpty)
+                  _buildSocialButton(Icons.facebook, 'Facebook', () => _openUrl(facebook)),
+                if (linkedin != null && linkedin.isNotEmpty)
+                  _buildSocialButton(Icons.work, 'LinkedIn', () => _openUrl(linkedin)),
+              ],
             ),
           ],
-        ),
+          
+          const SizedBox(height: 24),
+          _buildSectionTitle('Giới thiệu công ty'),
+          const SizedBox(height: 8),
+          Text(
+            widget.company.metadata['description'] ?? 'Chưa có mô tả.',
+            style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.black87),
+          ),
+          
+          const SizedBox(height: 24),
+          _buildSectionTitle('Quy mô'),
+          const SizedBox(height: 8),
+          Text(
+            widget.company.metadata['company_size'] ?? 'Chưa cập nhật',
+            style: const TextStyle(fontSize: 15, color: Colors.black87),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJobsTab() {
+    return Container(
+      key: const ValueKey('jobs'),
+      child: StreamBuilder<List<JobModel>>(
+        stream: _jobRepository.getEmployerJobsStream(widget.company.id),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          
+          final activeJobs = snapshot.data ?? [];
+          
+          if (activeJobs.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.work_off_outlined,
+                      size: 64,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Chưa có tin tuyển dụng nào',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount: activeJobs.length,
+            itemBuilder: (context, index) {
+              final job = activeJobs[index];
+              
+              // For school users, override JobCard tap to create partnership
+              if (widget.userRole == 'school') {
+                return GestureDetector(
+                  onTap: () {
+                    final companyName = widget.company.metadata['company_name'] ?? 
+                                       widget.company.fullName ?? 
+                                       'Công ty';
+                    
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateSchoolJobScreen(
+                          isPartnership: true,
+                          preselectedCompanyId: widget.company.id,
+                          preselectedCompanyName: companyName,
+                          job: job, // Pre-fill with job data
+                        ),
+                      ),
+                    );
+                  },
+                  child: AbsorbPointer(
+                    child: JobCard(job: job),
+                  ),
+                );
+              }
+              
+              // For candidates, navigate to job detail screen
+              return JobCard(
+                job: job,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => JobDetailScreen(job: job),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        }
       ),
     );
   }
@@ -513,29 +730,5 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> with SingleTi
         ),
       ),
     );
-  }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar _tabBar;
-
-  _SliverAppBarDelegate(this._tabBar);
-
-  @override
-  double get minExtent => _tabBar.preferredSize.height;
-  @override
-  double get maxExtent => _tabBar.preferredSize.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: _tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
   }
 }

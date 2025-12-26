@@ -15,11 +15,15 @@ import '../school_email_setup_screen.dart';
 class CreateSchoolJobScreen extends StatefulWidget {
   final bool isPartnership;
   final JobModel? job; // For editing
+  final String? preselectedCompanyId;
+  final String? preselectedCompanyName;
 
   const CreateSchoolJobScreen({
     super.key,
     required this.isPartnership,
     this.job,
+    this.preselectedCompanyId,
+    this.preselectedCompanyName,
   });
 
   @override
@@ -57,6 +61,13 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Set preselected company if provided
+    if (widget.preselectedCompanyId != null && widget.preselectedCompanyName != null) {
+      _selectedCompanyId = widget.preselectedCompanyId;
+      _selectedCompanyName = widget.preselectedCompanyName;
+    }
+    
     if (widget.job != null) {
       _initData();
     }
