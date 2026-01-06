@@ -17,12 +17,14 @@ class JobApplicantsScreen extends StatefulWidget {
   final String jobId;
   final List<JobApplication> applicants;
   final bool isPartnershipJob;
+  final bool isReadOnly; // New flag for read-only mode
 
   const JobApplicantsScreen({
     super.key,
     required this.jobId,
     required this.applicants,
     this.isPartnershipJob = false,
+    this.isReadOnly = false, // Default to false
   });
 
   @override
@@ -1136,7 +1138,7 @@ $employerName
                               ],
                             ),
                           ),
-                          if (['pending', 'viewed'].contains(applicant.status.toLowerCase()))
+                          if (['pending', 'viewed'].contains(applicant.status.toLowerCase()) && !widget.isReadOnly)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                               child: Row(
@@ -1188,6 +1190,30 @@ $employerName
                                     backgroundColor: Colors.grey.shade100,
                                     foregroundColor: Colors.grey.shade700,
                                     elevation: 0,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (widget.isReadOnly)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Tính năng xem đánh giá đang được phát triển')),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.star_outline, size: 18),
+                                  label: const Text('Xem đánh giá'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange,
+                                    foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
