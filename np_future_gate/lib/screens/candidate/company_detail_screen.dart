@@ -5,6 +5,7 @@ import '../../core/models/profile_model.dart';
 import '../../core/models/job_model.dart';
 import '../../core/repositories/company_repository.dart';
 import '../../core/repositories/job_repository.dart';
+import '../../core/repositories/partnership_repository.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../widgets/animated_avatar.dart';
@@ -29,6 +30,7 @@ class CompanyDetailScreen extends StatefulWidget {
 class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
   final _companyRepository = CompanyRepository();
   final _jobRepository = JobRepository();
+  final _partnershipRepository = PartnershipRepository();
   final _supabaseService = SupabaseService.instance;
 
   int _selectedTabIndex = 0;
@@ -114,27 +116,72 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
     }
   }
 
-  void _createPartnershipJob() async {
-    final companyName = widget.company.metadata['company_name'] ?? 
-                       widget.company.fullName ?? 
-                       'Công ty';
-    
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateSchoolJobScreen(
-          isPartnership: true,
-          preselectedCompanyId: widget.company.id,
-          preselectedCompanyName: companyName,
-        ),
-      ),
-    );
+  Future<void> _sendPartnershipRequest() async {
+    final userId = _supabaseService.currentUserId;
+    if (userId == null) return;
 
-    // Optionally refresh or show success message
-    if (result == true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã tạo yêu cầu liên kết')),
+    try {
+      // 1. Check if partnership already exists
+      final existing = await _partnershipRepository.checkExistingPartnership(
+        schoolId: userId,
+        companyId: widget.company.id,
       );
+
+      if (existing != null) {
+        if (!mounted) return;
+        String status = existing['status'];
+        String msg = status == 'approved' 
+            ? 'Đã là đối tác của nhau' 
+            : status == 'pending' 
+                ? 'Đã gửi yêu cầu, vui lòng chờ phản hồi' 
+                : 'Yêu cầu trước đó đã bị từ chối';
+        
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        return;
+      }
+
+      // Confirmation Dialog
+      if (!mounted) return;
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Gửi yêu cầu liên kết'),
+          content: Text('Bạn có muốn gửi yêu cầu liên kết tới ${widget.company.fullName ?? 'doanh nghiệp này'} không?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Gửi yêu cầu'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+
+      // 2. Insert new request
+      await _partnershipRepository.sendPartnershipRequest(
+        schoolId: userId,
+        companyId: widget.company.id,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã gửi yêu cầu liên kết thành công!'), 
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e')),
+        );
+      }
     }
   }
 
@@ -190,7 +237,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                     ],
                   ),
                   child: IconButton(
-                    onPressed: _createPartnershipJob,
+                    onPressed: _sendPartnershipRequest,
                     icon: const Icon(
                       Icons.add,
                       color: Colors.white,
@@ -525,6 +572,27 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                 if (linkedin != null && linkedin.isNotEmpty)
                   _buildSocialButton(Icons.work, 'LinkedIn', () => _openUrl(linkedin)),
               ],
+            ),
+          ],
+          
+          if (widget.userRole == 'school') ...[
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: _sendPartnershipRequest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
+                ),
+                icon: const Icon(Icons.handshake, color: Colors.white),
+                label: const Text(
+                  'Yêu cầu liên kết', 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
             ),
           ],
           

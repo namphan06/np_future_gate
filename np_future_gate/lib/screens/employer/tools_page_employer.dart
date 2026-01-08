@@ -4,6 +4,7 @@ import 'jobs/employer_jobs_screen.dart';
 import 'saved_candidates_screen.dart';
 import 'interview_schedule_screen.dart';
 import 'partnership_requests_employer_screen.dart';
+import 'partnership/school_partnerships_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -259,6 +260,22 @@ class ToolsPageEmployer extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => const InterviewScheduleScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      _buildToolListItem(
+                        context,
+                        icon: Icons.school_outlined,
+                        title: 'Liên kết trường học',
+                        subtitle: 'Quản lý đối tác & giới hạn',
+                        color: Colors.deepPurple,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SchoolPartnershipsScreen(),
                             ),
                           );
                         },

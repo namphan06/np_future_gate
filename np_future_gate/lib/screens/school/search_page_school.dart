@@ -4,7 +4,9 @@ import '../../core/theme/app_main_colors.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/repositories/company_repository.dart';
+import '../../core/repositories/partnership_repository.dart';
 import '../candidate/company_detail_screen.dart';
+import 'jobs/create_school_job_screen.dart';
 
 class SearchPageSchool extends StatefulWidget {
   const SearchPageSchool({super.key});
@@ -17,6 +19,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   final TextEditingController _searchController = TextEditingController();
   final AuthRepository _authRepository = AuthRepository();
   final CompanyRepository _companyRepository = CompanyRepository();
+  final PartnershipRepository _partnershipRepository = PartnershipRepository();
   
   List<Profile> _allEmployers = [];
   List<Profile> _filteredEmployers = [];
@@ -332,22 +335,81 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
               ),
               
               // Bookmark button
-              IconButton(
-                onPressed: () => _toggleFollowCompany(employer.id),
-                icon: Icon(
-                  _followedCompanyIds.contains(employer.id) 
-                      ? Icons.bookmark 
-                      : Icons.bookmark_border,
-                  color: _followedCompanyIds.contains(employer.id)
-                      ? AppMainColors.primary
-                      : Colors.grey.shade400,
-                ),
+              Column(
+                children: [
+                   IconButton(
+                    onPressed: () => _toggleFollowCompany(employer.id),
+                    icon: Icon(
+                      _followedCompanyIds.contains(employer.id) 
+                          ? Icons.bookmark 
+                          : Icons.bookmark_border,
+                      color: _followedCompanyIds.contains(employer.id)
+                          ? AppMainColors.primary
+                          : Colors.grey.shade400,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _createPartnershipRequest(employer),
+                    tooltip: 'Yêu cầu liên kết',
+                    icon: const Icon(
+                      Icons.handshake_outlined, 
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _createPartnershipRequest(Profile employer) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      // 1. Check if partnership already exists
+      final existing = await _partnershipRepository.checkExistingPartnership(
+        schoolId: userId,
+        companyId: employer.id,
+      );
+
+      if (existing != null) {
+        if (!mounted) return;
+        String status = existing['status'];
+        String msg = status == 'approved' 
+            ? 'Đã là đối tác của nhau' 
+            : status == 'pending' 
+                ? 'Đã gửi yêu cầu, vui lòng chờ phản hồi' 
+                : 'Yêu cầu trước đó đã bị từ chối';
+        
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        return;
+      }
+
+      // 2. Insert new request
+      await _partnershipRepository.sendPartnershipRequest(
+        schoolId: userId,
+        companyId: employer.id,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã gửi yêu cầu liên kết thành công!'), 
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildInfoChip(IconData icon, String label) {

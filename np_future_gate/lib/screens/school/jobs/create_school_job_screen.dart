@@ -10,6 +10,7 @@ import '../../../core/theme/app_main_colors.dart';
 import '../../../widgets/speech_text_field.dart';
 import '../partnership/select_company_screen.dart';
 import '../partnership/select_company_job_screen.dart';
+import '../partnership/companies_list_screen.dart';
 import '../school_email_setup_screen.dart';
 
 class CreateSchoolJobScreen extends StatefulWidget {
@@ -328,7 +329,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
   }
 
   Future<void> _savePartnershipJob(String schoolId, JobMetadata metadata) async {
-    // Check partnership limit
+    // 1. Get School Profile for email
     final profileData = await Supabase.instance.client
         .from('profiles')
         .select('metadata')
@@ -337,29 +338,99 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
 
     final profileMetadata = profileData['metadata'] as Map<String, dynamic>? ?? {};
     final schoolEmail = profileMetadata['school_email'] as String?;
-    final limitPartnership = profileMetadata['limit_partnership'] as int?;
     
-    // Check if partnership limit is reached
-    if (limitPartnership != null) {
-      final partnershipJobs = await Supabase.instance.client
-          .from('school_partnership_jobs')
-          .select('id')
-          .eq('school_id', schoolId);
+    // 2. Check Partnership Status & Limit
+    final partnership = await Supabase.instance.client
+        .from('school_company_partnerships')
+        .select()
+        .eq('school_id', schoolId)
+        .eq('company_id', _selectedCompanyId!)
+        .eq('status', 'accepted')
+        .maybeSingle();
+
+    String companyStatus = 'pending';
+    String? companyReviewedAt;
+
+    if (partnership != null) {
+      final limitPeriod = partnership['post_limit_period'] as String? ?? 'unlimited';
+      final limitCount = partnership['post_limit_count'] as int?;
       
-      final currentCount = (partnershipJobs as List).length;
-      
-      if (currentCount >= limitPartnership) {
-        throw Exception(
-          'Bạn đã đạt giới hạn tin liên kết ($limitPartnership tin). '
-          'Vui lòng xóa bớt tin cũ hoặc liên hệ quản trị viên để tăng giới hạn.'
+      bool isLimitReached = false;
+
+      if (limitPeriod != 'unlimited' && limitCount != null) {
+        DateTime now = DateTime.now();
+        DateTime startDate;
+        if (limitPeriod == 'month') {
+          startDate = DateTime(now.year, now.month, 1);
+        } else if (limitPeriod == 'year') {
+          startDate = DateTime(now.year, 1, 1);
+        } else {
+          startDate = DateTime(2000); 
+        }
+
+        final jobsResponse = await Supabase.instance.client
+            .from('school_partnership_jobs')
+            .select('id')
+            .eq('school_id', schoolId)
+            .eq('company_id', _selectedCompanyId!)
+            .gte('created_at', startDate.toIso8601String());
+        
+        if ((jobsResponse as List).length >= limitCount) {
+          isLimitReached = true;
+        }
+      }
+
+      if (!isLimitReached) {
+        // Limit valid -> Auto accept by company
+        companyStatus = 'accepted';
+        companyReviewedAt = DateTime.now().toIso8601String();
+      } else {
+        // Limit reached -> Confirm flow
+        if (!mounted) return;
+        
+        final bool? confirm = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Đã đạt giới hạn tin đăng'),
+            content: Text(
+              'Bạn đã đạt giới hạn ($limitCount tin/${limitPeriod == 'year' ? 'năm' : 'tháng'}) với đối tác này.\n\n'
+              'Nếu tiếp tục, tin sẽ cần chờ duyệt và không được tự động chấp nhận.\n'
+              'Hoặc bạn có thể gia hạn thêm quyền lợi.'
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false), // Go to extend
+                child: const Text('Gia hạn liên kết'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true), // Continue
+                child: const Text('Vẫn tạo tin'),
+              ),
+            ],
+          ),
         );
+
+        if (confirm == null) return; // Cancelled
+        
+        if (confirm == false) {
+          if (mounted) {
+             Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CompaniesListScreen()),
+            );
+          }
+          return; // Stop creation
+        }
+        
+        // If confirm == true, proceed with 'pending' companyStatus
       }
     }
 
     await Supabase.instance.client.from('school_partnership_jobs').insert({
       'school_id': schoolId,
       'company_id': _selectedCompanyId!,
-      'company_status': 'pending',
+      'company_status': companyStatus,
+      'company_reviewed_at': companyReviewedAt,
       'admin_status': 'pending',
       'is_active': _isActive,
       'deadline': _deadline?.toIso8601String(),
