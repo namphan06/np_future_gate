@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'evaluation/school_student_evaluations_screen.dart';
 import 'jobs/edit_job_screen.dart';
 import 'jobs/employer_jobs_screen.dart';
 import 'saved_candidates_screen.dart';
@@ -193,10 +194,18 @@ class ToolsPageEmployer extends StatelessWidget {
                           ),
                           _buildToolCard(
                             context,
-                            icon: Icons.check_circle_outline,
-                            title: 'Đã duyệt',
-                            subtitle: '31 UV',
-                            color: Colors.green,
+                            icon: Icons.assessment,
+                            title: 'Đánh giá thực tập',
+                            subtitle: 'Đánh giá sinh viên',
+                            color: Colors.amber,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SchoolStudentEvaluationsScreen(),
+                                ),
+                              );
+                            },
                           ),
                           _buildToolCard(
                             context,
@@ -287,14 +296,6 @@ class ToolsPageEmployer extends StatelessWidget {
                         title: 'Thống kê',
                         subtitle: 'Báo cáo tuyển dụng',
                         color: Colors.indigo,
-                      ),
-                      const SizedBox(height: 10),
-                      _buildToolListItem(
-                        context,
-                        icon: Icons.assessment,
-                        title: 'Đánh giá ứng viên',
-                        subtitle: 'Hệ thống đánh giá',
-                        color: Colors.amber,
                       ),
                       const SizedBox(height: 10),
                       _buildToolListItem(

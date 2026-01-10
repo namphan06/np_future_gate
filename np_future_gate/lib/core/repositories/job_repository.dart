@@ -771,12 +771,59 @@ class JobRepository {
 
   Future<void> applyForPartnershipJob(String jobId, String userId, String cvId) async {
     try {
-      await _supabase.rpc('apply_to_partnership_job', params: {
-        'p_job_id': jobId,
-        'p_user_id': userId,
-        'p_cv_id': cvId,
-      });
+      // 1. Apply via RPC
+      try {
+        await _supabase.rpc('apply_to_partnership_job', params: {
+          'p_job_id': jobId,
+          'p_user_id': userId,
+          'p_cv_id': cvId,
+        });
+      } on PostgrestException catch (e) {
+         // Fix: If already applied (P0001), ignore this error to proceed with creating tracking data
+         // This is useful for migrating old applications or re-running tests.
+         if (e.code == 'P0001' || e.message.contains('already applied')) {
+            // ignore
+         } else {
+            rethrow;
+         }
+      }
+
+      // 2. Fetch job info to initialize progress tracking
+      final jobData = await _supabase
+          .from('school_partnership_jobs')
+          .select('school_id, company_id, metadata')
+          .eq('id', jobId)
+          .maybeSingle();
+
+      if (jobData != null) {
+        final metadata = jobData['metadata'] as Map<String, dynamic>? ?? {};
+        final position = metadata['title'] ?? 'N/A';
+        final employmentTypes = metadata['employment_types'] as List?;
+
+        // 3. Create entry in student_work_progress
+        // Check duplication first
+        final existing = await _supabase
+            .from('student_work_progress')
+            .select()
+            .eq('user_id', userId)
+            .eq('company_id', jobData['company_id'])
+            .maybeSingle();
+
+        if (existing == null) {
+          await _supabase.from('student_work_progress').insert({
+            'user_id': userId,
+            'school_id': jobData['school_id'],
+            'company_id': jobData['company_id'],
+            'position': position,
+            'work_duration': employmentTypes?.join(', '),
+            'applied_at': DateTime.now().toIso8601String(),
+          });
+        }
+      }
     } catch (e) {
+      if (e.toString().contains('already applied') || e.toString().contains('P0001')) {
+         throw Exception('Bạn đã ứng tuyển công việc này rồi.');
+      }
       throw Exception('Failed to apply for partnership job: $e');
     }
   }

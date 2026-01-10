@@ -3,6 +3,7 @@ import 'jobs/school_jobs_screen.dart';
 import 'jobs/create_school_job_screen.dart';
 import 'partnership/partnership_requests_screen.dart';
 import 'partnership/companies_list_screen.dart';
+import 'evaluation/school_view_evaluations_screen.dart';
 
 class ToolsPageSchool extends StatelessWidget {
   const ToolsPageSchool({super.key});
@@ -194,6 +195,21 @@ class ToolsPageSchool extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => const CompaniesListScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildToolCard(
+                            context,
+                            icon: Icons.assignment_ind_outlined,
+                            title: 'Đánh giá thực tập',
+                            subtitle: 'Xem tiến độ SV',
+                            color: Colors.teal,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SchoolViewEvaluationsScreen(),
                                 ),
                               );
                             },
