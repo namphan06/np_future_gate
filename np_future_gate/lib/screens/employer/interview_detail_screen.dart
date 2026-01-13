@@ -38,6 +38,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
   List<String> _tags = [];
   final TextEditingController _tagController = TextEditingController();
   bool _isSaving = false;
+  bool _share = false;
   late String _currentStatus;
   late DateTime _displayTime;
 
@@ -61,6 +62,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
     }
 
     _tags = (eval['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    _share = eval['share'] == true;
     _currentStatus = widget.interview.status;
     _displayTime = widget.interview.interviewTime;
   }
@@ -92,6 +94,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
         'communication_rating': _communicationRating,
         'requirements_evaluation': _requirementsEvaluation,
         'tags': _tags,
+        'share': _share,
         'updated_at': DateTime.now().toIso8601String(),
       };
 
@@ -396,7 +399,20 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  
+                  if (widget.interview.isPartnership)
+                    Row(
+                      children: [
+                        Switch(
+                          value: _share,
+                          onChanged: (val) {
+                            setState(() {
+                              _share = val;
+                            });
+                          },
+                        ),
+                        const Text('Chia sẻ đánh giá cho trường', style: TextStyle(fontWeight: FontWeight.w500)),
+                      ],
+                    ),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(

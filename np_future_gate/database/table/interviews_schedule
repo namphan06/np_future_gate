@@ -7,7 +7,7 @@ CREATE TABLE public.interview_schedules (
     cv_id text NULL, -- Can be UUID or string depending on CV type
     interview_time timestamptz NOT NULL,
     job_title text NOT NULL,
-    evaluation jsonb DEFAULT '{}'::jsonb, -- Stores notes, ratings, tags, etc.
+    evaluation jsonb DEFAULT '{"share": false}'::jsonb, -- Stores notes, ratings, tags, etc.
     status text DEFAULT 'scheduled', -- scheduled, completed, cancelled
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now(),

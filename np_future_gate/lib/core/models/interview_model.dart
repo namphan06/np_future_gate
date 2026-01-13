@@ -9,6 +9,7 @@ class InterviewModel {
   final Map<String, dynamic> evaluation;
   final String status;
   final DateTime createdAt;
+  final bool isPartnership;
 
   InterviewModel({
     required this.id,
@@ -21,6 +22,7 @@ class InterviewModel {
     required this.evaluation,
     required this.status,
     required this.createdAt,
+    this.isPartnership = false,
   });
 
   factory InterviewModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class InterviewModel {
       evaluation: json['evaluation'] ?? {},
       status: json['status'],
       createdAt: DateTime.parse(json['created_at']).toLocal(),
+      isPartnership: json['is_partnership'] ?? false,
     );
   }
 
@@ -50,6 +53,7 @@ class InterviewModel {
       'evaluation': evaluation,
       'status': status,
       'created_at': createdAt.toIso8601String(),
+      'is_partnership': isPartnership,
     };
   }
 
@@ -64,6 +68,7 @@ class InterviewModel {
     Map<String, dynamic>? evaluation,
     String? status,
     DateTime? createdAt,
+    bool? isPartnership,
   }) {
     return InterviewModel(
       id: id ?? this.id,
@@ -76,6 +81,7 @@ class InterviewModel {
       evaluation: evaluation ?? this.evaluation,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      isPartnership: isPartnership ?? this.isPartnership,
     );
   }
 }

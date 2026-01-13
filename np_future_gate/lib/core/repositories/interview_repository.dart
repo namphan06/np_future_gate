@@ -43,7 +43,38 @@ class InterviewRepository {
           .eq('employer_id', employerId)
           .order('interview_time', ascending: true);
 
-      return (response as List).map((e) => InterviewModel.fromJson(e)).toList();
+      // Fetch all job IDs from interviews
+      final jobIds = (response as List)
+          .map((e) => e['job_id'] as String)
+          .toSet()
+          .toList();
+
+      // Get partnership job IDs
+      final partnershipJobIds = <String>{};
+      if (jobIds.isNotEmpty) {
+        try {
+          final partnershipJobs = await _client
+              .from('school_partnership_jobs')
+              .select('id')
+              .inFilter('id', jobIds);
+          
+          for (var job in partnershipJobs as List) {
+            partnershipJobIds.add(job['id'] as String);
+          }
+        } catch (e) {
+          print('Error fetching partnership job IDs: $e');
+          // Continue anyway
+        }
+      }
+
+      // Map interviews and add isPartnership flag
+      return (response as List).map((e) {
+        final jobId = e['job_id'] as String;
+        final isPartnership = partnershipJobIds.contains(jobId);
+        final interviewData = Map<String, dynamic>.from(e as Map);
+        interviewData['is_partnership'] = isPartnership;
+        return InterviewModel.fromJson(interviewData);
+      }).toList();
     } catch (e) {
       print('Error fetching interviews: $e');
       return [];
@@ -118,6 +149,40 @@ class InterviewRepository {
       return null;
     } catch (e) {
       print('Error checking interview conflict: $e');
+      return null;
+    }
+  }
+
+  /// Get evaluation for a candidate in a specific job
+  /// Returns null if no interview found or evaluation not shared
+  Future<Map<String, dynamic>?> getEvaluationForCandidate({
+    required String candidateId,
+    required String jobId,
+  }) async {
+    try {
+      final response = await _client
+          .from('interview_schedules')
+          .select()
+          .eq('candidate_id', candidateId)
+          .eq('job_id', jobId)
+          .order('interview_time', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (response == null) {
+        return null;
+      }
+
+      final evaluation = response['evaluation'] as Map<String, dynamic>? ?? {};
+      
+      // Return complete interview data including evaluation and share status
+      return {
+        'evaluation': evaluation,
+        'interview_time': response['interview_time'],
+        'is_shared': evaluation['share'] == true,
+      };
+    } catch (e) {
+      print('Error getting evaluation: $e');
       return null;
     }
   }

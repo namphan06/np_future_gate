@@ -993,7 +993,10 @@ class JobRepository {
     try {
       await _supabase
           .from('jobs')
-          .update({'status': 'approved'})
+          .update({
+            'status': 'approved',
+            'created_at': DateTime.now().toIso8601String(),
+          })
           .eq('id', jobId);
     } catch (e) {
       throw Exception('Failed to approve job: $e');

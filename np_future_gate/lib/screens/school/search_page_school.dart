@@ -24,6 +24,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   List<Profile> _allEmployers = [];
   List<Profile> _filteredEmployers = [];
   Set<String> _followedCompanyIds = {};
+  Set<String> _partnerCompanyIds = {};
   bool _isLoading = true;
   String _searchQuery = '';
 
@@ -32,6 +33,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
     super.initState();
     _loadEmployers();
     _loadFollowedCompanies();
+    _loadPartnerCompanies();
   }
 
   @override
@@ -83,6 +85,32 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
       }
     } catch (e) {
       print('Error loading followed companies: $e');
+    }
+  }
+
+  Future<void> _loadPartnerCompanies() async {
+    try {
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return;
+      
+      // Get all approved partnerships
+      final response = await Supabase.instance.client
+          .from('school_company_partnerships')
+          .select('company_id')
+          .eq('school_id', userId)
+          .eq('status', 'accepted');
+      
+      final partnerIds = (response as List)
+          .map((e) => e['company_id'] as String)
+          .toSet();
+      
+      if (mounted) {
+        setState(() {
+          _partnerCompanyIds = partnerIds;
+        });
+      }
+    } catch (e) {
+      print('Error loading partner companies: $e');
     }
   }
 
@@ -350,10 +378,16 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
                   ),
                   IconButton(
                     onPressed: () => _createPartnershipRequest(employer),
-                    tooltip: 'Yêu cầu liên kết',
-                    icon: const Icon(
-                      Icons.handshake_outlined, 
-                      color: Colors.orange,
+                    tooltip: _partnerCompanyIds.contains(employer.id) 
+                        ? 'Đã liên kết' 
+                        : 'Yêu cầu liên kết',
+                    icon: Icon(
+                      _partnerCompanyIds.contains(employer.id)
+                          ? Icons.handshake
+                          : Icons.handshake_outlined,
+                      color: _partnerCompanyIds.contains(employer.id)
+                          ? Colors.green
+                          : Colors.orange,
                     ),
                   ),
                 ],
@@ -450,5 +484,6 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
     
     // Reload followed companies when coming back
     _loadFollowedCompanies();
+    _loadPartnerCompanies();
   }
 }

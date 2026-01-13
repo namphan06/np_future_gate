@@ -42,8 +42,20 @@ class _HomePageSchoolState extends State<HomePageSchool> {
       final userId = SupabaseService.instance.client.auth.currentUser?.id;
       if (userId == null) return;
 
-      // Load regular jobs
-      final regularJobs = await JobRepository().getEmployerJobs(userId);
+      print('📊 Loading school home data for user: $userId');
+
+      // Load regular jobs (jobs table where creator_id = school)
+      final regularJobsData = await SupabaseService.instance.client
+          .from('jobs')
+          .select()
+          .eq('creator_id', userId)
+          .order('created_at', ascending: false);
+      
+      final regularJobs = (regularJobsData as List)
+          .map((e) => JobModel.fromJson(e))
+          .toList();
+      
+      print('📝 Regular jobs count: ${regularJobs.length}');
       
       // Load partnership jobs
       final partnershipJobsData = await SupabaseService.instance.client
@@ -52,36 +64,56 @@ class _HomePageSchoolState extends State<HomePageSchool> {
           .eq('school_id', userId)
           .order('created_at', ascending: false);
 
-      // Calculate statistics
+      print('🤝 Partnership jobs count: ${(partnershipJobsData as List).length}');
+
+      // Calculate statistics for partnership jobs
       final pendingPartnership = (partnershipJobsData as List).where(
-        (job) => job['company_status'] == 'pending'
+        (job) => job['company_status'] == 'pending' || job['admin_status'] == 'pending'
       ).length;
 
-      // Count applicants
+      print('⏳ Pending partnership jobs: $pendingPartnership');
+
+      // Count applicants from regular jobs
       int totalApplicants = 0;
       int newApplicants = 0;
       final oneDayAgo = DateTime.now().subtract(const Duration(days: 1));
 
       for (var job in regularJobs) {
-        totalApplicants += (job.applicants?.length ?? 0);
-        for (var applicant in job.applicants ?? []) {
-          final appliedAt = DateTime.parse(applicant['applied_at']);
-          if (appliedAt.isAfter(oneDayAgo)) {
-            newApplicants++;
+        final applicants = job.applicants ?? [];
+        totalApplicants += applicants.length;
+        for (var applicant in applicants) {
+          try {
+            final appliedAt = applicant.appliedAt;
+            if (appliedAt.isAfter(oneDayAgo)) {
+              newApplicants++;
+            }
+          } catch (e) {
+            print('Error parsing applicant date: $e');
           }
         }
       }
 
+      // Count applicants from partnership jobs
       for (var job in partnershipJobsData) {
         final applicants = job['applicants'] as List? ?? [];
         totalApplicants += applicants.length;
         for (var applicant in applicants) {
-          final appliedAt = DateTime.parse(applicant['applied_at']);
-          if (appliedAt.isAfter(oneDayAgo)) {
-            newApplicants++;
+          try {
+            final appliedAtStr = applicant['applied_at'] as String?;
+            if (appliedAtStr != null) {
+              final appliedAt = DateTime.parse(appliedAtStr);
+              if (appliedAt.isAfter(oneDayAgo)) {
+                newApplicants++;
+              }
+            }
+          } catch (e) {
+            print('Error parsing partnership applicant date: $e');
           }
         }
       }
+
+      print('👥 Total applicants: $totalApplicants');
+      print('🆕 New applicants (last 24h): $newApplicants');
 
       setState(() {
         _totalRegularJobs = regularJobs.length;
@@ -93,7 +125,11 @@ class _HomePageSchoolState extends State<HomePageSchool> {
         _recentPartnershipJobs = List<Map<String, dynamic>>.from(partnershipJobsData.take(5));
         _isLoading = false;
       });
-    } catch (e) {
+
+      print('✅ School home data loaded successfully');
+    } catch (e, stackTrace) {
+      print('❌ Error loading school home data: $e');
+      print('Stack trace: $stackTrace');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

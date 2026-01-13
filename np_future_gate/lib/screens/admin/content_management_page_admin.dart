@@ -847,9 +847,16 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
       final table = isPartnership ? 'school_partnership_jobs' : 'jobs';
       final statusField = isPartnership ? 'admin_status' : 'status';
 
+      final updates = <String, dynamic>{statusField: 'approved'};
+      
+      // Update created_at for regular jobs so they appear as new
+      if (!isPartnership) {
+        updates['created_at'] = DateTime.now().toIso8601String();
+      }
+
       await _supabase
           .from(table)
-          .update({statusField: 'approved'})
+          .update(updates)
           .eq('id', jobId);
 
       if (mounted) {

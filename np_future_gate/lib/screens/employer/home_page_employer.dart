@@ -133,6 +133,34 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
     }
   }
 
+  String _getDeadlineText(DateTime deadline) {
+    final now = DateTime.now();
+    final difference = deadline.difference(now);
+
+    if (difference.isNegative) {
+      return 'Đã hết hạn';
+    } else if (difference.inDays > 0) {
+      return 'Còn ${difference.inDays} ngày';
+    } else if (difference.inHours > 0) {
+      return 'Còn ${difference.inHours} giờ';
+    } else {
+      return 'Sắp hết hạn';
+    }
+  }
+
+  Color _getDeadlineColor(DateTime deadline) {
+    final now = DateTime.now();
+    final difference = deadline.difference(now);
+
+    if (difference.isNegative) {
+      return Colors.red;
+    } else if (difference.inDays <= 3) {
+      return Colors.orange.shade700;
+    } else {
+      return Colors.green.shade600;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = supabaseService.currentUser;
@@ -473,7 +501,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Đăng ${_getTimeAgo(job.createdAt!)}',
+                                    _getTimeAgo(job.createdAt!),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey.shade500,
@@ -481,12 +509,11 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                                   ),
                                   if (job.deadline != null)
                                     Text(
-                                      'Hết hạn ${_getTimeAgo(job.deadline!)}', // Logic might need fix for future dates
-                                      // Actually _getTimeAgo says "x days ago". For deadline we want "in x days".
-                                      // Or just show date.
+                                      _getDeadlineText(job.deadline!),
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.orange.shade700,
+                                        color: _getDeadlineColor(job.deadline!),
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                 ],

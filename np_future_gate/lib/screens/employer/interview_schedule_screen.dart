@@ -121,10 +121,15 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
       return true;
     }).toList();
     
-    // Sort by interview time - earliest first
-    filtered.sort((a, b) => a.interviewTime.compareTo(b.interviewTime));
+    // Sort: upcoming first, past interviews at bottom
+    final now = DateTime.now();
+    final upcoming = filtered.where((i) => i.interviewTime.isAfter(now)).toList();
+    final past = filtered.where((i) => !i.interviewTime.isAfter(now)).toList();
     
-    return filtered;
+    upcoming.sort((a, b) => a.interviewTime.compareTo(b.interviewTime));
+    past.sort((a, b) => b.interviewTime.compareTo(a.interviewTime)); // Latest past first
+    
+    return [...upcoming, ...past];
   }
 
   Map<String, Map<String, List<InterviewModel>>> _groupInterviews(List<InterviewModel> interviews) {
@@ -153,8 +158,28 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
   Widget build(BuildContext context) {
     final filteredInterviews = _getFilteredInterviews();
     final groupedInterviews = _groupInterviews(filteredInterviews);
-    final sortedDates = groupedInterviews.keys.toList()
-      ..sort((a, b) => a.compareTo(b)); // Earliest first (ascending order)
+    
+    // Sort dates: upcoming first, then past
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+    final sortedDates = groupedInterviews.keys.toList();
+    
+    sortedDates.sort((a, b) {
+      final dateA = DateTime.parse(a);
+      final dateB = DateTime.parse(b);
+      final isAFuture = dateA.isAfter(now);
+      final isBFuture = dateB.isAfter(now);
+      
+      if (isAFuture && !isBFuture) return -1; // A is future, B is past → A comes first
+      if (!isAFuture && isBFuture) return 1;  // A is past, B is future → B comes first
+      
+      // Both future or both past
+      if (isAFuture) {
+        return dateA.compareTo(dateB); // Future: earliest first
+      } else {
+        return dateB.compareTo(dateA); // Past: latest first
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -343,6 +368,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                               ...jobsMap.entries.map((entry) {
                                 final jobTitle = entry.key;
                                 final interviews = entry.value;
+                                final isPartnership = interviews.any((i) => i.isPartnership);
 
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 16),
@@ -376,6 +402,22 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                                 ),
                                               ),
                                             ),
+                                            if (isPartnership)
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.purple.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                ),
+                                                child: const Text(
+                                                  'Liên kết',
+                                                  style: TextStyle(
+                                                    color: Colors.purple,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
                                           ],
                                         ),
                                       ),

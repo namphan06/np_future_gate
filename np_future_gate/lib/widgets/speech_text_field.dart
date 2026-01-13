@@ -95,15 +95,15 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
     } catch (e) {
       debugPrint('Speech init error: $e');
       setState(() => _speechAvailable = false);
-      if (e.toString().contains('recognizerNotAvailable')) {
-        _showError(
-          'Thiết bị không hỗ trợ nhận diện giọng nói.\n\n'
-          'Giải pháp:\n'
-          '• Cài đặt/cập nhật Google App\n'
-          '• Kiểm tra Google Play Services\n'
-          '• Đảm bảo có kết nối Internet'
-        );
-      }
+      // if (e.toString().contains('recognizerNotAvailable')) {
+      //   _showError(
+      //     'Thiết bị không hỗ trợ nhận diện giọng nói.\n\n'
+      //     'Giải pháp:\n'
+      //     '• Cài đặt/cập nhật Google App\n'
+      //     '• Kiểm tra Google Play Services\n'
+      //     '• Đảm bảo có kết nối Internet'
+      //   );
+      // }
     }
   }
 

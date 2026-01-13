@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/auth_models.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/models/profile_model.dart';
@@ -1204,11 +1205,7 @@ $employerName
                               child: SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Tính năng xem đánh giá đang được phát triển')),
-                                    );
-                                  },
+                                  onPressed: () => _viewEvaluation(profile.id, profile.fullName ?? 'Ứng viên'),
                                   icon: const Icon(Icons.star_outline, size: 18),
                                   label: const Text('Xem đánh giá'),
                                   style: ElevatedButton.styleFrom(
@@ -1251,6 +1248,315 @@ $employerName
           fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
+      ),
+    );
+  }
+
+  // View evaluation from interview_schedules
+  Future<void> _viewEvaluation(String userId, String candidateName) async {
+    print('🔍 ========== VIEW EVALUATION DEBUG ==========');
+    print('📋 Input Parameters:');
+    print('   candidateId: $userId');
+    print('   jobId: ${widget.jobId}');
+    print('   candidateName: $candidateName');
+    
+    try {
+      // Get evaluation from repository
+      print('⏳ Calling repository.getEvaluationForCandidate()...');
+      final evaluationData = await _interviewRepository.getEvaluationForCandidate(
+        candidateId: userId,
+        jobId: widget.jobId,
+      );
+
+      print('📦 Repository Response:');
+      if (evaluationData == null) {
+        print('   ❌ Result: NULL (No interview found)');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Chưa có lịch phỏng vấn cho ứng viên này')),
+          );
+        }
+        return;
+      }
+
+      print('   ✅ Result: Data found');
+      print('   📊 Keys: ${evaluationData.keys.toList()}');
+      print('   🔓 is_shared: ${evaluationData['is_shared']}');
+      print('   📝 evaluation: ${evaluationData['evaluation']}');
+      print('   🕐 interview_time: ${evaluationData['interview_time']}');
+
+      final isShared = evaluationData['is_shared'] as bool;
+      
+      if (!isShared) {
+        print('   🔒 Share status: FALSE - showing locked dialog');
+        if (mounted) {
+          _showNotSharedDialog(candidateName);
+        }
+        return;
+      }
+
+      print('   ✅ Share status: TRUE - showing evaluation detail');
+      // Show evaluation detail
+      final evaluation = evaluationData['evaluation'] as Map<String, dynamic>;
+      final interviewTime = evaluationData['interview_time'] as String;
+      
+      if (mounted) {
+        _showEvaluationDetail(candidateName, evaluation, interviewTime);
+      }
+      print('🔍 ========== END DEBUG ==========');
+    } catch (e, stackTrace) {
+      print('❌ ERROR in _viewEvaluation:');
+      print('   Error: $e');
+      print('   StackTrace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi tải đánh giá: $e')),
+        );
+      }
+    }
+  }
+
+  void _showNotSharedDialog(String candidateName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.lock_outline, color: Colors.orange),
+            SizedBox(width: 12),
+            Text('Đánh giá không được chia sẻ'),
+          ],
+        ),
+        content: Text(
+          'Nhà tuyển dụng không cho phép chia sẻ thông tin đánh giá cho ứng viên $candidateName',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEvaluationDetail(String candidateName, Map<String, dynamic> evaluation, String interviewTime) {
+    final rating = (evaluation['rating'] as num?)?.toDouble() ?? 0;
+    final envRating = (evaluation['environment_rating'] as num?)?.toDouble() ?? 0;
+    final posRating = (evaluation['position_rating'] as num?)?.toDouble() ?? 0;
+    final potRating = (evaluation['potential_rating'] as num?)?.toDouble() ?? 0;
+    final commRating = (evaluation['communication_rating'] as num?)?.toDouble() ?? 0;
+    final tags = (evaluation['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    final note = evaluation['note'] as String? ?? '';
+    final reqEval = evaluation['requirements_evaluation'] as Map<String, dynamic>? ?? {};
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Đánh giá ứng viên',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              candidateName,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppMainColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${rating.toStringAsFixed(1)}/10',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppMainColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Overall Ratings
+                    const Text(
+                      'Đánh giá tổng quát',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildEvalRatingRow('Xếp hạng chung', rating),
+                    _buildEvalRatingRow('Môi trường làm việc', envRating),
+                    _buildEvalRatingRow('Phù hợp với vị trí', posRating),
+                    _buildEvalRatingRow('Tiềm năng phát triển', potRating),
+                    _buildEvalRatingRow('Kỹ năng giao tiếp', commRating),
+                    const SizedBox(height: 20),
+
+                    // Requirements Evaluation
+                    if (reqEval.isNotEmpty) ...[
+                      const Text(
+                        'Đánh giá yêu cầu công việc',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      ...reqEval.entries.map((e) => _buildEvalRatingRow(e.key, (e.value as num?)?.toDouble() ?? 0)),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Tags
+                    if (tags.isNotEmpty) ...[
+                      const Text(
+                        'Ghi chú đặc biệt',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: tags.map((tag) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppMainColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppMainColors.primary.withOpacity(0.3)),
+                          ),
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                              color: AppMainColors.primary,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                          ),
+                        )).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Note
+                    if (note.isNotEmpty) ...[
+                      const Text(
+                        'Nhận xét',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Text(
+                          note,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                            height: 1.6,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEvalRatingRow(String label, double rating) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppMainColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '${rating.toStringAsFixed(1)}/10',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppMainColors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 60,
+            height: 6,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: rating / 10,
+                backgroundColor: Colors.grey.shade300,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  rating >= 8 ? Colors.green : rating >= 6 ? Colors.orange : Colors.red,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
