@@ -17,8 +17,50 @@ class DeviceTokenRepository {
     required String role,
   }) async {
     try {
-      // Lấy thông tin thiết bị
+      // Kiểm tra xem token đã tồn tại chưa (không quan tâm is_active)
+      final existing = await _supabase
+          .from('device_tokens')
+          .select('id')
+          .eq('device_id', deviceToken)
+          .eq('user_id', userId)
+          .eq('role', role)
+          .maybeSingle();
+
+      // Nếu đã tồn tại, cập nhật last_login_at và is_active = true
+      if (existing != null) {
+        await _supabase
+            .from('device_tokens')
+            .update({
+              'last_login_at': DateTime.now().toIso8601String(),
+              'is_active': true,
+            })
+            .eq('id', existing['id']);
+        return existing['id'] as String;
+      }
+
+      // Nếu chưa tồn tại, tạo mới với notification_settings
       final deviceInfo = await _getDeviceInfo();
+      
+      final notificationSettings = {
+        'enabled': true,
+        'sound_enabled': true,
+        'job_notifications': true,
+        'vibration_enabled': true,
+        'notification_types': {
+          'info': true,
+          'error': true,
+          'success': true,
+          'warning': true,
+          'reminder': true,
+          'requirement': true,
+          'announcement': true,
+        },
+        'system_notifications': true,
+        'message_notifications': true,
+        'interview_notifications': true,
+        'application_notifications': true,
+        'partnership_notifications': true,
+      };
 
       // Gọi function upsert_device_token trong database
       final response = await _supabase.rpc(
@@ -30,6 +72,7 @@ class DeviceTokenRepository {
           'p_device_type': deviceInfo['device_type'],
           'p_device_name': deviceInfo['device_name'],
           'p_app_version': deviceInfo['app_version'],
+          'p_notification_settings': notificationSettings,
         },
       );
 
@@ -96,6 +139,54 @@ class DeviceTokenRepository {
     }
   }
 
+  /// Cập nhật notification settings cho device
+  Future<bool> updateNotificationSettings({
+    required String deviceToken,
+    required String userId,
+    required Map<String, dynamic> settings,
+  }) async {
+    try {
+      final response = await _supabase.rpc(
+        'update_device_notification_settings',
+        params: {
+          'p_device_id': deviceToken,
+          'p_user_id': userId,
+          'p_settings': settings,
+        },
+      );
+
+      return response as bool? ?? false;
+    } catch (e) {
+      print('Error updating notification settings: $e');
+      return false;
+    }
+  }
+
+  /// Kiểm tra có nên gửi notification cho device không
+  Future<bool> shouldSendNotification({
+    required String deviceToken,
+    required String userId,
+    required String category, // 'job', 'application', 'interview', etc.
+    String? type, // 'info', 'success', 'warning', etc.
+  }) async {
+    try {
+      final response = await _supabase.rpc(
+        'should_send_notification',
+        params: {
+          'p_device_id': deviceToken,
+          'p_user_id': userId,
+          'p_notification_category': category,
+          'p_notification_type': type,
+        },
+      );
+
+      return response as bool? ?? false;
+    } catch (e) {
+      print('Error checking notification permission: $e');
+      return false;
+    }
+  }
+
   /// Xóa/deactivate device token khi logout
   Future<bool> removeDeviceToken({
     required String deviceToken,
@@ -126,9 +217,13 @@ class DeviceTokenRepository {
     String? role,
   }) async {
     try {
+      print('🔍 DEBUG Repository Query:');
+      print('   userId: $userId');
+      print('   role: $role');
+      
       var query = _supabase
           .from('device_tokens')
-          .select('device_id')
+          .select('device_id, user_id, role, is_active')
           .eq('is_active', true);
 
       if (userId != null) {
@@ -141,11 +236,16 @@ class DeviceTokenRepository {
 
       final response = await query;
       
-      return (response as List)
+      print('📱 DEBUG Raw Response:');
+      print('   Type: ${response.runtimeType}');
+      print('   Length: ${(response as List).length}');
+      print('   Data: $response');
+      
+      return response
           .map((item) => item['device_id'] as String)
           .toList();
     } catch (e) {
-      print('Error getting active device IDs: $e');
+      print('❌ Error getting active device IDs: $e');
       return [];
     }
   }

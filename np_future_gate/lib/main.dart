@@ -47,6 +47,9 @@ void main() async {
   try {
     await FCMService().initialize();
     print('✅ FCM Service initialized');
+    
+    // Check initial message (nếu app được mở từ notification khi terminated)
+    await FCMService().checkInitialMessage();
   } catch (e) {
     print('⚠️ FCM initialization error: $e');
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/notification/screens/notifications_screen.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/services/cv_supabase_service.dart';
@@ -297,8 +298,9 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(12),
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Bạn có 8 thông báo mới')),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => NotificationsScreen()),
                               );
                             },
                             child: Padding(

@@ -22,11 +22,19 @@ School:
 - Tin liên kết chưa xoá được
 - Homepage thống kê mặc định là 0 cho các chỉ số (done)
 - Hiện tại việc sửa tin liên kết có thể không khả thi vì công ty sẽ phải duyệt nhiều lần và thường sẽ lấy tin từ thông tin có sẵn nên có thể xem xét
+- Nhà trường chưa có phần thông báo
 
 Chung:
 - Thêm thông báo khi gửi thông báo đến thiết bị 
 - Có thể xem lại cách xác minh tài khoản trường học và học sinh trong trường (hiện tại đang xác minh thông qua đuôi email)
+- Notification và device token đang RLS disable (Kiểm tra lại các quyền để chỉnh sau )
+- Chưa dùng đến notification_reads
+- Thông báo chưa chuyển được đến action cần thiết chỉnh lại sau 
 
 
 Supabase:
 - Hiện tại đã thay đổi delete cho role school để có thể xoá ngay cả khi company đã phê duyệt ban đầu là chỉ đuwocj xoá trước khi phê duyệt
+
+Device:
+- Hiện tại mỗi lần đăng nhập sẽ lưu vào bảng dữ liệu cần lọc trước khi lưu để tránh trùng
+- Hiện tại buil trên máy nào thì mới gửi đi được thông báo trên thiết bị (test lại sau)

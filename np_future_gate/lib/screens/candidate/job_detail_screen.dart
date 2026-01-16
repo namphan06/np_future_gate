@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
+import '../../../core/repositories/auth_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
 import '../../../core/services/chat_service.dart';
+import '../../../core/services/notification/application_notification_service.dart';
 import '../../../core/theme/app_main_colors.dart';
 import '../chat/chat_list_screen.dart';
 import '../chat/chat_detail_screen.dart';
@@ -22,6 +24,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   final JobRepository _jobRepository = JobRepository();
   final CVSupabaseService _cvService = CVSupabaseService();
   final ChatService _chatService = ChatService();
+  final ApplicationNotificationService _appNotificationService = ApplicationNotificationService();
+  final AuthRepository _authRepository = AuthRepository();
   
   bool _isSaved = false;
   bool _isApplying = false;
@@ -133,7 +137,29 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     setState(() => _isApplying = true);
 
     try {
+      // 1. Ứng tuyển vào job
       await _jobRepository.applyForJob(widget.job.id!, _currentUserId!, cvId);
+      
+      // 2. Gửi notification đến nhà tuyển dụng
+      if (widget.job.creatorId != null) {
+        // Lấy thông tin candidate
+        final candidateProfile = await _authRepository.getCurrentUserProfile();
+        final candidateName = candidateProfile?.fullName ?? 'Ứng viên';
+        
+        // Gửi notification (chạy background, không ảnh hưởng UI)
+        _appNotificationService.notifyNewApplication(
+          employerId: widget.job.creatorId!,
+          jobId: widget.job.id!,
+          jobTitle: widget.job.metadata.title,
+          candidateId: _currentUserId!,
+          candidateName: candidateName,
+          isPartnershipJob: false, // TODO: Detect if partnership job
+        ).catchError((e) {
+          print('⚠️ Failed to send notification: $e');
+          // Không hiển thị lỗi cho user vì notification là tính năng phụ
+        });
+      }
+      
       if (mounted) {
         setState(() {
           _hasApplied = true;

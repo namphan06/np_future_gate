@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/material.dart';
 import '../repositories/device_token_repository.dart';
 
 /// Firebase Cloud Messaging Service
@@ -17,6 +18,9 @@ class FCMService {
   
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
+  
+  // Callback để navigate đến home page khi notification được bấm
+  Function(BuildContext)? onNotificationTap;
 
   /// Initialize FCM and Local Notifications
   Future<void> initialize() async {
@@ -68,7 +72,14 @@ class FCMService {
       iOS: iosSettings,
     );
     
-    await _localNotifications.initialize(initSettings);
+    // Xử lý khi user tap vào local notification
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        print('📱 Local notification tapped: ${response.payload}');
+        // App sẽ tự động mở, không cần xử lý gì thêm
+      },
+    );
   }
 
   /// Handle foreground messages
@@ -127,6 +138,8 @@ class FCMService {
     print('   Title: ${message.notification?.title}');
     print('   Body: ${message.notification?.body}');
     print('   Data: ${message.data}');
+    // App sẽ tự động mở về trang đầu (splash -> home)
+    // Không cần navigate thêm
   }
 
   /// Save FCM token to database
@@ -169,6 +182,25 @@ class FCMService {
       print('✅ Unsubscribed from topic: $topic');
     } catch (e) {
       print('❌ Failed to unsubscribe from topic: $e');
+    }
+  }
+  
+  /// Check và xử lý initial message (khi app mở từ terminated state)
+  /// Gọi method này trong main.dart sau khi app đã khởi tạo xong
+  Future<void> checkInitialMessage() async {
+    try {
+      // Kiểm tra xem app có được mở từ notification không
+      RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+      
+      if (initialMessage != null) {
+        print('🚀 App opened from notification (terminated state):');
+        print('   Title: ${initialMessage.notification?.title}');
+        print('   Body: ${initialMessage.notification?.body}');
+        print('   Data: ${initialMessage.data}');
+        // App sẽ tự động mở về trang đầu
+      }
+    } catch (e) {
+      print('❌ Error checking initial message: $e');
     }
   }
 }

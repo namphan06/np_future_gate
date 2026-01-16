@@ -8,6 +8,7 @@ import '../../core/models/job_model.dart';
 import 'job_detail_screen.dart';
 import '../../widgets/animated_avatar.dart';
 import '../../widgets/cards/job_card.dart';
+import '../../notification/screens/notifications_screen.dart';
 
 class HomePageCandidate extends StatefulWidget {
   const HomePageCandidate({super.key});
@@ -269,9 +270,11 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Bạn có 3 thông báo mới')),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationsScreen(),
+                              ),
                             );
                           },
                           child: Padding(

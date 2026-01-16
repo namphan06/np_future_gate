@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
+import '../../../core/repositories/auth_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
+import '../../../core/services/notification/application_notification_service.dart';
 import '../../../core/theme/app_main_colors.dart';
 import 'cv_selection_screen.dart';
 import 'job_detail_screen.dart';
@@ -30,6 +32,8 @@ class _PartnershipJobDetailWrapper extends StatefulWidget {
 class _PartnershipJobDetailWrapperState extends State<_PartnershipJobDetailWrapper> {
   final JobRepository _jobRepository = JobRepository();
   final CVSupabaseService _cvService = CVSupabaseService();
+  final ApplicationNotificationService _appNotificationService = ApplicationNotificationService();
+  final AuthRepository _authRepository = AuthRepository();
 
   bool _hasApplied = false;
   String? _currentUserId;
@@ -106,7 +110,28 @@ class _PartnershipJobDetailWrapperState extends State<_PartnershipJobDetailWrapp
 
   Future<void> _applyForJob(String cvId) async {
     try {
+      // 1. Ứng tuyển vào partnership job
       await _jobRepository.applyForPartnershipJob(widget.job.id!, _currentUserId!, cvId);
+      
+      // 2. Gửi notification đến nhà tuyển dụng
+      if (widget.job.creatorId != null) {
+        // Lấy thông tin candidate
+        final candidateProfile = await _authRepository.getCurrentUserProfile();
+        final candidateName = candidateProfile?.fullName ?? 'Ứng viên';
+        
+        // Gửi notification (chạy background)
+        _appNotificationService.notifyNewApplication(
+          employerId: widget.job.creatorId!,
+          jobId: widget.job.id!,
+          jobTitle: widget.job.metadata.title,
+          candidateId: _currentUserId!,
+          candidateName: candidateName,
+          isPartnershipJob: true, // Đánh dấu đây là partnership job
+        ).catchError((e) {
+          print('⚠️ Failed to send partnership notification: $e');
+        });
+      }
+      
       if (mounted) {
         setState(() {
           _hasApplied = true;

@@ -1,0 +1,263 @@
+-- 1. Tạo bảng notifications
+-- Bảng quản lý thông báo hệ thống
+-- Hỗ trợ gửi đến: tất cả, nhiều người, hoặc một người cụ thể
+create table public.notifications (
+  id uuid not null default gen_random_uuid() primary key,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now(),
+
+  -- Người nhận (không dùng foreign key để linh hoạt)
+  -- Có thể là:
+  -- - 'all': gửi đến tất cả user
+  -- - uuid đơn: '123e4567-e89b-12d3-a456-426614174000' (gửi đến 1 người)
+  -- - mảng uuid: '["uuid1", "uuid2", "uuid3"]' (gửi đến nhiều người)
+  recipient_ids text not null,
+
+  -- Tiêu đề thông báo
+  title text not null,
+
+  -- Nội dung thông báo
+  content text not null,
+
+  -- Mã điều hướng
+  -- VD: 'job_detail', 'interview_schedule', 'partnership_request', 'system_update', etc.
+  action_code text,
+
+  -- Dữ liệu bổ sung cho action (JSON)
+  -- VD: {"job_id": "uuid", "interview_id": "uuid", etc.}
+  action_data jsonb,
+
+  -- Trạng thái thông báo
+  is_active boolean default true,
+
+  -- Loại thông báo (để filter hoặc styling)
+  type text check (type in ('info', 'success', 'warning', 'error', 'announcement', "requirement", "reminder")) default 'info',
+
+  -- Người gửi (optional, có thể là system)
+  sender_id uuid references auth.users(id) on delete set null,
+
+  -- Thời gian hết hạn (mặc định 30 ngày từ khi tạo)
+  expires_at timestamp with time zone default (now() + interval '30 days')
+);
+
+-- 2. Tạo bảng notification_reads để track đã đọc
+-- Bảng này ghi nhận user nào đã đọc notification nào
+create table public.notification_reads (
+  id uuid not null default gen_random_uuid() primary key,
+  notification_id uuid not null references public.notifications(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  read_at timestamp with time zone not null default now(),
+  
+  -- Đảm bảo mỗi user chỉ đọc 1 notification 1 lần
+  unique(notification_id, user_id)
+);
+
+-- 3. Tạo Index
+create index notifications_recipient_ids_idx on public.notifications (recipient_ids);
+create index notifications_action_code_idx on public.notifications (action_code);
+create index notifications_created_at_idx on public.notifications (created_at desc);
+create index notifications_is_active_idx on public.notifications (is_active);
+create index notifications_type_idx on public.notifications (type);
+create index notification_reads_user_id_idx on public.notification_reads (user_id);
+create index notification_reads_notification_id_idx on public.notification_reads (notification_id);
+
+-- 4. Bật Row Level Security (RLS)
+alter table public.notifications enable row level security;
+alter table public.notification_reads enable row level security;
+
+-- 5. Tạo Policies cho notifications
+
+-- Policy 1: Ai cũng có thể xem thông báo dành cho 'all'
+create policy "Everyone can view notifications for all"
+on public.notifications for select
+using (
+  is_active = true 
+  and recipient_ids = 'all'
+  and (expires_at is null or expires_at > now())
+);
+
+-- Policy 2: User có thể xem thông báo gửi riêng cho mình (single UUID)
+create policy "Users can view their own notifications"
+on public.notifications for select
+using (
+  is_active = true 
+  and recipient_ids = auth.uid()::text
+  and (expires_at is null or expires_at > now())
+);
+
+-- Policy 3: User có thể xem thông báo nếu ID của họ nằm trong mảng
+create policy "Users can view notifications in recipient array"
+on public.notifications for select
+using (
+  is_active = true 
+  and recipient_ids like '%' || auth.uid()::text || '%'
+  and (expires_at is null or expires_at > now())
+);
+
+-- Policy 4: Admin/System có thể tạo thông báo
+-- (Tạm comment, cần có hệ thống phân quyền admin rõ ràng)
+-- create policy "Admins can insert notifications"
+-- on public.notifications for insert
+-- with check (auth.uid() in (select id from admin_users));
+
+-- Policy 5: Admin/System có thể cập nhật thông báo
+-- create policy "Admins can update notifications"
+-- on public.notifications for update
+-- using (auth.uid() in (select id from admin_users));
+
+-- Policy 6: Admin/System có thể xóa thông báo
+-- create policy "Admins can delete notifications"
+-- on public.notifications for delete
+-- using (auth.uid() in (select id from admin_users));
+
+-- 6. Tạo Policies cho notification_reads
+
+-- User có thể xem lịch sử đọc của chính mình
+create policy "Users can view their own read history"
+on public.notification_reads for select
+using (auth.uid() = user_id);
+
+-- User có thể đánh dấu đã đọc
+create policy "Users can mark notifications as read"
+on public.notification_reads for insert
+with check (auth.uid() = user_id);
+
+-- User không thể xóa lịch sử đọc (optional, có thể bỏ nếu muốn cho phép)
+-- create policy "Users cannot delete read history"
+-- on public.notification_reads for delete
+-- using (false);
+
+-- 7. Trigger để tự động cập nhật updated_at
+create trigger on_notifications_updated
+  before update on public.notifications
+  for each row execute procedure public.handle_updated_at();
+
+-- 8. Function để tự động xóa thông báo hết hạn
+create or replace function public.delete_expired_notifications()
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  delete from public.notifications
+  where expires_at is not null 
+    and expires_at < now();
+  
+  raise notice 'Deleted expired notifications';
+end;
+$$;
+
+-- 9. Tạo cron job để tự động xóa thông báo hết hạn mỗi ngày
+-- (Cần bật pg_cron extension trước: create extension pg_cron;)
+-- Nếu không có quyền dùng pg_cron, hãy dùng trigger hoặc gọi function từ app
+-- select cron.schedule(
+--   'delete-expired-notifications',
+--   '0 2 * * *', -- Chạy lúc 2 giờ sáng mỗi ngày
+--   $$select public.delete_expired_notifications()$$
+-- );
+
+-- 9b. Alternative: Tự động xóa khi insert notification mới (không cần cron)
+create or replace function public.auto_delete_expired_on_insert()
+returns trigger
+language plpgsql
+as $$
+begin
+  -- Xóa thông báo hết hạn mỗi khi có notification mới được tạo
+  delete from public.notifications
+  where expires_at is not null 
+    and expires_at < now();
+  
+  return new;
+end;
+$$;
+
+create trigger auto_cleanup_expired_notifications
+  after insert on public.notifications
+  for each statement
+  execute function public.auto_delete_expired_on_insert();
+
+-- 10. Function để lấy thông báo chưa đọc của user
+create or replace function public.get_unread_notifications(user_uuid uuid)
+returns table (
+  id uuid,
+  created_at timestamptz,
+  title text,
+  content text,
+  action_code text,
+  action_data jsonb,
+  type text
+)
+language plpgsql
+security definer
+as $$
+begin
+  return query
+  select 
+    n.id,
+    n.created_at,
+    n.title,
+    n.content,
+    n.action_code,
+    n.action_data,
+    n.type
+  from public.notifications n
+  where n.is_active = true
+    and (n.expires_at is null or n.expires_at > now())
+    and (
+      n.recipient_ids = 'all' 
+      or n.recipient_ids = user_uuid::text
+      or n.recipient_ids like '%' || user_uuid::text || '%'
+    )
+    and not exists (
+      select 1 
+      from public.notification_reads nr 
+      where nr.notification_id = n.id 
+        and nr.user_id = user_uuid
+    )
+  order by n.created_at desc;
+end;
+$$;
+
+
+
+-- 11. Function để đếm số thông báo chưa đọc
+create or replace function public.count_unread_notifications(user_uuid uuid)
+returns integer
+language plpgsql
+security definer
+as $$
+declare
+  unread_count integer;
+begin
+  select count(*)::integer into unread_count
+  from public.notifications n
+  where n.is_active = true
+    and (n.expires_at is null or n.expires_at > now())
+    and (
+      n.recipient_ids = 'all' 
+      or n.recipient_ids = user_uuid::text
+      or n.recipient_ids like '%' || user_uuid::text || '%'
+    )
+    and not exists (
+      select 1 
+      from public.notification_reads nr 
+      where nr.notification_id = n.id 
+        and nr.user_id = user_uuid
+    );
+  
+  return unread_count;
+end;
+$$;
+
+-- 12. Comments để document
+comment on table public.notifications is 'Bảng quản lý thông báo hệ thống';
+comment on column public.notifications.recipient_ids is 'ID người nhận: "all" | "uuid" | mảng JSON uuid';
+comment on column public.notifications.action_code is 'Mã điều hướng: job_detail, interview_schedule, etc.';
+comment on column public.notifications.action_data is 'Dữ liệu bổ sung cho action dạng JSON';
+comment on column public.notifications.expires_at is 'Thời gian hết hạn (mặc định 30 ngày), thông báo sẽ tự động xóa sau thời gian này';
+
+comment on table public.notification_reads is 'Bảng tracking user đã đọc notification nào';
+comment on function public.get_unread_notifications is 'Lấy danh sách thông báo chưa đọc của user';
+comment on function public.count_unread_notifications is 'Đếm số thông báo chưa đọc của user';
+comment on function public.delete_expired_notifications is 'Xóa tất cả thông báo đã hết hạn (expires_at < now())';
+
