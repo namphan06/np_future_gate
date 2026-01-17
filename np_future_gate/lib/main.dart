@@ -10,6 +10,7 @@ import 'core/services/fcm_service.dart';
 import 'core/repositories/auth_repository.dart';
 import 'screens/splash/splash_screen.dart';
 import 'widgets/chat_floating_overlay.dart';
+import 'notification/notification_navigation_setup.dart';
 
 // Global navigator key để access navigator từ bất kỳ đâu
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -53,6 +54,10 @@ void main() async {
   } catch (e) {
     print('⚠️ FCM initialization error: $e');
   }
+  
+  // Setup notification navigation
+  setupNotificationNavigation();
+  print('✅ Notification navigation setup completed');
   
   // Debug: Check current auth session
   final session = Supabase.instance.client.auth.currentSession;

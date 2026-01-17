@@ -19,6 +19,11 @@ class NotificationService {
     BuildContext context,
     NotificationModel notification,
   ) async {
+    print('🔔 ========== handleNotificationTap START ==========');
+    print('🔔 Notification ID: ${notification.id}');
+    print('🔔 Action Code: ${notification.actionCode}');
+    print('🔔 Action Data: ${notification.actionData}');
+    
     // Đánh dấu đã đọc
     final userId = await _getCurrentUserId();
     if (userId != null && !notification.isRead) {
@@ -31,15 +36,20 @@ class NotificationService {
     // Lấy config từ action code
     final actionCode = notification.actionCodeEnum;
     final config = NotificationConfigs.getConfig(actionCode);
+    
+    print('🔔 Action Code Enum: ${actionCode.code}');
+    print('🔔 Config found: ${config != null}');
 
     if (config == null) {
       // Không có config, show dialog mặc định
+      print('⚠️ No config found, showing dialog');
       _showNotificationDialog(context, notification);
       return false;
     }
 
     // Nếu config yêu cầu show dialog
     if (config.showDialog) {
+      print('💬 Config requires dialog');
       _showNotificationDialog(
         context,
         notification,
@@ -50,16 +60,20 @@ class NotificationService {
 
     // Nếu cần navigation
     if (actionCode.requiresNavigation) {
+      print('🧭 Navigation required');
       // Extract route params từ action_data
       final routeParams = config.extractRouteParams?.call(notification.actionData) ?? {};
+      print('🧭 Route params: $routeParams');
       
       // Gọi callback navigate nếu có
       if (onNavigate != null) {
+        print('✅ onNavigate callback is available');
         try {
           await onNavigate!(context, actionCode, routeParams);
+          print('✅ Navigation completed successfully');
           return true;
         } catch (e) {
-          print('Error navigating: $e');
+          print('❌ Error navigating: $e');
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Không thể mở trang này')),
@@ -67,6 +81,7 @@ class NotificationService {
           }
         }
       } else {
+        print('⚠️ onNavigate callback is NULL! Navigation not configured.');
         // Fallback: show dialog nếu chưa có callback
         _showNotificationDialog(context, notification);
       }
@@ -74,6 +89,7 @@ class NotificationService {
     }
 
     // Default: show dialog
+    print('💬 Default: showing dialog');
     _showNotificationDialog(context, notification);
     return false;
   }

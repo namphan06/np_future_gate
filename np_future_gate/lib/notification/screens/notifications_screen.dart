@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/notification_model.dart';
 import '../models/notification_config.dart';
 import '../../../core/repositories/notification_repository.dart';
 import '../../../core/services/notification/notification_service.dart';
+import '../../../core/theme/app_main_colors.dart';
 import '../widgets/notification_item_widget.dart';
 
 /// Màn hình hiển thị danh sách thông báo
@@ -21,6 +23,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   final ScrollController _scrollController = ScrollController();
 
   late TabController _tabController;
+  int _selectedTab = 0;
   
   List<NotificationModel> _notifications = [];
   bool _isLoading = false;
@@ -63,6 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   void _onTabChanged() {
     if (_tabController.indexIsChanging) {
       setState(() {
+        _selectedTab = _tabController.index;
         // Tab 0: Tất cả, Tab 1: Chưa đọc
         _selectedReadStatus = _tabController.index == 1 ? false : null;
         _notifications.clear();
@@ -185,128 +189,563 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   }
 
   void _showFilterDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Lọc thông báo'),
-        content: StatefulBuilder(
-          builder: (context, setDialogState) {
-            return Column(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setBottomSheetState) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Loại thông báo',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    FilterChip(
-                      label: const Text('Tất cả'),
-                      selected: _selectedType == null,
-                      onSelected: (selected) {
-                        setDialogState(() {
-                          _selectedType = null;
-                        });
-                      },
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    ...NotificationType.values.map((type) {
-                      return FilterChip(
-                        label: Text(type.displayName),
-                        selected: _selectedType == type,
-                        onSelected: (selected) {
-                          setDialogState(() {
-                            _selectedType = selected ? type : null;
-                          });
-                        },
-                      );
-                    }),
+                  ),
+                ),
+                
+                // Title
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppMainColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.filter_list_rounded,
+                        color: AppMainColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Lọc thông báo',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 24),
+                
+                // Filter options
+                const Text(
+                  'Loại thông báo',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // All option
+                _buildFilterChip(
+                  label: 'Tất cả',
+                  icon: Icons.all_inbox_rounded,
+                  isSelected: _selectedType == null,
+                  onTap: () {
+                    setBottomSheetState(() {
+                      _selectedType = null;
+                    });
+                  },
+                ),
+                const SizedBox(height: 8),
+                
+                // Type options
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: NotificationType.values.map((type) {
+                    return _buildFilterChip(
+                      label: type.displayName,
+                      icon: _getTypeIcon(type),
+                      color: _getTypeColor(type),
+                      isSelected: _selectedType == type,
+                      onTap: () {
+                        setBottomSheetState(() {
+                          _selectedType = _selectedType == type ? null : type;
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setBottomSheetState(() {
+                            _selectedType = null;
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: Colors.grey[300]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Đặt lại',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {
+                            _notifications.clear();
+                            _currentPage = 0;
+                            _hasMore = true;
+                          });
+                          _loadNotifications();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppMainColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Áp dụng',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: MediaQuery.of(context).padding.bottom),
               ],
-            );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    final chipColor = color ?? AppMainColors.primary;
+    
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? chipColor.withOpacity(0.1) : Colors.grey[100],
+          border: Border.all(
+            color: isSelected ? chipColor : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _notifications.clear();
-                _currentPage = 0;
-                _hasMore = true;
-              });
-              _loadNotifications();
-            },
-            child: const Text('Áp dụng'),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? chipColor : Colors.grey[600],
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? chipColor : Colors.grey[700],
+              ),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.check_circle,
+                size: 16,
+                color: chipColor,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getTypeIcon(NotificationType type) {
+    switch (type) {
+      case NotificationType.info:
+        return Icons.info_outline_rounded;
+      case NotificationType.success:
+        return Icons.check_circle_outline_rounded;
+      case NotificationType.warning:
+        return Icons.warning_amber_rounded;
+      case NotificationType.error:
+        return Icons.error_outline_rounded;
+      case NotificationType.reminder:
+        return Icons.notifications_active_rounded;
+      case NotificationType.requirement:
+        return Icons.assignment_outlined;
+      case NotificationType.announcement:
+        return Icons.campaign_rounded;
+    }
+  }
+
+  Color _getTypeColor(NotificationType type) {
+    switch (type) {
+      case NotificationType.info:
+        return Colors.blue;
+      case NotificationType.success:
+        return Colors.green;
+      case NotificationType.warning:
+        return Colors.orange;
+      case NotificationType.error:
+        return Colors.red;
+      case NotificationType.reminder:
+        return Colors.purple;
+      case NotificationType.requirement:
+        return Colors.teal;
+      case NotificationType.announcement:
+        return Colors.indigo;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom Header
+              _buildCustomHeader(),
+              
+              // Custom Tab Bar
+              _buildCustomTabBar(),
+              
+              // Notification List
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    await _loadNotifications();
+                    await _loadUnreadCount();
+                  },
+                  color: AppMainColors.primary,
+                  child: _buildNotificationList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Back button
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded),
+              onPressed: () => Navigator.pop(context),
+              iconSize: 22,
+              color: Colors.black87,
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // Title & Subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Thông báo',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    height: 1.2,
+                  ),
+                ),
+                if (_unreadCount > 0)
+                  Text(
+                    '$_unreadCount thông báo chưa đọc',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                      height: 1.3,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          
+          // Filter button
+          Container(
+            decoration: BoxDecoration(
+              color: _selectedType != null 
+                  ? AppMainColors.primary.withOpacity(0.1)
+                  : Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
+              border: _selectedType != null
+                  ? Border.all(color: AppMainColors.primary, width: 1.5)
+                  : null,
+            ),
+            child: IconButton(
+              icon: Stack(
+                children: [
+                  Icon(
+                    Icons.filter_list_rounded,
+                    color: _selectedType != null 
+                        ? AppMainColors.primary
+                        : Colors.grey[700],
+                  ),
+                  if (_selectedType != null)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppMainColors.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              onPressed: _showFilterDialog,
+              iconSize: 22,
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+              tooltip: 'Lọc thông báo',
+            ),
+          ),
+          
+          if (_unreadCount > 0) ...[
+            const SizedBox(width: 8),
+            // Mark all as read button
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green[200]!, width: 1.5),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.done_all_rounded),
+                onPressed: _markAllAsRead,
+                iconSize: 20,
+                color: Colors.green[700],
+                padding: const EdgeInsets.all(8),
+                constraints: const BoxConstraints(),
+                tooltip: 'Đánh dấu tất cả đã đọc',
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomTabBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildTab(
+            index: 0,
+            label: 'Tất cả',
+            count: _notifications.length,
+            icon: Icons.inbox_rounded,
+          ),
+          const SizedBox(width: 4),
+          _buildTab(
+            index: 1,
+            label: 'Chưa đọc',
+            count: _unreadCount,
+            icon: Icons.mark_email_unread_rounded,
           ),
         ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thông báo'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'Tất cả (${_notifications.length})'),
-            Tab(text: 'Chưa đọc ($_unreadCount)'),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-            tooltip: 'Lọc',
-          ),
-          if (_unreadCount > 0)
-            IconButton(
-              icon: const Icon(Icons.done_all),
-              onPressed: _markAllAsRead,
-              tooltip: 'Đánh dấu tất cả đã đọc',
-            ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadNotifications();
-          await _loadUnreadCount();
+  Widget _buildTab({
+    required int index,
+    required String label,
+    required int count,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedTab == index;
+    
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          _tabController.animateTo(index);
         },
-        child: _buildNotificationList(),
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      AppMainColors.primary,
+                      AppMainColors.primaryDark,
+                    ],
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppMainColors.primary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected ? Colors.white : Colors.grey[600],
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? Colors.white : Colors.grey[700],
+                ),
+              ),
+              if (count > 0) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Colors.white.withOpacity(0.25)
+                        : AppMainColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : count.toString(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected
+                          ? Colors.white
+                          : AppMainColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildNotificationList() {
     if (_isLoading && _notifications.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_notifications.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.notifications_none,
-              size: 64,
-              color: Colors.grey[400],
+            CircularProgressIndicator(
+              color: AppMainColors.primary,
             ),
             const SizedBox(height: 16),
             Text(
-              'Không có thông báo',
+              'Đang tải thông báo...',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 color: Colors.grey[600],
               ),
             ),
@@ -315,15 +754,65 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       );
     }
 
-    return ListView.builder(
+    if (_notifications.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _selectedTab == 1
+                    ? Icons.mark_email_read_rounded
+                    : Icons.notifications_none_rounded,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _selectedTab == 1
+                  ? 'Không có thông báo chưa đọc'
+                  : 'Chưa có thông báo nào',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _selectedTab == 1
+                  ? 'Tất cả thông báo đã được đọc'
+                  : 'Thông báo sẽ hiển thị ở đây',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
       controller: _scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: _notifications.length + (_hasMore ? 1 : 0),
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         if (index == _notifications.length) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
+              padding: const EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(
+                color: AppMainColors.primary,
+                strokeWidth: 2,
+              ),
             ),
           );
         }

@@ -219,7 +219,9 @@ class NotificationConfigs {
       actionCode: NotificationActionCode.applicationReceived,
       routeName: '/job-applicants',
       extractRouteParams: (actionData) => {
-        'jobId': actionData?['job_id'],
+        'jobId': actionData?['jobId'] ?? actionData?['job_id'], // Support both formats
+        'userId': actionData?['userId'] ?? actionData?['user_id'],
+        'candidateId': actionData?['userId'] ?? actionData?['candidateId'],
       },
     ),
     NotificationActionCode.applicationApproved: NotificationActionConfig(

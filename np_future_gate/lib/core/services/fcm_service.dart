@@ -2,7 +2,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../repositories/device_token_repository.dart';
+import '../models/notification_model.dart';
+import '../../notification/models/notification_config.dart';
+import 'notification/notification_service.dart';
+import '../../main.dart'; // For navigatorKey
 
 /// Firebase Cloud Messaging Service
 /// Xử lý việc nhận và gửi push notifications
@@ -75,9 +80,59 @@ class FCMService {
     // Xử lý khi user tap vào local notification
     await _localNotifications.initialize(
       initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) {
-        print('📱 Local notification tapped: ${response.payload}');
-        // App sẽ tự động mở, không cần xử lý gì thêm
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        print('👉 =================================');
+        print('📱 Local notification tapped!');
+        print('📱 Payload: ${response.payload}');
+        print('📱 Action ID: ${response.actionId}');
+        print('📱 Notification ID: ${response.id}');
+        print('👉 =================================');
+        
+        // Parse data từ payload
+        if (response.payload != null && response.payload!.isNotEmpty) {
+          try {
+            // Parse JSON payload
+            final data = jsonDecode(response.payload!) as Map<String, dynamic>;
+            print('📦 Parsed data: $data');
+            
+            // Lấy context từ navigatorKey
+            final context = navigatorKey.currentContext;
+            print('🎯 Context available: ${context != null}');
+            print('🎯 Context mounted: ${context?.mounted ?? false}');
+            
+            if (context != null && context.mounted) {
+              // Sử dụng NotificationService để handle navigation
+              final notificationService = NotificationService();
+              print('✅ Creating NotificationModel...');
+              
+              // Tạo notification model tạm từ data
+              final notification = NotificationModel(
+                id: data['notificationId'] as String? ?? '',
+                createdAt: DateTime.now(),
+                updatedAt: DateTime.now(),
+                recipientIds: '', // Không cần thiết cho navigation
+                title: data['title'] as String? ?? 'Thông báo',
+                content: data['body'] as String? ?? '',
+                actionCode: data['type'] as String? ?? '',
+                actionData: data,
+                isActive: true,
+                type: NotificationType.info,
+                isRead: false,
+              );
+              
+              print('✅ Calling handleNotificationTap...');
+              await notificationService.handleNotificationTap(context, notification);
+              print('✅ Navigation completed');
+            } else {
+              print('❌ Context not available or not mounted');
+            }
+          } catch (e, stackTrace) {
+            print('❌ Error handling notification tap: $e');
+            print('❌ Stack trace: $stackTrace');
+          }
+        } else {
+          print('⚠️ Payload is null or empty');
+        }
       },
     );
   }
@@ -94,7 +149,7 @@ class FCMService {
       await _showLocalNotification(
         title: message.notification!.title ?? 'Notification',
         body: message.notification!.body ?? '',
-        payload: message.data.toString(),
+        payload: jsonEncode(message.data), // Convert to JSON string
       );
     }
   }
@@ -133,13 +188,50 @@ class FCMService {
   }
 
   /// Handle messages that opened the app
-  void _handleMessageOpenedApp(RemoteMessage message) {
-    print('📲 Message opened app:');
+  void _handleMessageOpenedApp(RemoteMessage message) async {
+    print('👉 =================================');
+    print('📲 Message opened app (from background)!');
     print('   Title: ${message.notification?.title}');
     print('   Body: ${message.notification?.body}');
     print('   Data: ${message.data}');
-    // App sẽ tự động mở về trang đầu (splash -> home)
-    // Không cần navigate thêm
+    print('👉 =================================');
+    
+    // Lấy context từ navigatorKey
+    final context = navigatorKey.currentContext;
+    print('🎯 Context available: ${context != null}');
+    print('🎯 Context mounted: ${context?.mounted ?? false}');
+    
+    if (context != null && context.mounted && message.data.isNotEmpty) {
+      try {
+        final notificationService = NotificationService();
+        print('✅ Creating NotificationModel from FCM data...');
+        
+        // Tạo notification model từ FCM data
+        final notification = NotificationModel(
+          id: message.data['notificationId'] as String? ?? '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          recipientIds: '',
+          title: message.notification?.title ?? 'Thông báo',
+          content: message.notification?.body ?? '',
+          actionCode: message.data['type'] as String? ?? '',
+          actionData: message.data,
+          isActive: true,
+          type: NotificationType.info,
+          isRead: false,
+        );
+        
+        print('✅ Calling handleNotificationTap...');
+        // Handle navigation
+        await notificationService.handleNotificationTap(context, notification);
+        print('✅ Navigation completed');
+      } catch (e, stackTrace) {
+        print('❌ Error handling message opened app: $e');
+        print('❌ Stack trace: $stackTrace');
+      }
+    } else {
+      print('❌ Cannot handle: context=${context != null}, data empty=${message.data.isEmpty}');
+    }
   }
 
   /// Save FCM token to database
@@ -201,6 +293,29 @@ class FCMService {
       }
     } catch (e) {
       print('❌ Error checking initial message: $e');
+    }
+  }
+  
+  /// Parse payload string to Map
+  Map<String, dynamic> _parsePayload(String payload) {
+    try {
+      // Payload format: "{key1: value1, key2: value2}"
+      // Simple parsing (not JSON)
+      final map = <String, dynamic>{};
+      final cleaned = payload.replaceAll('{', '').replaceAll('}', '');
+      final pairs = cleaned.split(', ');
+      
+      for (var pair in pairs) {
+        final keyValue = pair.split(': ');
+        if (keyValue.length == 2) {
+          map[keyValue[0]] = keyValue[1];
+        }
+      }
+      
+      return map;
+    } catch (e) {
+      print('❌ Error parsing payload: $e');
+      return {};
     }
   }
 }
