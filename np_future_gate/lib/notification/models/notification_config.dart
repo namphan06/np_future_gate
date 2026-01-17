@@ -228,7 +228,18 @@ class NotificationConfigs {
       actionCode: NotificationActionCode.applicationApproved,
       routeName: '/job-detail',
       extractRouteParams: (actionData) => {
-        'jobId': actionData?['job_id'],
+        'jobId': actionData?['jobId'] ?? actionData?['job_id'],
+        'userId': actionData?['userId'] ?? actionData?['user_id'],
+        'isApproved': true,
+      },
+    ),
+    NotificationActionCode.applicationRejected: NotificationActionConfig(
+      actionCode: NotificationActionCode.applicationRejected,
+      routeName: '/job-detail',
+      extractRouteParams: (actionData) => {
+        'jobId': actionData?['jobId'] ?? actionData?['job_id'],
+        'userId': actionData?['userId'] ?? actionData?['user_id'],
+        'isApproved': false,
       },
     ),
 

@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/notification_model.dart';
 import '../models/notification_config.dart';
 import '../../../core/repositories/notification_repository.dart';
-import '../../../core/services/notification/notification_service.dart';
+import '../../core/services/notification/status_notification_service.dart';
 import '../../../core/theme/app_main_colors.dart';
 import '../widgets/notification_item_widget.dart';
 
@@ -19,7 +19,7 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen>
     with SingleTickerProviderStateMixin {
   final NotificationRepository _repository = NotificationRepository();
-  final NotificationService _service = NotificationService();
+  final StatusNotificationService _service = StatusNotificationService();
   final ScrollController _scrollController = ScrollController();
 
   late TabController _tabController;

@@ -38,3 +38,6 @@ Supabase:
 Device:
 - Hiện tại mỗi lần đăng nhập sẽ lưu vào bảng dữ liệu cần lọc trước khi lưu để tránh trùng
 - Hiện tại buil trên máy nào thì mới gửi đi được thông báo trên thiết bị (test lại sau)
+
+Notification:
+- Hiện tại đã tạo thông báo với ứng tuyển cv,từ chối và đồng ý chưa test cơ chế giống từ chối

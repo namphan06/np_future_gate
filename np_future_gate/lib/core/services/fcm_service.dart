@@ -6,7 +6,7 @@ import 'dart:convert';
 import '../repositories/device_token_repository.dart';
 import '../models/notification_model.dart';
 import '../../notification/models/notification_config.dart';
-import 'notification/notification_service.dart';
+import 'notification/status_notification_service.dart';
 import '../../main.dart'; // For navigatorKey
 
 /// Firebase Cloud Messaging Service
@@ -102,7 +102,7 @@ class FCMService {
             
             if (context != null && context.mounted) {
               // Sử dụng NotificationService để handle navigation
-              final notificationService = NotificationService();
+              final notificationService = StatusNotificationService();
               print('✅ Creating NotificationModel...');
               
               // Tạo notification model tạm từ data
@@ -203,7 +203,7 @@ class FCMService {
     
     if (context != null && context.mounted && message.data.isNotEmpty) {
       try {
-        final notificationService = NotificationService();
+        final notificationService = StatusNotificationService();
         print('✅ Creating NotificationModel from FCM data...');
         
         // Tạo notification model từ FCM data
@@ -285,11 +285,57 @@ class FCMService {
       RemoteMessage? initialMessage = await _fcm.getInitialMessage();
       
       if (initialMessage != null) {
-        print('🚀 App opened from notification (terminated state):');
+        print('🚀 ========================================');
+        print('🚀 App opened from notification (terminated state)!');
         print('   Title: ${initialMessage.notification?.title}');
         print('   Body: ${initialMessage.notification?.body}');
         print('   Data: ${initialMessage.data}');
-        // App sẽ tự động mở về trang đầu
+        print('🚀 ========================================');
+        
+        // Đợi một chút để app render xong
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Lấy context từ navigatorKey
+        final context = navigatorKey.currentContext;
+        print('🎯 Context available: ${context != null}');
+        print('🎯 Context mounted: ${context?.mounted ?? false}');
+        
+        if (context != null && context.mounted && initialMessage.data.isNotEmpty) {
+          try {
+            final notificationService = StatusNotificationService();
+            print('✅ Creating NotificationModel from initial FCM data...');
+            
+            // Tạo notification model từ FCM data
+            final notification = NotificationModel(
+              id: initialMessage.data['notificationId'] as String? ?? '',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              recipientIds: '',
+              title: initialMessage.notification?.title ?? 'Thông báo',
+              content: initialMessage.notification?.body ?? '',
+              actionCode: initialMessage.data['type'] as String? ?? '',
+              actionData: initialMessage.data,
+              isActive: true,
+              type: NotificationType.info,
+              isRead: false,
+            );
+            
+            print('✅ Calling handleNotificationTap from terminated state...');
+            // Handle navigation
+            await notificationService.handleNotificationTap(context, notification);
+            print('✅ Navigation from terminated state completed');
+          } catch (e, stackTrace) {
+            print('❌ Error handling initial message: $e');
+            print('❌ Stack trace: $stackTrace');
+          }
+        } else {
+          print('⚠️ Cannot handle initial message:');
+          print('   Context: ${context != null}');
+          print('   Mounted: ${context?.mounted ?? false}');
+          print('   Has data: ${initialMessage.data.isNotEmpty}');
+        }
+      } else {
+        print('ℹ️ No initial message (app opened normally)');
       }
     } catch (e) {
       print('❌ Error checking initial message: $e');

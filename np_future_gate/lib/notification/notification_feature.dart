@@ -9,7 +9,7 @@ export '../core/models/notification_model.dart';
 export '../core/repositories/notification_repository.dart';
 
 // Services
-export '../core/services/notification/notification_service.dart';
+export '../core/services/notification/status_notification_service.dart';
 
 // Screens
 export 'screens/notifications_screen.dart';

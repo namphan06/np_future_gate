@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:np_future_gate/screens/employer/jobs/employer_jobs_screen.dart';
 import 'package:np_future_gate/screens/employer/jobs/job_applicants_screen.dart';
 import 'models/notification_config.dart';
-import '../core/services/notification/notification_service.dart';
-import 'actions/application_received_handler.dart';
+import '../core/services/notification/status_notification_service.dart';
+import 'actions/actions.dart';
 
 /// File này chứa cấu hình navigation cho notification system
 /// 
@@ -15,7 +15,7 @@ import 'actions/application_received_handler.dart';
 /// Setup navigation handler cho notification system
 /// Gọi hàm này trong main() hoặc khi khởi tạo app
 void setupNotificationNavigation() {
-  NotificationService.onNavigate = _handleNavigate;
+  StatusNotificationService.onNavigate = _handleNavigate;
 }
 
 /// Handler chính để navigate đến các screen
@@ -28,6 +28,7 @@ Future<void> _handleNavigate(
 
   // Initialize action handler
   final applicationReceivedHandler = ApplicationReceivedHandler();
+  final applicationStatusHandler = ApplicationStatusHandler();
 
   // TODO: Import các screen cần thiết ở đầu file
   // import '../job/screens/job_detail_screen.dart';
@@ -73,11 +74,20 @@ Future<void> _handleNavigate(
 
       case NotificationActionCode.applicationApproved:
       case NotificationActionCode.applicationRejected:
-      case NotificationActionCode.applicationViewed:
         final jobId = params['jobId'] as String?;
+        final userId = params['userId'] as String?;
+        final isApproved = params['isApproved'] as bool?;
+        
         if (jobId != null) {
-          // Navigate to job detail hoặc application detail
-          print('Navigate to Application detail with jobId: $jobId');
+          // Use action handler to navigate to job detail
+          await applicationStatusHandler.navigateToJobDetail(
+            context: context,
+            jobId: jobId,
+            userId: userId,
+            isApproved: isApproved,
+          );
+        } else {
+          print('Error: Missing jobId in application status action');
         }
         break;
 

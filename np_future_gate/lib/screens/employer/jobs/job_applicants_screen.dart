@@ -11,6 +11,7 @@ import '../../../core/repositories/interview_repository.dart';
 import '../../../core/services/cv_supabase_service.dart';
 import '../../../core/services/emailjs_service.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/notification/application_notification_service.dart';
 import '../../cv/cv_setting/cv_display_manager.dart';
 import '../../../core/theme/app_main_colors.dart';
 
@@ -39,6 +40,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   final InterviewRepository _interviewRepository = InterviewRepository();
   final CVSupabaseService _cvService = CVSupabaseService();
   final EmailJsService _emailService = EmailJsService();
+  final ApplicationNotificationService _notificationService = ApplicationNotificationService();
   
   Map<String, Profile> _profiles = {};
   bool _isLoading = true;
@@ -339,6 +341,35 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Đã cập nhật trạng thái thành ${_getStatusText(newStatus)}')),
         );
+      }
+      
+      // Send notification to candidate based on status
+      try {
+        final employerProfile = await _candidateRepository.getProfileById(_authRepository.currentUser!.id);
+        final employerName = employerProfile?.fullName ?? 'Nhà tuyển dụng';
+        
+        if (newStatus.toLowerCase() == 'accepted') {
+          // Send approved notification
+          await _notificationService.notifyApplicationApproved(
+            candidateId: userId,
+            jobId: widget.jobId,
+            jobTitle: _jobTitle ?? 'Công việc',
+            employerName: employerName,
+          );
+          print('✅ Sent application approved notification to candidate $userId');
+        } else if (newStatus.toLowerCase() == 'rejected') {
+          // Send rejected notification
+          await _notificationService.notifyApplicationRejected(
+            candidateId: userId,
+            jobId: widget.jobId,
+            jobTitle: _jobTitle ?? 'Công việc',
+            employerName: employerName,
+          );
+          print('✅ Sent application rejected notification to candidate $userId');
+        }
+      } catch (e) {
+        print('⚠️ Error sending notification to candidate: $e');
+        // Don't show error to user - notification is not critical
       }
       
       // Send rejection email if status is 'rejected'

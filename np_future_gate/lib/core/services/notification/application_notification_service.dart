@@ -208,4 +208,53 @@ class ApplicationNotificationService {
       print('❌ Error in notifyApplicationApproved: $e');
     }
   }
+
+  /// Gửi thông báo khi đơn ứng tuyển bị từ chối
+  Future<void> notifyApplicationRejected({
+    required String candidateId,
+    required String jobId,
+    required String jobTitle,
+    required String employerName,
+  }) async {
+    try {
+      // Tạo notification trong database
+      await _notificationRepo.createNotificationToUser(
+        userId: candidateId,
+        title: 'Đơn ứng tuyển bị từ chối',
+        content: 'Rất tiếc, đơn ứng tuyển của bạn vào vị trí "$jobTitle" đã không được chấp nhận',
+        actionCode: NotificationActionCode.applicationRejected,
+        actionData: {
+          'jobId': jobId,
+          'jobTitle': jobTitle,
+          'employerName': employerName,
+        },
+        type: NotificationType.warning,
+      );
+
+      // Lấy device tokens và gửi push notification
+      final deviceIds = await _deviceTokenRepo.getActiveDeviceIds(
+        userId: candidateId,
+        role: 'candidate',
+      );
+      
+      if (deviceIds.isEmpty) {
+        print('ℹ️ No active devices found for candidate');
+        return;
+      }
+
+      await PushNotificationService.sendNotificationToMultipleDevices(
+        deviceTokens: deviceIds,
+        title: 'Đơn ứng tuyển bị từ chối',
+        body: 'Rất tiếc, đơn ứng tuyển của bạn vào vị trí "$jobTitle" đã không được chấp nhận',
+        data: {
+          'type': 'application_rejected',
+          'jobId': jobId,
+        },
+      );
+      
+      print('✅ Push notifications sent to ${deviceIds.length} candidate device(s)');
+    } catch (e) {
+      print('❌ Error in notifyApplicationRejected: $e');
+    }
+  }
 }

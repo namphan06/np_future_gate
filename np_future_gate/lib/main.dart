@@ -49,8 +49,8 @@ void main() async {
     await FCMService().initialize();
     print('✅ FCM Service initialized');
     
-    // Check initial message (nếu app được mở từ notification khi terminated)
-    await FCMService().checkInitialMessage();
+    // Note: checkInitialMessage sẽ được gọi sau khi app render xong
+    // (từ MyApp._checkInitialNotification)
   } catch (e) {
     print('⚠️ FCM initialization error: $e');
   }
@@ -100,8 +100,29 @@ Future<void> _saveDeviceTokenForCurrentUser() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Check initial message sau khi widget tree đã build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkInitialNotification();
+    });
+  }
+
+  Future<void> _checkInitialNotification() async {
+    // Đợi thêm một chút để đảm bảo navigation đã sẵn sàng
+    await Future.delayed(const Duration(milliseconds: 1000));
+    print('🔍 Checking for initial notification...');
+    await FCMService().checkInitialMessage();
+  }
 
   @override
   Widget build(BuildContext context) {

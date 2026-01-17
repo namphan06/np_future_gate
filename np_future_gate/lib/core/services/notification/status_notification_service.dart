@@ -3,10 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/notification_model.dart';
 import '../../../notification/models/notification_config.dart';
 import '../../repositories/notification_repository.dart';
+import '../../repositories/device_token_repository.dart';
+import '../push_notification_service.dart';
 
 /// Service xử lý logic navigation và hiển thị thông báo
-class NotificationService {
+class StatusNotificationService {
   final NotificationRepository _repository = NotificationRepository();
+  final DeviceTokenRepository _deviceTokenRepo = DeviceTokenRepository();
 
   // Callback để navigate đến các screen
   // Set từ bên ngoài khi khởi tạo app
@@ -130,6 +133,48 @@ class NotificationService {
     }
   }
 
+  /// Gửi push notification đến thiết bị của user
+  Future<void> _sendPushNotificationToUser({
+    required String userId,
+    required String title,
+    required String body,
+    String? role,
+    Map<String, dynamic>? data,
+  }) async {
+    try {
+      print('📱 Sending push notification to user: $userId');
+      
+      // Lấy danh sách active device IDs
+      final deviceIds = await _deviceTokenRepo.getActiveDeviceIds(
+        userId: userId,
+        role: role,
+      );
+      
+      if (deviceIds.isEmpty) {
+        print('ℹ️ No active devices found for user: $userId');
+        return;
+      }
+      
+      print('📱 Found ${deviceIds.length} device(s)');
+      
+      // Gửi notification đến tất cả devices của user
+      final success = await PushNotificationService.sendNotificationToMultipleDevices(
+        deviceTokens: deviceIds,
+        title: title,
+        body: body,
+        data: data,
+      );
+      
+      if (success) {
+        print('✅ Push notifications sent to ${deviceIds.length} device(s)');
+      } else {
+        print('❌ Failed to send push notifications');
+      }
+    } catch (e) {
+      print('❌ Error sending push notification: $e');
+    }
+  }
+
   /// Tạo thông báo khi có đơn ứng tuyển mới
   Future<void> notifyNewApplication({
     required String employerId,
@@ -137,13 +182,30 @@ class NotificationService {
     required String jobTitle,
     required String candidateName,
   }) async {
+    final title = 'Đơn ứng tuyển mới';
+    final content = '$candidateName đã ứng tuyển vào vị trí $jobTitle';
+    
+    // Tạo thông báo trong database
     await _repository.createNotificationToUser(
       userId: employerId,
-      title: 'Đơn ứng tuyển mới',
-      content: '$candidateName đã ứng tuyển vào vị trí $jobTitle',
+      title: title,
+      content: content,
       actionCode: NotificationActionCode.applicationReceived,
       actionData: {'job_id': jobId},
       type: NotificationType.info,
+    );
+    
+    // Gửi push notification đến thiết bị
+    await _sendPushNotificationToUser(
+      userId: employerId,
+      title: title,
+      body: content,
+      role: 'employer',
+      data: {
+        'type': 'application_received',
+        'action_code': NotificationActionCode.applicationReceived.code,
+        'jobId': jobId,
+      },
     );
   }
 
@@ -155,16 +217,34 @@ class NotificationService {
     required String jobTitle,
     required DateTime interviewTime,
   }) async {
+    final title = 'Lịch phỏng vấn mới';
+    final content = 'Bạn có lịch phỏng vấn cho vị trí $jobTitle vào ${_formatDateTime(interviewTime)}';
+    
+    // Tạo thông báo trong database
     await _repository.createNotificationToUser(
       userId: candidateId,
-      title: 'Lịch phỏng vấn mới',
-      content: 'Bạn có lịch phỏng vấn cho vị trí $jobTitle vào ${_formatDateTime(interviewTime)}',
+      title: title,
+      content: content,
       actionCode: NotificationActionCode.interviewScheduled,
       actionData: {
         'interview_id': interviewId,
         'job_id': jobId,
       },
       type: NotificationType.requirement,
+    );
+    
+    // Gửi push notification đến thiết bị
+    await _sendPushNotificationToUser(
+      userId: candidateId,
+      title: title,
+      body: content,
+      role: 'candidate',
+      data: {
+        'type': 'interview_scheduled',
+        'action_code': NotificationActionCode.interviewScheduled.code,
+        'interviewId': interviewId,
+        'jobId': jobId,
+      },
     );
   }
 
@@ -174,13 +254,30 @@ class NotificationService {
     required String jobId,
     required String jobTitle,
   }) async {
+    final title = 'Công việc được duyệt';
+    final content = 'Tin tuyển dụng "$jobTitle" đã được phê duyệt';
+    
+    // Tạo thông báo trong database
     await _repository.createNotificationToUser(
       userId: employerId,
-      title: 'Công việc được duyệt',
-      content: 'Tin tuyển dụng "$jobTitle" đã được phê duyệt',
+      title: title,
+      content: content,
       actionCode: NotificationActionCode.jobApproved,
       actionData: {'job_id': jobId},
       type: NotificationType.success,
+    );
+    
+    // Gửi push notification đến thiết bị
+    await _sendPushNotificationToUser(
+      userId: employerId,
+      title: title,
+      body: content,
+      role: 'employer',
+      data: {
+        'type': 'job_approved',
+        'action_code': NotificationActionCode.jobApproved.code,
+        'jobId': jobId,
+      },
     );
   }
 
@@ -191,13 +288,31 @@ class NotificationService {
     required String jobTitle,
     required String reason,
   }) async {
+    final title = 'Công việc bị từ chối';
+    final content = 'Tin tuyển dụng "$jobTitle" đã bị từ chối. Lý do: $reason';
+    
+    // Tạo thông báo trong database
     await _repository.createNotificationToUser(
       userId: employerId,
-      title: 'Công việc bị từ chối',
-      content: 'Tin tuyển dụng "$jobTitle" đã bị từ chối. Lý do: $reason',
+      title: title,
+      content: content,
       actionCode: NotificationActionCode.jobRejected,
       actionData: {'job_id': jobId},
       type: NotificationType.error,
+    );
+    
+    // Gửi push notification đến thiết bị
+    await _sendPushNotificationToUser(
+      userId: employerId,
+      title: title,
+      body: content,
+      role: 'employer',
+      data: {
+        'type': 'job_rejected',
+        'action_code': NotificationActionCode.jobRejected.code,
+        'jobId': jobId,
+        'reason': reason,
+      },
     );
   }
 
@@ -207,13 +322,30 @@ class NotificationService {
     required String schoolName,
     required String partnershipId,
   }) async {
+    final title = 'Yêu cầu liên kết';
+    final content = '$schoolName muốn liên kết với doanh nghiệp của bạn';
+    
+    // Tạo thông báo trong database
     await _repository.createNotificationToUser(
       userId: companyId,
-      title: 'Yêu cầu liên kết',
-      content: '$schoolName muốn liên kết với doanh nghiệp của bạn',
+      title: title,
+      content: content,
       actionCode: NotificationActionCode.partnershipRequest,
       actionData: {'partnership_id': partnershipId},
       type: NotificationType.requirement,
+    );
+    
+    // Gửi push notification đến thiết bị
+    await _sendPushNotificationToUser(
+      userId: companyId,
+      title: title,
+      body: content,
+      role: 'employer',
+      data: {
+        'type': 'partnership_request',
+        'action_code': NotificationActionCode.partnershipRequest.code,
+        'partnershipId': partnershipId,
+      },
     );
   }
 
@@ -237,13 +369,30 @@ class NotificationService {
     required String jobTitle,
     required DateTime interviewTime,
   }) async {
+    final title = 'Nhắc nhở phỏng vấn';
+    final content = 'Bạn có lịch phỏng vấn cho vị trí $jobTitle vào ngày mai lúc ${_formatDateTime(interviewTime)}';
+    
+    // Tạo thông báo trong database
     await _repository.createNotificationToUser(
       userId: candidateId,
-      title: 'Nhắc nhở phỏng vấn',
-      content: 'Bạn có lịch phỏng vấn cho vị trí $jobTitle vào ngày mai lúc ${_formatDateTime(interviewTime)}',
+      title: title,
+      content: content,
       actionCode: NotificationActionCode.interviewReminder,
       actionData: {'interview_id': interviewId},
       type: NotificationType.reminder,
+    );
+    
+    // Gửi push notification đến thiết bị
+    await _sendPushNotificationToUser(
+      userId: candidateId,
+      title: title,
+      body: content,
+      role: 'candidate',
+      data: {
+        'type': 'interview_reminder',
+        'action_code': NotificationActionCode.interviewReminder.code,
+        'interviewId': interviewId,
+      },
     );
   }
 

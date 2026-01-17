@@ -64,6 +64,12 @@ class PushNotificationService {
       // Get OAuth2 token
       final accessToken = await _getAccessToken();
       
+      // Convert all data values to strings (FCM requirement)
+      final stringData = <String, String>{};
+      data?.forEach((key, value) {
+        stringData[key] = value.toString();
+      });
+      
       // Prepare FCM message
       final message = {
         'message': {
@@ -72,12 +78,13 @@ class PushNotificationService {
             'title': title,
             'body': body,
           },
-          'data': data ?? {},
+          'data': stringData,
           'android': {
             'priority': 'high',
             'notification': {
               'sound': 'default',
               'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'channel_id': 'fcm_channel',
             },
           },
           'apns': {
@@ -87,6 +94,7 @@ class PushNotificationService {
             'payload': {
               'aps': {
                 'sound': 'default',
+                'category': 'FLUTTER_NOTIFICATION_CLICK',
               },
             },
           },
@@ -160,6 +168,12 @@ class PushNotificationService {
       
       final accessToken = await _getAccessToken();
       
+      // Convert all data values to strings (FCM requirement)
+      final stringData = <String, String>{};
+      data?.forEach((key, value) {
+        stringData[key] = value.toString();
+      });
+      
       final message = {
         'message': {
           'topic': topic,
@@ -167,9 +181,25 @@ class PushNotificationService {
             'title': title,
             'body': body,
           },
-          'data': data ?? {},
+          'data': stringData,
           'android': {
             'priority': 'high',
+            'notification': {
+              'sound': 'default',
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'channel_id': 'fcm_channel',
+            },
+          },
+          'apns': {
+            'headers': {
+              'apns-priority': '10',
+            },
+            'payload': {
+              'aps': {
+                'sound': 'default',
+                'category': 'FLUTTER_NOTIFICATION_CLICK',
+              },
+            },
           },
         }
       };

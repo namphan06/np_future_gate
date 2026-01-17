@@ -70,4 +70,22 @@ class CandidateRepository {
       return [];
     }
   }
+
+  /// Lấy thông tin profile theo ID
+  Future<Profile?> getProfileById(String userId) async {
+    try {
+      final response = await _client
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (response == null) return null;
+      
+      return Profile.fromJson(response);
+    } catch (e) {
+      print('Error fetching profile by ID: $e');
+      return null;
+    }
+  }
 }
