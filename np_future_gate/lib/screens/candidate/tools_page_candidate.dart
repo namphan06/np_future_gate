@@ -6,6 +6,7 @@ import 'applied_jobs_screen.dart';
 import 'saved_jobs_screen.dart';
 import 'companies_list_screen.dart';
 import 'school_jobs_screen.dart';
+import '../career_news/career_news_screen.dart';
 
 class ToolsPageCandidate extends StatelessWidget {
   const ToolsPageCandidate({super.key});
@@ -345,24 +346,24 @@ class ToolsPageCandidate extends StatelessWidget {
                           color: Colors.orange,
                           onTap: () => _showComingSoon(context, 'MI Test'),
                         ),
-                        const SizedBox(height: 12),
-                        _buildToolListItem(
-                          context,
-                          icon: Icons.calculate,
-                          title: 'Tính thuế TNCN',
-                          subtitle: 'Tính thuế thu nhập cá nhân',
-                          color: Colors.teal,
-                          onTap: () => _showComingSoon(context, 'Tính thuế TNCN'),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildToolListItem(
-                          context,
-                          icon: Icons.attach_money,
-                          title: 'Tính lương NET',
-                          subtitle: 'Chuyển đổi lương NET/GROSS',
-                          color: Colors.green,
-                          onTap: () => _showComingSoon(context, 'Tính lương NET'),
-                        ),
+                        // const SizedBox(height: 12),
+                        // _buildToolListItem(
+                        //   context,
+                        //   icon: Icons.calculate,
+                        //   title: 'Tính thuế TNCN',
+                        //   subtitle: 'Tính thuế thu nhập cá nhân',
+                        //   color: Colors.teal,
+                        //   onTap: () => _showComingSoon(context, 'Tính thuế TNCN'),
+                        // ),
+                        // const SizedBox(height: 12),
+                        // _buildToolListItem(
+                        //   context,
+                        //   icon: Icons.attach_money,
+                        //   title: 'Tính lương NET',
+                        //   subtitle: 'Chuyển đổi lương NET/GROSS',
+                        //   color: Colors.green,
+                        //   onTap: () => _showComingSoon(context, 'Tính lương NET'),
+                        // ),
                         const SizedBox(height: 12),
                         _buildToolListItem(
                           context,
@@ -379,7 +380,14 @@ class ToolsPageCandidate extends StatelessWidget {
                           title: 'Tin tức nghề nghiệp',
                           subtitle: 'Xu hướng & cơ hội việc làm',
                           color: Colors.indigo,
-                          onTap: () => _showComingSoon(context, 'Tin tức'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CareerNewsScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

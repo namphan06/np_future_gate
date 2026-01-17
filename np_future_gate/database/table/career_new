@@ -1,0 +1,121 @@
+-- Tạo bảng career_news
+CREATE TABLE public.career_news (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  
+  -- Thông tin cơ bản
+  title text NOT NULL,
+  slug text UNIQUE,
+  excerpt text, -- Mô tả ngắn (SEO)
+  content text NOT NULL, -- Nội dung đầy đủ (HTML hoặc Markdown)
+  
+  -- Media
+  cover_image_url text, -- URL ảnh bìa từ Storage bucket
+  
+  -- Phân loại
+  category text NOT NULL CHECK (category IN ('market_trends', 'company_news', 'industry_insights', 'career_tips', 'events')),
+  tags text[] DEFAULT '{}', -- Mảng tags tự do, ví dụ: ['IT', 'Remote', 'Startup']
+  
+  -- Liên kết công ty
+  related_company_ids uuid[] DEFAULT '{}', -- Mảng ID của các employer liên quan
+  
+  -- Trạng thái & SEO
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+  is_featured boolean DEFAULT false, -- Tin nổi bật
+  is_pinned boolean DEFAULT false, -- Ghim lên đầu
+  
+  -- Metadata
+  author_id uuid REFERENCES auth.users(id), -- Admin tạo tin
+  view_count integer DEFAULT 0,
+  
+  -- SEO
+  meta_title text,
+  meta_description text
+);
+-- Index để tìm kiếm nhanh
+CREATE INDEX idx_career_news_category ON public.career_news(category);
+CREATE INDEX idx_career_news_status ON public.career_news(status);
+CREATE INDEX idx_career_news_created_at ON public.career_news(created_at DESC);
+CREATE INDEX idx_career_news_featured ON public.career_news(is_featured) WHERE is_featured = true;
+-- Trigger cập nhật updated_at
+CREATE OR REPLACE FUNCTION update_career_news_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER career_news_updated_at
+  BEFORE UPDATE ON public.career_news
+  FOR EACH ROW
+  EXECUTE FUNCTION update_career_news_updated_at();
+-- Auto-generate slug from title
+CREATE OR REPLACE FUNCTION generate_news_slug()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.slug IS NULL OR NEW.slug = '' THEN
+    NEW.slug = lower(regexp_replace(NEW.title, '[^a-zA-Z0-9]+', '-', 'g')) || '-' || substr(NEW.id::text, 1, 8);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER career_news_slug
+  BEFORE INSERT ON public.career_news
+  FOR EACH ROW
+  EXECUTE FUNCTION generate_news_slug();
+
+
+
+-- Enable RLS
+ALTER TABLE public.career_news ENABLE ROW LEVEL SECURITY;
+-- Everyone can read published news
+CREATE POLICY "Anyone can read published news"
+  ON public.career_news
+  FOR SELECT
+  USING (status = 'published');
+-- Admin can do everything
+CREATE POLICY "Admin can manage all news"
+  ON public.career_news
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role = 'admin'
+    )
+  );
+
+
+-- Tạo bucket (chạy trong Supabase Dashboard hoặc qua API)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('career-news-images', 'career-news-images', true);
+-- Policies cho bucket
+-- Cho phép mọi người xem ảnh
+CREATE POLICY "Public read access"
+  ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'career-news-images');
+-- Chỉ admin được upload/delete
+CREATE POLICY "Admin upload access"
+  ON storage.objects
+  FOR INSERT
+  WITH CHECK (
+    bucket_id = 'career-news-images'
+    AND EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role = 'admin'
+    )
+  );
+CREATE POLICY "Admin delete access"
+  ON storage.objects
+  FOR DELETE
+  USING (
+    bucket_id = 'career-news-images'
+    AND EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role = 'admin'
+    )
+  );
