@@ -139,29 +139,6 @@ class DeviceTokenRepository {
     }
   }
 
-  /// Cập nhật notification settings cho device
-  Future<bool> updateNotificationSettings({
-    required String deviceToken,
-    required String userId,
-    required Map<String, dynamic> settings,
-  }) async {
-    try {
-      final response = await _supabase.rpc(
-        'update_device_notification_settings',
-        params: {
-          'p_device_id': deviceToken,
-          'p_user_id': userId,
-          'p_settings': settings,
-        },
-      );
-
-      return response as bool? ?? false;
-    } catch (e) {
-      print('Error updating notification settings: $e');
-      return false;
-    }
-  }
-
   /// Kiểm tra có nên gửi notification cho device không
   Future<bool> shouldSendNotification({
     required String deviceToken,
@@ -283,6 +260,78 @@ class DeviceTokenRepository {
       return true;
     } catch (e) {
       print('Error updating user role: $e');
+      return false;
+    }
+  }
+
+  /// Lấy notification settings của user hiện tại
+  Future<Map<String, dynamic>?> getNotificationSettings({
+    required String userId,
+    required String deviceToken,
+  }) async {
+    try {
+      final response = await _supabase
+          .from('device_tokens')
+          .select('notification_settings')
+          .eq('user_id', userId)
+          .eq('device_id', deviceToken)
+          .eq('is_active', true)
+          .maybeSingle();
+
+      return response?['notification_settings'] as Map<String, dynamic>?;
+    } catch (e) {
+      print('Error getting notification settings: $e');
+      return null;
+    }
+  }
+
+  /// Cập nhật notification settings cho device token cụ thể
+  Future<bool> updateNotificationSettings({
+    required String userId,
+    required String deviceToken,
+    required Map<String, dynamic> settings,
+  }) async {
+    try {
+      print('📝 Updating notification settings...');
+      print('   User ID: $userId');
+      print('   Device Token: ${deviceToken.substring(0, 20)}...');
+      print('   Settings: $settings');
+
+      await _supabase
+          .from('device_tokens')
+          .update({'notification_settings': settings})
+          .eq('user_id', userId)
+          .eq('device_id', deviceToken)
+          .eq('is_active', true);
+
+      print('✅ Notification settings updated successfully');
+      return true;
+    } catch (e) {
+      print('❌ Error updating notification settings: $e');
+      return false;
+    }
+  }
+
+  /// Cập nhật notification settings cho tất cả devices của user
+  Future<bool> updateNotificationSettingsForAllDevices({
+    required String userId,
+    required Map<String, dynamic> settings,
+  }) async {
+    try {
+      print('📝 Updating notification settings for all devices...');
+      print('   User ID: $userId');
+      print('   Settings: $settings');
+
+      await _supabase
+          .from('device_tokens')
+          .update({'notification_settings': settings})
+          .eq('user_id', userId)
+          .eq('is_active', true);
+
+      print('✅ Notification settings updated for all devices');
+      return true;
+    } catch (e) {
+      print('❌ Error updating notification settings for all devices: $e');
       return false;
     }
   }

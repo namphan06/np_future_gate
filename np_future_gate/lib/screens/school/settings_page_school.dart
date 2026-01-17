@@ -6,6 +6,7 @@ import '../../widgets/animated_avatar.dart';
 import '../auth/login_screen.dart';
 import '../auth/change_password_screen.dart';
 import 'school_email_setup_screen.dart';
+import '../settings/notification_settings_screen.dart';
 
 class SettingsPageSchool extends StatefulWidget {
   const SettingsPageSchool({super.key});
@@ -275,7 +276,12 @@ class _SettingsPageSchoolState extends State<SettingsPageSchool> {
                           title: 'Cài đặt thông báo',
                           subtitle: 'Quản lý thông báo push, email',
                           color: Colors.indigo,
-                          onTap: () => _showComingSoon(context, 'Cài đặt thông báo'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationSettingsScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

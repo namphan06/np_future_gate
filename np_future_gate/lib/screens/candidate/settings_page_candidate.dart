@@ -7,6 +7,7 @@ import '../../core/services/supabase_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/models/profile_model.dart';
 import '../profile/edit_profile_screen.dart';
+import '../settings/notification_settings_screen.dart';
 
 class SettingsPageCandidate extends StatefulWidget {
   const SettingsPageCandidate({super.key});
@@ -295,7 +296,12 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                           title: 'Cài đặt thông báo',
                           subtitle: 'Quản lý thông báo push, email',
                           color: Colors.purple,
-                          onTap: () => _showComingSoon(context, 'Cài đặt thông báo'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationSettingsScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

@@ -7,6 +7,7 @@ import '../../core/repositories/auth_repository.dart';
 import '../../widgets/animated_avatar.dart';
 import 'edit_company_profile_screen.dart';
 import 'email_notification_settings_screen.dart';
+import '../settings/notification_settings_screen.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -305,7 +306,12 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           title: 'Cài đặt thông báo',
                           subtitle: 'Quản lý thông báo push, email',
                           color: Colors.indigo,
-                          onTap: () => _showComingSoon(context, 'Cài đặt thông báo'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationSettingsScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(
