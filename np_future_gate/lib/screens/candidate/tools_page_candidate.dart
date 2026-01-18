@@ -7,6 +7,7 @@ import 'saved_jobs_screen.dart';
 import 'companies_list_screen.dart';
 import 'school_jobs_screen.dart';
 import '../career_news/career_news_screen.dart';
+import '../courses/courses_screen.dart';
 
 class ToolsPageCandidate extends StatelessWidget {
   const ToolsPageCandidate({super.key});
@@ -371,7 +372,14 @@ class ToolsPageCandidate extends StatelessWidget {
                           title: 'Khóa học',
                           subtitle: 'Khóa học kỹ năng & nghề nghiệp',
                           color: Colors.blue,
-                          onTap: () => _showComingSoon(context, 'Khóa học'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CoursesScreen(),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 12),
                         _buildToolListItem(

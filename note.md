@@ -29,11 +29,12 @@ Chung:
 - Có thể xem lại cách xác minh tài khoản trường học và học sinh trong trường (hiện tại đang xác minh thông qua đuôi email)
 - Notification và device token đang RLS disable (Kiểm tra lại các quyền để chỉnh sau )
 - Chưa dùng đến notification_reads
-- Thông báo chưa chuyển được đến action cần thiết chỉnh lại sau 
+- Thông báo chưa chuyển được đến action cần thiết chỉnh lại sau
+- Chi tiết công việc cần cải thiện giao 
 
 
 Supabase:
-- Hiện tại đã thay đổi delete cho role school để có thể xoá ngay cả khi company đã phê duyệt ban đầu là chỉ đuwocj xoá trước khi phê duyệt
+- Hiện tại đã thay đổi delete cho role school để có thể xoá ngay cả khi company đã phê duyệt ban đầu là chỉ được xoá trước khi phê duyệt
 
 Device:
 - Hiện tại mỗi lần đăng nhập sẽ lưu vào bảng dữ liệu cần lọc trước khi lưu để tránh trùng
