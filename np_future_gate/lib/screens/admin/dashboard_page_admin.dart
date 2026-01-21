@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'job_approval_page_admin.dart';
 import '../../core/repositories/job_repository.dart';
 
@@ -11,8 +12,21 @@ class DashboardPageAdmin extends StatefulWidget {
 
 class _DashboardPageAdminState extends State<DashboardPageAdmin> {
   final JobRepository _jobRepository = JobRepository();
-  int _pendingJobsCount = 0;
+  final SupabaseClient _supabase = Supabase.instance.client;
+  
+  // Loading state
   bool _isLoading = true;
+  
+  // Dashboard stats
+  int _totalUsersCount = 0;
+  int _pendingJobsCount = 0;
+  int _totalApplicationsCount = 0;
+  int _totalCompaniesCount = 0;
+  
+  // Percentage changes (placeholder for now)
+  double _usersChangePercent = 12.5;
+  double _applicationsChangePercent = 15.3;
+  double _companiesChangePercent = -2.4;
 
   @override
   void initState() {
@@ -22,28 +36,114 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
 
   Future<void> _loadStats() async {
     try {
-      // Load from BOTH tables
+      // Load all stats in parallel
+      final results = await Future.wait([
+        _getTotalUsersCount(),
+        _getPendingJobsCount(),
+        _getTotalApplicationsCount(),
+        _getTotalCompaniesCount(),
+      ]);
+      
+      if (mounted) {
+        setState(() {
+          _totalUsersCount = results[0] as int;
+          _pendingJobsCount = results[1] as int;
+          _totalApplicationsCount = results[2] as int;
+          _totalCompaniesCount = results[3] as int;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading stats: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Get total users count (all roles)
+  Future<int> _getTotalUsersCount() async {
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select('id')
+          .count(CountOption.exact);
+      
+      return response.count ?? 0;
+    } catch (e) {
+      print('Error fetching total users: $e');
+      return 0;
+    }
+  }
+
+  /// Get pending jobs count (from both regular and partnership jobs)
+  Future<int> _getPendingJobsCount() async {
+    try {
       final results = await Future.wait([
         _jobRepository.getPendingJobs(),
         _jobRepository.getPendingPartnershipJobs(),
       ]);
       
-      final regularJobs = results[0];
-      final partnershipJobs = results[1];
+      final regularJobs = results[0] as List;
+      final partnershipJobs = results[1] as List;
       
-      if (mounted) {
-        setState(() {
-          // Total count from both tables
-          _pendingJobsCount = regularJobs.length + partnershipJobs.length;
-          _isLoading = false;
-        });
-      }
+      return regularJobs.length + partnershipJobs.length;
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+      print('Error fetching pending jobs: $e');
+      return 0;
+    }
+  }
+
+  /// Get total applications count
+  Future<int> _getTotalApplicationsCount() async {
+    try {
+      // Get all jobs to count applications
+      final jobsResponse = await _supabase
+          .from('jobs')
+          .select('applicants');
+      
+      int totalApplications = 0;
+      for (var job in jobsResponse as List) {
+        final applicants = job['applicants'] as List?;
+        if (applicants != null) {
+          totalApplications += applicants.length;
+        }
       }
+      
+      // Also count partnership job applications
+      final partnershipJobsResponse = await _supabase
+          .from('school_partnership_jobs')
+          .select('applicants');
+      
+      for (var job in partnershipJobsResponse as List) {
+        final applicants = job['applicants'] as List?;
+        if (applicants != null) {
+          totalApplications += applicants.length;
+        }
+      }
+      
+      return totalApplications;
+    } catch (e) {
+      print('Error fetching total applications: $e');
+      return 0;
+    }
+  }
+
+  /// Get total companies count (employers)
+  Future<int> _getTotalCompaniesCount() async {
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'employer')
+          .count(CountOption.exact);
+      
+      return response.count ?? 0;
+    } catch (e) {
+      print('Error fetching total companies: $e');
+      return 0;
     }
   }
 
@@ -84,7 +184,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
             children: [
               _buildStatCard(
                 title: 'Tổng người dùng',
-                value: '12,458',
+                value: _isLoading ? '...' : '$_totalUsersCount',
                 change: '+12.5%',
                 isPositive: true,
                 icon: Icons.people,
@@ -100,7 +200,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
               ),
               _buildStatCard(
                 title: 'Ứng tuyển',
-                value: '28,567',
+                value: _isLoading ? '...' : '$_totalApplicationsCount',
                 change: '+15.3%',
                 isPositive: true,
                 icon: Icons.description,
@@ -108,7 +208,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
               ),
               _buildStatCard(
                 title: 'Công ty',
-                value: '1,234',
+                value: _isLoading ? '...' : '$_totalCompaniesCount',
                 change: '-2.4%',
                 isPositive: false,
                 icon: Icons.business,
