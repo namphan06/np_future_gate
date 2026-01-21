@@ -1,5 +1,6 @@
 User:
 - Việc làm hôm nay đang lấy theo ngày tạo nên khi sửa lại deadline cho tin tuyển dụng thì vẫn không hiển thị chỉ hiển thị ở tìm kiếm việc làm (done)
+- Chưa có phân trang trong phần tìm kiếm
 
 
 Employer:
@@ -31,6 +32,7 @@ Chung:
 - Chưa dùng đến notification_reads
 - Thông báo chưa chuyển được đến action cần thiết chỉnh lại sau
 - Chi tiết công việc cần cải thiện giao 
+- Trang cài đặt thông báo cần chỉnh lại tuỳ cho từng đối tượng và có thể liên kết đến việc các côgn ty ứng viên theo dõi 
 
 
 Supabase:
