@@ -25,7 +25,7 @@ School:
 - Homepage thống kê mặc định là 0 cho các chỉ số (done)
 - Hiện tại việc sửa tin liên kết có thể không khả thi vì công ty sẽ phải duyệt nhiều lần và thường sẽ lấy tin từ thông tin có sẵn nên có thể xem xét
 - Nhà trường chưa có phần thông báo
-- Hiện phần yêu cầu liên kết đang hiển thị của cả bên tuyển dụng khác hiển thị tất cả cần sử lại để hiển thị các tin của mình thôi
+
 
 Chung:
 - Thêm thông báo khi gửi thông báo đến thiết bị 

@@ -4,6 +4,7 @@ import 'jobs/create_school_job_screen.dart';
 import 'partnership/partnership_requests_screen.dart';
 import 'partnership/companies_list_screen.dart';
 import 'evaluation/school_view_evaluations_screen.dart';
+import 'statistics/school_statistics_screen.dart';
 
 class ToolsPageSchool extends StatelessWidget {
   const ToolsPageSchool({super.key});
@@ -256,6 +257,14 @@ class ToolsPageSchool extends StatelessWidget {
                         title: 'Thống kê',
                         subtitle: 'Báo cáo tuyển dụng',
                         color: Colors.indigo,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SchoolStatisticsScreen(),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 10),
                       _buildToolListItem(
