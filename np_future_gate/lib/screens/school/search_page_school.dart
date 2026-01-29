@@ -27,6 +27,10 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   Set<String> _partnerCompanyIds = {};
   bool _isLoading = true;
   String _searchQuery = '';
+  
+  // Pagination
+  int _currentPage = 1;
+  final int _itemsPerPage = 3;
 
   @override
   void initState() {
@@ -149,6 +153,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   void _filterEmployers(String query) {
     setState(() {
       _searchQuery = query;
+      _currentPage = 1; // Reset to first page when filtering
       if (query.isEmpty) {
         _filteredEmployers = _allEmployers;
       } else {
@@ -165,6 +170,107 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
         }).toList();
       }
     });
+  }
+  
+  Widget _buildPaginationControls() {
+    final totalPages = (_filteredEmployers.length / _itemsPerPage).ceil();
+    if (totalPages <= 1) return const SizedBox.shrink();
+    
+    return Container(
+      margin: const EdgeInsets.only(top: 40, bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Previous button
+          IconButton(
+            onPressed: _currentPage > 1
+                ? () {
+                    setState(() {
+                      _currentPage--;
+                    });
+                  }
+                : null,
+            icon: Icon(
+              Icons.chevron_left,
+              color: _currentPage > 1 ? AppMainColors.primary : Colors.grey.shade300,
+            ),
+          ),
+          
+          // Page numbers
+          ..._buildPageNumbers(totalPages),
+          
+          // Next button
+          IconButton(
+            onPressed: _currentPage < totalPages
+                ? () {
+                    setState(() {
+                      _currentPage++;
+                    });
+                  }
+                : null,
+            icon: Icon(
+              Icons.chevron_right,
+              color: _currentPage < totalPages ? AppMainColors.primary : Colors.grey.shade300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  List<Widget> _buildPageNumbers(int totalPages) {
+    List<Widget> pages = [];
+    
+    for (int i = 1; i <= totalPages; i++) {
+      if (i == 1 || i == totalPages || (i >= _currentPage - 1 && i <= _currentPage + 1)) {
+        pages.add(
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _currentPage = i;
+              });
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _currentPage == i ? AppMainColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$i',
+                style: TextStyle(
+                  color: _currentPage == i ? Colors.white : Colors.black87,
+                  fontWeight: _currentPage == i ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        );
+      } else if (i == _currentPage - 2 || i == _currentPage + 2) {
+        pages.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text('...', style: TextStyle(color: Colors.grey.shade600)),
+          ),
+        );
+      }
+    }
+    
+    return pages;
   }
 
   @override
@@ -253,16 +359,35 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
                               ],
                             ),
                           )
-                        : RefreshIndicator(
-                            onRefresh: _loadEmployers,
-                            color: AppMainColors.primary,
-                            child: ListView.builder(
-                              itemCount: _filteredEmployers.length,
-                              itemBuilder: (context, index) {
-                                final employer = _filteredEmployers[index];
-                                return _buildEmployerCard(employer);
-                              },
-                            ),
+                        : Column(
+                            children: [
+                              Expanded(
+                                child: RefreshIndicator(
+                                  onRefresh: _loadEmployers,
+                                  color: AppMainColors.primary,
+                                  child: Builder(
+                                    builder: (context) {
+                                      final totalPages = (_filteredEmployers.length / _itemsPerPage).ceil();
+                                      if (_currentPage > totalPages && totalPages > 0) {
+                                        _currentPage = totalPages;
+                                      }
+                                      final startIndex = (_currentPage - 1) * _itemsPerPage;
+                                      final endIndex = (startIndex + _itemsPerPage).clamp(0, _filteredEmployers.length);
+                                      final paginatedEmployers = _filteredEmployers.sublist(startIndex, endIndex);
+                                      
+                                      return ListView.builder(
+                                        itemCount: paginatedEmployers.length,
+                                        itemBuilder: (context, index) {
+                                          final employer = paginatedEmployers[index];
+                                          return _buildEmployerCard(employer);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              _buildPaginationControls(),
+                            ],
                           ),
               ),
             ],

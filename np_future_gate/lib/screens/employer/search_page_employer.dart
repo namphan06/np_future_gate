@@ -35,6 +35,10 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
   String _searchQuery = '';
   final _searchController = TextEditingController();
   
+  // Pagination
+  int _currentPage = 1;
+  final int _itemsPerPage = 3;
+  
   @override
   void initState() {
     super.initState();
@@ -74,6 +78,106 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
         SnackBar(content: Text('Lỗi cập nhật theo dõi: $e')),
       );
     }
+  }
+
+  Widget _buildPaginationControls(int totalPages) {
+    if (totalPages <= 1) return const SizedBox.shrink();
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20, top: 20, left: 20, right: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Previous button
+          IconButton(
+            onPressed: _currentPage > 1
+                ? () {
+                    setState(() {
+                      _currentPage--;
+                    });
+                  }
+                : null,
+            icon: Icon(
+              Icons.chevron_left,
+              color: _currentPage > 1 ? AppMainColors.primary : Colors.grey.shade300,
+            ),
+          ),
+          
+          // Page numbers
+          ..._buildPageNumbers(totalPages),
+          
+          // Next button
+          IconButton(
+            onPressed: _currentPage < totalPages
+                ? () {
+                    setState(() {
+                      _currentPage++;
+                    });
+                  }
+                : null,
+            icon: Icon(
+              Icons.chevron_right,
+              color: _currentPage < totalPages ? AppMainColors.primary : Colors.grey.shade300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  List<Widget> _buildPageNumbers(int totalPages) {
+    List<Widget> pages = [];
+    
+    for (int i = 1; i <= totalPages; i++) {
+      if (i == 1 || i == totalPages || (i >= _currentPage - 1 && i <= _currentPage + 1)) {
+        pages.add(
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _currentPage = i;
+              });
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _currentPage == i ? AppMainColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '$i',
+                style: TextStyle(
+                  color: _currentPage == i ? Colors.white : Colors.black87,
+                  fontWeight: _currentPage == i ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        );
+      } else if (i == _currentPage - 2 || i == _currentPage + 2) {
+        pages.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text('...', style: TextStyle(color: Colors.grey.shade600)),
+          ),
+        );
+      }
+    }
+    
+    return pages;
   }
 
   @override
@@ -204,9 +308,10 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
             // Filters Panel
             if (_showFilters)
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  maxHeight: MediaQuery.of(context).size.height * 0.49
+                  ,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -340,13 +445,29 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                     );
                   }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
-                    itemCount: profiles.length,
-                    itemBuilder: (context, index) {
-                      final profile = profiles[index];
-                      return _buildCandidateCard(profile);
-                    },
+                  // Calculate pagination
+                  final totalPages = (profiles.length / _itemsPerPage).ceil();
+                  if (_currentPage > totalPages && totalPages > 0) {
+                    _currentPage = totalPages;
+                  }
+                  final startIndex = (_currentPage - 1) * _itemsPerPage;
+                  final endIndex = (startIndex + _itemsPerPage).clamp(0, profiles.length);
+                  final paginatedProfiles = profiles.sublist(startIndex, endIndex);
+
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                          itemCount: paginatedProfiles.length,
+                          itemBuilder: (context, index) {
+                            final profile = paginatedProfiles[index];
+                            return _buildCandidateCard(profile);
+                          },
+                        ),
+                      ),
+                      _buildPaginationControls(totalPages),
+                    ],
                   );
                 },
               ),

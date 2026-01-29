@@ -1,6 +1,7 @@
 User:
 - Việc làm hôm nay đang lấy theo ngày tạo nên khi sửa lại deadline cho tin tuyển dụng thì vẫn không hiển thị chỉ hiển thị ở tìm kiếm việc làm (done)
-- Chưa có phân trang trong phần tìm kiếm
+- Chưa có phân trang trong phần tìm kiếm (done)
+- profile nơi có thể làm việc phải hiện list chứ không phải nhập 
 
 
 Employer:
@@ -17,13 +18,14 @@ Admin:
 
 
 School:
-- Hiện tại kiên kết doanh nghiệp chưa có dấu hiệu phên biệt doanh nghiệp đã liên kết và chưa liên kết ở trang tìm kiếm nhà tuyển dụng (done)
+- Hiện tại liên kết doanh nghiệp chưa có dấu hiệu phên biệt doanh nghiệp đã liên kết và chưa liên kết ở trang tìm kiếm nhà tuyển dụng (done)
 - Hiện tại chưa thay đổi được trạng thái dừng liên kết
 - Tin tuyển dụng liên kết doanh nghiệp cần lấy thông tin doanh nghiệp hoặc thay đổi phương thức để có thẻ sửa được (hiện tại lấy thiếu doanh nghiệp không thể sửa được)
 - Tin liên kết chưa xoá được
 - Homepage thống kê mặc định là 0 cho các chỉ số (done)
 - Hiện tại việc sửa tin liên kết có thể không khả thi vì công ty sẽ phải duyệt nhiều lần và thường sẽ lấy tin từ thông tin có sẵn nên có thể xem xét
 - Nhà trường chưa có phần thông báo
+- Hiện phần yêu cầu liên kết đang hiển thị của cả bên tuyển dụng khác hiển thị tất cả cần sử lại để hiển thị các tin của mình thôi
 
 Chung:
 - Thêm thông báo khi gửi thông báo đến thiết bị 
@@ -33,6 +35,8 @@ Chung:
 - Thông báo chưa chuyển được đến action cần thiết chỉnh lại sau
 - Chi tiết công việc cần cải thiện giao 
 - Trang cài đặt thông báo cần chỉnh lại tuỳ cho từng đối tượng và có thể liên kết đến việc các côgn ty ứng viên theo dõi 
+- Tìm hiểu thêm chức năng mạng xã hội có thể học hỏi LinkedIn để có thể tạo thương hiệu cho bản thân ( xem xét có nên thêm không vì hiện tại nhà tuyển dụng đã có thể tìm kiếm ứng viên và gửi email đến ứng viên để cung cấp thông tin về việc làm)
+- Thiếu các bài Skill Test trực tuyến (trắc nghiệm, code test) để ứng viên tự chứng minh năng lực trước khi Employer đánh giá thủ công.
 
 
 Supabase:
