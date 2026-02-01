@@ -145,11 +145,15 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
   }
 
   Future<void> _rescheduleInterview() async {
+    // Ensure firstDate is not after initialDate
+    final now = DateTime.now();
+    final initialDate = _displayTime.isBefore(now) ? now : _displayTime;
+    
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _displayTime,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDate: initialDate,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
     );
     
     if (pickedDate != null && mounted) {
