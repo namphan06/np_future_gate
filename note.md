@@ -13,6 +13,7 @@ Employer:
 - Cài đặt email thông báo còn thiếu với phần chấp nhận và tiêu đề chưa thể gán biến có sẵn , test thêm file và cải thiện giao diện
 - Tại phần home danh sách các tin deadline đã được cập nhật nhưng lại hiện là hết hạn vừa xong kiểm tra lại logic (done)
 - Thêm bảng đánh giá quá trình đối với học sinh nhà trường (done)
+- Đặt lại lịch phỏng vấn đang lỗi
 
 
 
@@ -51,3 +52,4 @@ Device:
 
 Notification:
 - Hiện tại đã tạo thông báo với ứng tuyển cv,từ chối và đồng ý chưa test cơ chế giống từ chối
+- Đã hiển thị thông báo khi sắp đến lịch phỏng vấn nhưng cần sửa lại giao diện hiển thị và chưa bấm vào được đang lỗi ( chưa thêm vào notification)

@@ -1,10 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/interview_model.dart';
 import '../services/supabase_service.dart';
+import '../services/notification/interview_reminder_service.dart';
 
 class InterviewRepository {
   final SupabaseService _supabaseService = SupabaseService.instance;
   SupabaseClient get _client => _supabaseService.client;
+  final InterviewReminderService _reminderService = InterviewReminderService();
 
   Future<void> createInterview({
     required String candidateId,
@@ -19,7 +21,7 @@ class InterviewRepository {
       // Simply insert job_id - it can reference either jobs or school_partnership_jobs
       // Foreign key constraint is relaxed to allow this
       // Access control is handled by RLS policies
-      await _client.from('interview_schedules').insert({
+      final response = await _client.from('interview_schedules').insert({
         'candidate_id': candidateId,
         'job_id': jobId,
         'employer_id': employerId,
@@ -28,7 +30,55 @@ class InterviewRepository {
         'job_title': jobTitle,
         'status': 'scheduled',
         'evaluation': {},
-      });
+      }).select().single();
+
+      // Schedule reminders for both employer and candidate
+      try {
+        final interviewId = response['id'] as String;
+        
+        // Get candidate name
+        final candidateProfile = await _client
+            .from('profiles')
+            .select('full_name')
+            .eq('id', candidateId)
+            .maybeSingle();
+        
+        final candidateName = candidateProfile?['full_name'] ?? 'Ứng viên';
+
+        final interview = InterviewModel(
+          id: interviewId,
+          candidateId: candidateId,
+          jobId: jobId,
+          employerId: employerId,
+          cvId: cvId,
+          interviewTime: interviewTime,
+          jobTitle: jobTitle,
+          evaluation: {},
+          status: 'scheduled',
+          createdAt: DateTime.now(),
+          isPartnership: isPartnershipJob,
+          share: false,
+        );
+
+        // Schedule for employer
+        await _reminderService.scheduleInterviewReminders(
+          interview: interview,
+          candidateName: candidateName,
+          isForEmployer: true,
+        );
+
+        // Schedule for candidate
+        await _reminderService.scheduleInterviewReminders(
+          interview: interview,
+          candidateName: candidateName,
+          isForEmployer: false,
+        );
+        
+        print('✅ Scheduled reminders for interview $interviewId');
+      } catch (e) {
+        print('⚠️ Error scheduling reminders: $e');
+        // Don't throw - interview was created successfully
+      }
     } catch (e) {
       print('Error creating interview: $e');
       rethrow;
@@ -111,6 +161,17 @@ class InterviewRepository {
         'status': status,
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', id);
+
+      // Cancel reminders if status changed to completed/cancelled
+      if (status == 'completed' || status == 'cancelled') {
+        try {
+          await _reminderService.cancelInterviewReminders(id, true);  // employer
+          await _reminderService.cancelInterviewReminders(id, false); // candidate
+          print('✅ Cancelled reminders for interview $id');
+        } catch (e) {
+          print('⚠️ Error cancelling reminders: $e');
+        }
+      }
     } catch (e) {
       print('Error updating status: $e');
       rethrow;
@@ -119,6 +180,15 @@ class InterviewRepository {
 
   Future<void> deleteInterview(String id) async {
     try {
+      // Cancel reminders before deleting
+      try {
+        await _reminderService.cancelInterviewReminders(id, true);  // employer
+        await _reminderService.cancelInterviewReminders(id, false); // candidate
+        print('✅ Cancelled reminders for deleted interview $id');
+      } catch (e) {
+        print('⚠️ Error cancelling reminders: $e');
+      }
+
       await _client.from('interview_schedules').delete().eq('id', id);
     } catch (e) {
       print('Error deleting interview: $e');
@@ -133,6 +203,39 @@ class InterviewRepository {
         'status': 'scheduled',
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       }).eq('id', id);
+
+      // Reschedule reminders with new time
+      try {
+        final interviewData = await _client
+            .from('interview_schedules')
+            .select('''
+              *,
+              profiles!interview_schedules_candidate_id_fkey(full_name)
+            ''')
+            .eq('id', id)
+            .single();
+
+        final interview = InterviewModel.fromJson(interviewData);
+        final candidateName = interviewData['profiles']['full_name'] ?? 'Ứng viên';
+
+        // Reschedule for employer
+        await _reminderService.rescheduleInterviewReminders(
+          interview: interview,
+          candidateName: candidateName,
+          isForEmployer: true,
+        );
+
+        // Reschedule for candidate
+        await _reminderService.rescheduleInterviewReminders(
+          interview: interview,
+          candidateName: candidateName,
+          isForEmployer: false,
+        );
+        
+        print('✅ Rescheduled reminders for interview $id');
+      } catch (e) {
+        print('⚠️ Error rescheduling reminders: $e');
+      }
     } catch (e) {
       print('Error rescheduling interview: $e');
       rethrow;

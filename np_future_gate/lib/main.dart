@@ -3,6 +3,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/supabase_service.dart';
@@ -15,10 +17,18 @@ import 'notification/notification_navigation_setup.dart';
 // Global navigator key để access navigator từ bất kỳ đâu
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+// Global notification plugin
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   print('🚀 Initializing app...');
+  
+  // Initialize timezone
+  tz.initializeTimeZones();
+  print('✅ Timezone initialized');
   
   // Load environment variables
   try {
@@ -43,6 +53,10 @@ void main() async {
 
   // Initialize date formatting
   await initializeDateFormatting('vi', null);
+  
+  // Initialize local notifications
+  await _initializeLocalNotifications();
+  print('✅ Local notifications initialized');
   
   // Initialize FCM
   try {
@@ -73,6 +87,47 @@ void main() async {
   }
   
   runApp(const MyApp());
+}
+
+Future<void> _initializeLocalNotifications() async {
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+  
+  const DarwinInitializationSettings iosSettings =
+      DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+  
+  const InitializationSettings settings = InitializationSettings(
+    android: androidSettings,
+    iOS: iosSettings,
+  );
+  
+  await flutterLocalNotificationsPlugin.initialize(
+    settings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      if (response.payload != null) {
+        _handleNotificationTap(response.payload!);
+      }
+    },
+  );
+  
+  // Request permissions for Android 13+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
+}
+
+void _handleNotificationTap(String payload) {
+  // Handle interview reminder notification tap
+  if (payload.startsWith('interview:')) {
+    final interviewId = payload.split(':')[1];
+    print('📅 Navigate to interview: $interviewId');
+    // TODO: Navigate to interview detail screen
+  }
 }
 
 /// Lưu device token cho user hiện tại (nếu đã đăng nhập)
