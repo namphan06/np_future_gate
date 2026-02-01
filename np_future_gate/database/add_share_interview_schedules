@@ -1,0 +1,10 @@
+ALTER TABLE public.interview_schedules 
+ADD COLUMN share boolean DEFAULT false;
+
+-- Update existing records to have share = false
+UPDATE public.interview_schedules 
+SET share = false 
+WHERE share IS NULL;
+
+-- Add index for better query performance
+CREATE INDEX idx_interview_schedules_share ON public.interview_schedules(share);

@@ -93,6 +93,18 @@ class InterviewRepository {
     }
   }
 
+  Future<void> updateShare(String id, bool share) async {
+    try {
+      await _client.from('interview_schedules').update({
+        'share': share,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', id);
+    } catch (e) {
+      print('Error updating share status: $e');
+      rethrow;
+    }
+  }
+
   Future<void> updateStatus(String id, String status) async {
     try {
       await _client.from('interview_schedules').update({
@@ -174,12 +186,13 @@ class InterviewRepository {
       }
 
       final evaluation = response['evaluation'] as Map<String, dynamic>? ?? {};
+      final share = response['share'] as bool? ?? false; // Read from share column
       
       // Return complete interview data including evaluation and share status
       return {
         'evaluation': evaluation,
         'interview_time': response['interview_time'],
-        'is_shared': evaluation['share'] == true,
+        'is_shared': share, // Use share column value
       };
     } catch (e) {
       print('Error getting evaluation: $e');

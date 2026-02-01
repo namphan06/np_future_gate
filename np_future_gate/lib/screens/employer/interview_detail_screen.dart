@@ -62,7 +62,10 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
     }
 
     _tags = (eval['tags'] as List?)?.map((e) => e.toString()).toList() ?? [];
-    _share = eval['share'] == true;
+    
+    // Load share status from dedicated column (not from evaluation JSON)
+    _share = widget.interview.share;
+    
     _currentStatus = widget.interview.status;
     _displayTime = widget.interview.interviewTime;
   }
@@ -94,11 +97,13 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
         'communication_rating': _communicationRating,
         'requirements_evaluation': _requirementsEvaluation,
         'tags': _tags,
-        'share': _share,
         'updated_at': DateTime.now().toIso8601String(),
       };
 
       await _interviewRepository.updateEvaluation(widget.interview.id, evaluation);
+      
+      // Update share status separately (it's a column, not in evaluation JSON)
+      await _interviewRepository.updateShare(widget.interview.id, _share);
       
       if (!isDraft) {
         await _interviewRepository.updateStatus(widget.interview.id, 'completed');
@@ -244,6 +249,87 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
           SnackBar(content: Text('Lỗi tải CV: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _updateShareStatus(bool newValue) async {
+    final String confirmMessage = widget.interview.isPartnership
+        ? (newValue
+            ? 'Bạn có chắc chắn muốn chia sẻ đánh giá này với trường đối tác?'
+            : 'Bạn có chắc chắn muốn ngừng chia sẻ đánh giá này với trường đối tác?')
+        : (newValue
+            ? 'Bạn có chắc chắn muốn bật chia sẻ đánh giá này?'
+            : 'Bạn có chắc chắn muốn tắt chia sẻ đánh giá này?');
+    
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xác nhận'),
+        content: Text(confirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Xác nhận'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        setState(() => _share = newValue);
+        
+        // Update share status in database (separate column)
+        await _interviewRepository.updateShare(widget.interview.id, _share);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                newValue
+                    ? 'Đã bật chia sẻ đánh giá'
+                    : 'Đã tắt chia sẻ đánh giá',
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        // Revert on error
+        setState(() => _share = !newValue);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lỗi cập nhật: $e')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _updateEvaluation() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xác nhận cập nhật'),
+        content: const Text('Bạn có chắc chắn muốn cập nhật lại đánh giá này?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cập nhật'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _saveData(isDraft: false);
     }
   }
 
@@ -399,20 +485,59 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  if (widget.interview.isPartnership)
-                    Row(
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _share ? AppMainColors.primary.withOpacity(0.3) : Colors.grey.shade300,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
                       children: [
+                        Icon(
+                          Icons.share_outlined,
+                          color: _share ? AppMainColors.primary : Colors.grey.shade600,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.interview.isPartnership 
+                                    ? 'Chia sẻ đánh giá cho trường'
+                                    : 'Chia sẻ đánh giá',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.interview.isPartnership
+                                    ? 'Trường đối tác sẽ nhận được kết quả đánh giá'
+                                    : 'Cho phép chia sẻ đánh giá này với bên thứ ba',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         Switch(
                           value: _share,
-                          onChanged: (val) {
-                            setState(() {
-                              _share = val;
-                            });
-                          },
+                          onChanged: _updateShareStatus,
+                          activeColor: AppMainColors.primary,
                         ),
-                        const Text('Chia sẻ đánh giá cho trường', style: TextStyle(fontWeight: FontWeight.w500)),
                       ],
                     ),
+                  ),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -597,64 +722,107 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
           ),
           
           // Bottom Actions
-          if (_currentStatus != 'completed')
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isSaving ? null : _saveDraft,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        side: BorderSide(color: AppMainColors.primary),
-                      ),
-                      child: Text(
-                        'Lưu nháp',
-                        style: TextStyle(
-                          color: AppMainColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isSaving ? null : _completeInterview,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppMainColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                      child: _isSaving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: _currentStatus == 'completed'
+                ? SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isSaving ? null : _updateEvaluation,
+                      icon: const Icon(Icons.update, color: Colors.white),
+                      label: _isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Text(
-                              'Hoàn thành',
+                              'Cập nhật đánh giá',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppMainColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _isSaving ? null : _saveDraft,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            side: BorderSide(color: AppMainColors.primary),
+                          ),
+                          child: Text(
+                            'Lưu nháp',
+                            style: TextStyle(
+                              color: AppMainColors.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isSaving ? null : _completeInterview,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppMainColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Hoàn thành',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+          ),
         ],
       ),
     );

@@ -10,6 +10,7 @@ class InterviewModel {
   final String status;
   final DateTime createdAt;
   final bool isPartnership;
+  final bool share;
 
   InterviewModel({
     required this.id,
@@ -23,6 +24,7 @@ class InterviewModel {
     required this.status,
     required this.createdAt,
     this.isPartnership = false,
+    this.share = false,
   });
 
   factory InterviewModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class InterviewModel {
       status: json['status'],
       createdAt: DateTime.parse(json['created_at']).toLocal(),
       isPartnership: json['is_partnership'] ?? false,
+      share: json['share'] ?? false,
     );
   }
 
@@ -54,6 +57,7 @@ class InterviewModel {
       'status': status,
       'created_at': createdAt.toIso8601String(),
       'is_partnership': isPartnership,
+      'share': share,
     };
   }
 
@@ -69,6 +73,7 @@ class InterviewModel {
     String? status,
     DateTime? createdAt,
     bool? isPartnership,
+    bool? share,
   }) {
     return InterviewModel(
       id: id ?? this.id,
@@ -82,6 +87,7 @@ class InterviewModel {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       isPartnership: isPartnership ?? this.isPartnership,
+      share: share ?? this.share,
     );
   }
 }

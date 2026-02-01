@@ -2,6 +2,9 @@ User:
 - Việc làm hôm nay đang lấy theo ngày tạo nên khi sửa lại deadline cho tin tuyển dụng thì vẫn không hiển thị chỉ hiển thị ở tìm kiếm việc làm (done)
 - Chưa có phân trang trong phần tìm kiếm (done)
 - profile nơi có thể làm việc phải hiện list chứ không phải nhập 
+- Thêm kiểm soát trạng thái tin tuyển dụng
+- (Học sinh) Xem được đánh giá từ nhà tuyển dụng (đánh giá phỏng vấn, đánh giá quá trình làm việc) nếu được cấp quyền
+- Thêm quản lý thông báo về lịch phỏng vấn ( xem được lịch phỏng vấn thống báo lên app khi sắp đến thời gian phỏng vấn )
 
 
 Employer:

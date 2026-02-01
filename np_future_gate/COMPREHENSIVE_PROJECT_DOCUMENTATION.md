@@ -1,8 +1,9 @@
 # NP FutureGate - Tài Liệu Chi Tiết Dự Án
 
 > **Ngày tạo:** 2026-01-21  
-> **Phiên bản:** 1.0.0  
-> **Mục đích:** Tài liệu tổng quan để tạo Use Case, Sơ đồ luồng, Sơ đồ hoạt động
+> **Ngày cập nhật:** 2026-01-28
+> **Phiên bản:** 1.1.0  
+> **Mục đích:** Cập nhật các tính năng Partnership, Courses, Career News và mở rộng API Repositories.
 
 ---
 
@@ -13,9 +14,10 @@
 3. [Chức Năng Chi Tiết Theo Role](#3-chức-năng-chi-tiết-theo-role)
 4. [Mô Hình Dữ Liệu (Data Models)](#4-mô-hình-dữ-liệu)
 5. [Quy Trình Nghiệp Vụ (Business Flows)](#5-quy-trình-nghiệp-vụ)
-6. [Hệ Thống Thông Báo](#6-hệ-thống-thông-báo)
-7. [API & Services](#7-api--services)
-8. [Bảng Tổng Hợp Use Case](#8-bảng-tổng-hợp-use-case)
+6. [Đánh Giá Quá Trình Làm Việc](#6-đánh-giá-quá-trình-làm-việc)
+7. [Hệ Thống Thông Báo](#7-hệ-thống-thông-báo)
+8. [API & Services](#8-api--services)
+9. [Bảng Tổng Hợp Use Case](#9-bảng-tổng-hợp-use-case)
 
 ---
 
@@ -86,6 +88,7 @@
 | Việc đã lưu | `saved_jobs_screen.dart` | Việc bookmark |
 | Công ty | `companies_list_screen.dart` | Danh sách công ty |
 | Chi tiết công ty | `company_detail_screen.dart` | Thông tin công ty |
+| Công cụ CV | `tools_page_candidate.dart` | Bộ công cụ hỗ trợ ứng viên |
 | Cài đặt | `settings_page_candidate.dart` | Cài đặt tài khoản |
 
 #### 3.1.2 Chức năng chi tiết
@@ -113,8 +116,11 @@
 | Tìm ứng viên | `search_page_employer.dart` | Tìm kiếm candidates |
 | Lịch phỏng vấn | `interview_schedule_screen.dart` | Quản lý phỏng vấn |
 | Chi tiết PV | `interview_detail_screen.dart` | Đánh giá ứng viên |
+| Các ứng viên đã lưu | `saved_candidates_screen.dart` | Danh sách ứng viên bookmark |
 | Partnership | `partnership_requests_employer_screen.dart` | Yêu cầu từ trường |
 | Hồ sơ công ty | `edit_company_profile_screen.dart` | Thông tin công ty |
+| Email Settings | `email_notification_settings_screen.dart` | Cấu hình thông báo email |
+| Công cụ | `tools_page_employer.dart` | Các công cụ hỗ trợ NTD |
 
 #### 3.2.2 Chức năng chi tiết
 | Mã | Chức năng | Mô tả | Đầu vào | Đầu ra |
@@ -140,8 +146,11 @@
 | Trang chủ | `home_page_school.dart` | Dashboard |
 | Partnership jobs | `jobs/` folder | Quản lý tin partnership |
 | Tạo partnership | `create_school_job_screen.dart` | Tạo tin cho công ty |
+| Quản lý quan hệ | `partnership/` folder | Danh sách đối tác, yêu cầu hợp tác |
 | Email setup | `school_email_setup_screen.dart` | Cấu hình email |
 | Tìm công ty | `search_page_school.dart` | Tìm đối tác |
+| Xem đánh giá SV | `evaluation/school_view_evaluations_screen.dart` | Xem đánh giá từ DN |
+| Công cụ | `tools_page_school.dart` | Công cụ hỗ trợ nhà trường |
 | Cài đặt | `settings_page_school.dart` | Cài đặt |
 
 #### 3.3.2 Chức năng chi tiết
@@ -276,22 +285,61 @@
 | metadata | JSONB | Thông tin job (giống jobs) |
 | applicants | JSONB | Danh sách ứng viên |
 
-### 4.4 Interview Schedule (Lịch phỏng vấn)
+### 4.4 School Company Partnership (Mối quan hệ lâu dài)
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả |
+|------------|--------------|-------|
+| id | UUID | Primary key |
+| school_id | UUID | FK -> Trường học |
+| company_id | UUID | FK -> Công ty |
+| status | Enum | pending/active/ended |
+| created_at | Timestamp | Thời điểm bắt đầu hợp tác |
+
+### 4.5 Interview Schedule (Lịch phỏng vấn)
 
 | Thuộc tính | Kiểu dữ liệu | Mô tả |
 |------------|--------------|-------|
 | id | UUID | Primary key |
 | candidate_id | UUID | FK -> ứng viên |
-| job_id | UUID | FK -> công việc |
+| job_id | UUID | FK -> công việc (jobs hoặc partnership jobs) |
 | employer_id | UUID | FK -> nhà tuyển dụng |
 | cv_id | UUID | FK -> CV sử dụng |
 | interview_time | Timestamp | Thời gian phỏng vấn |
 | job_title | String | Tên công việc |
-| evaluation | JSONB | Đánh giá |
+| evaluation | JSONB | Đánh giá (gồm kết quả, nhận xét, flag 'share') |
 | status | Enum | scheduled/completed/cancelled |
-| is_partnership | Boolean | Có phải partnership job |
+| is_partnership | Boolean | Được xác định tự động từ job_id |
 
-### 4.5 Conversation & Message (Chat)
+### 4.6 Student Work Progress (Tiến độ & Đánh giá làm việc)
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả |
+|------------|--------------|-------|
+| id | UUID | Primary key |
+| user_id | UUID | FK -> Ứng viên |
+| school_id | UUID | FK -> Nhà trường quản lý |
+| company_id | UUID | FK -> Công ty thực tập/làm việc |
+| applied_at | Timestamp | Thời điểm bắt đầu |
+| position | String | Vị trí công việc |
+| work_duration | String | Thời gian làm việc (VD: 3 tháng) |
+| evaluator_name | String | Tên Mentor/Manager đánh giá |
+| work_roadmap | JSONB | Danh sách đầu việc và kết quả (task, result, deadline) |
+| evaluations | JSONB | Danh sách tiêu chí và điểm (criteria, score, comment) |
+
+### 4.7 Courses (Khóa học)
+
+| Thuộc tính | Kiểu dữ liệu | Mô tả |
+|------------|--------------|-------|
+| id | UUID | Primary key |
+| title | String | Tên khóa học |
+| slug | String | URL friendly name |
+| description | String | Mô tả khóa học |
+| thumbnail_url | String | Ảnh đại diện |
+| category_id | UUID | FK -> Course Categories |
+| level | String | Cấp độ (fresher/junior/etc.) |
+| status | Enum | draft/published |
+| is_featured | Boolean | Khóa học nổi bật |
+
+### 4.8 Conversation & Message (Chat)
 
 **Conversation:**
 | Thuộc tính | Kiểu dữ liệu | Mô tả |
@@ -316,17 +364,19 @@
 | attachment_url | String | Link file đính kèm |
 | is_read | Boolean | Đã đọc |
 
-### 4.6 Các bảng phụ trợ
+### 4.9 Các bảng phụ trợ
 
 | Bảng | Mô tả |
 |------|-------|
-| cv_templates | Quản lý CV của ứng viên |
+| cv_templates | Quản lý CV của ứng viên (Creation/Upload) |
 | device_tokens | FCM tokens cho push notification |
 | user_job_activities | Lưu/xem/ứng tuyển công việc |
 | company_followers | Theo dõi công ty |
 | notifications | Thông báo hệ thống |
-| career_news | Tin tức nghề nghiệp |
+| career_news | Tin tức nghề nghiệp (published/featured/pinned) |
 | courses | Khóa học |
+| course_lessons | Bài học trong khóa học |
+| school_company_partnerships | Quản lý quan hệ trường - doanh nghiệp |
 
 ---
 
@@ -446,9 +496,29 @@
 
 ---
 
-## 6. HỆ THỐNG THÔNG BÁO
+## 6. ĐÁNH GIÁ QUÁ TRÌNH LÀM VIỆC (INTERNSHIP EVALUATION)
 
-### 6.1 Loại thông báo
+### 6.1 Tổng quan quy trình
+Hệ thống cho phép theo dõi sát sao quá trình làm việc của sinh viên/ứng viên tại doanh nghiệp, tạo sự kết nối chặt chẽ giữa 3 bên: **Ứng viên - Doanh nghiệp - Nhà trường**.
+
+### 6.2 Các bước thực hiện
+1. **Khởi tạo**: Khi ứng viên bắt đầu làm việc, một bản ghi `student_work_progress` được tạo (thường bởi Employer hoặc tự động sau khi trúng tuyển).
+2. **Lập lộ trình (Roadmap)**: Doanh nghiệp thiết lập các đầu việc (tasks), kết quả mong muốn và thời hạn (deadlines) trong cột `work_roadmap`.
+3. **Cập nhật tiến độ**: Trong quá trình làm việc, Mentor/Manager cập nhật trạng thái các task (Đang thực hiện, Hoàn thành, Hủy bỏ).
+4. **Đánh giá định kỳ/kết thúc**: Doanh nghiệp thực hiện đánh giá theo các tiêu chí (criteria) như Thái độ, Chuyên môn, Kỷ luật kèm điểm số (0-10) và nhận xét.
+5. **Giám sát từ Nhà trường**: Nhà trường có thể truy cập dashboard để xem toàn bộ danh sách sinh viên đang thực tập và xem chi tiết đánh giá từ từng doanh nghiệp.
+6. **Phản hồi từ Ứng viên**: Ứng viên xem được lộ trình công việc để chủ động thực hiện và xem kết quả đánh giá để cải thiện.
+
+### 6.3 Phân quyền truy cập đánh giá
+- **Employer**: Toàn quyền CRUD (Tạo, Xem, Sửa, Xóa) lộ trình và đánh giá cho ứng viên mình quản lý.
+- **School**: Quyền Xem (View) đánh giá của những sinh viên thuộc trường mình.
+- **Candidate**: Quyền Xem (View) lộ trình và kết quả của bản thân.
+
+---
+
+## 7. HỆ THỐNG THÔNG BÁO
+
+### 7.1 Loại thông báo
 
 | Type | Mô tả | Trigger |
 |------|-------|---------|
@@ -461,7 +531,7 @@
 | `message` | Tin nhắn | New message |
 | `system` | Hệ thống | Maintenance, updates |
 
-### 6.2 Action Codes
+### 7.2 Action Codes
 
 | Code | Mô tả | Navigation |
 |------|-------|------------|
@@ -473,9 +543,9 @@
 
 ---
 
-## 7. API & SERVICES
+## 8. API & SERVICES
 
-### 7.1 AuthRepository
+### 8.1 AuthRepository
 ```
 signUpWithEmail(email, password, fullName, phone, role)
 signInWithEmail(email, password)
@@ -488,47 +558,59 @@ uploadAvatar(file, userId)
 saveDeviceToken(token, userId, role)
 ```
 
-### 7.2 JobRepository
+### 8.2 JobRepository (Mở rộng)
 ```
-createJob(job) → Check post limit → Insert
-updateJob(job)
-deleteJob(jobId)
-getActiveJobs() → Filter approved, active
-getEmployerJobs(creatorId)
-applyForJob(jobId, userId, cvId) → RPC call
-hasApplied(userId, jobId)
-toggleSaveJob(userId, jobId)
-getSavedJobs(userId)
-getAppliedJobs(userId)
-updateApplicationStatus(jobId, userId, status)
-getPendingJobs() → For admin
-approveJob(jobId) / rejectJob(jobId)
+createJob(job) / updateJob(job) / deleteJob(jobId)
+getActiveJobs() / getEmployerJobs(creatorId) / getJobById(jobId)
+getRecentEmployerJobs(creatorId, limit) / getRecentApplications(employerId, limit)
+getEmployerStats(employerId)
+applyForJob(jobId, userId, cvId) / updateApplicationStatus(jobId, userId, status)
+toggleSaveJob(userId, jobId) / getSavedJobIds(userId) / getSavedJobsStream(userId)
+
+// Partnership Job specific methods
+getEmployerPartnershipJobs(companyId)
+applyForPartnershipJob(jobId, userId, cvId)
+updatePartnershipApplicationStatus(jobId, userId, status)
+getPendingPartnershipJobs() (Admin)
+approvePartnershipJob(jobId) / rejectPartnershipJob(jobId)
 ```
 
-### 7.3 InterviewRepository
+### 8.3 InterviewRepository
 ```
-createInterview(interview)
-getEmployerInterviews(employerId)
+createInterview(data...)
+getInterviewsByEmployer(employerId)
 getCandidateInterviews(candidateId)
-updateInterviewStatus(id, status)
-updateInterviewEvaluation(id, evaluation)
-hasInterviewConflict(employerId, time)
+updateStatus(id, status) / updateEvaluation(id, evaluation)
+rescheduleInterview(id, newTime) / deleteInterview(id)
+checkInterviewConflict(employerId, time)
+getEvaluationForCandidate(candidateId, jobId)
 ```
 
-### 7.4 ChatService
+### 8.4 CourseRepository (Mới)
 ```
-getConversations()
-getOrCreateConversation(otherUserId, type, jobId?)
-getMessages(conversationId)
-sendMessage(conversationId, content, type)
-markAsRead(conversationId)
-streamMessages(conversationId) → Realtime
-streamConversations() → Realtime
+getActiveCategories() / getPublishedCourses(categoryId, level, ...)
+getFeaturedCourses(limit) / getCourseDetail(id) / getCourseBySlug(slug)
+getCourseLessons(courseId) / getLessonDetail(lessonId)
+searchCourses(keyword) / getRelatedCourses(...)
 ```
+
+### 8.5 CareerNewsRepository (Mới)
+```
+getPublishedNews(category, ...) / getFeaturedNews(limit)
+getNewsDetail(id) / getNewsBySlug(slug) / searchNews(keyword)
+getAvailableCategories()
+```
+
+### 8.6 Other Repositories
+- **NotificationRepository**: CRUD notifications, markRead, getUnreadCount.
+- **PartnershipRepository**: checkExistingPartnership, sendPartnershipRequest.
+- **CourseRepository**: Quản lý khóa học, bài học.
+- **EvaluationRepository**: Quản lý đánh giá và lộ trình làm việc của sinh viên thực tập (`student_work_progress`).
+- **AdminUserRepository**: Quản lý danh sách người dùng cho Admin.
+- **DeviceTokenRepository**: Quản lý FCM tokens.
 
 ---
 
-## 8. BẢNG TỔNG HỢP USE CASE
 
 ### 8.1 Use Cases - Candidate
 
@@ -687,4 +769,4 @@ np_future_gate/
 
 ---
 
-*Cập nhật lần cuối: 2026-01-21*
+*Cập nhật lần cuối: 2026-01-28*
