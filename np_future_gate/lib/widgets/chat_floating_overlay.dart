@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../screens/chat/chat_list_screen.dart';
+import '../screens/chatbot/chatbot_screen.dart';
 import 'draggable_floating_button.dart';
 
 class ChatFloatingOverlay extends StatefulWidget {
@@ -79,16 +80,12 @@ class _ChatFloatingOverlayState extends State<ChatFloatingOverlay> {
                 );
               },
               onChatbotPressed: () {
-                // Show chatbot placeholder
-                final context = widget.navigatorKey.currentContext;
-                if (context != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Chatbot AI sẽ được triển khai sau'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                // Navigate to chatbot screen
+                widget.navigatorKey.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (context) => const ChatbotScreen(),
+                  ),
+                );
               },
             ),
         ],

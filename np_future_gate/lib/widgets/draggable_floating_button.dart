@@ -1,28 +1,13 @@
 import 'package:flutter/material.dart';
 
-enum FloatingButtonMode {
-  chat,
-  chatbot,
-}
-
-enum FloatingButtonState {
-  expanded,   // Hiển thị đầy đủ
-  normal,     // Nút tròn bình thường
-  minimized,  // Thu nhỏ thành thanh dọc
-}
-
 class DraggableFloatingButton extends StatefulWidget {
   final VoidCallback onChatPressed;
   final VoidCallback onChatbotPressed;
-  final VoidCallback? onHide;
-  final bool initiallyVisible;
 
   const DraggableFloatingButton({
     Key? key,
     required this.onChatPressed,
     required this.onChatbotPressed,
-    this.onHide,
-    this.initiallyVisible = true,
   }) : super(key: key);
 
   @override
@@ -32,9 +17,8 @@ class DraggableFloatingButton extends StatefulWidget {
 
 class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     with SingleTickerProviderStateMixin {
-  Offset _position = const Offset(20, 100);
-  FloatingButtonState _buttonState = FloatingButtonState.normal;
-  FloatingButtonMode _currentMode = FloatingButtonMode.chat;
+  Offset? _position; // null = chưa set, sẽ dùng default bottom-right
+  bool _isExpanded = false;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
@@ -44,15 +28,12 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 250),
     );
     
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
-    
-    // Bắt đầu ở trạng thái minimized (rút gọn)
-    _buttonState = FloatingButtonState.minimized;
   }
 
   @override
@@ -63,179 +44,135 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
 
   void _toggleExpand() {
     setState(() {
-      if (_buttonState == FloatingButtonState.minimized) {
-        _buttonState = FloatingButtonState.normal;
-      } else if (_buttonState == FloatingButtonState.normal) {
-        _buttonState = FloatingButtonState.expanded;
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
         _animationController.forward();
       } else {
-        _buttonState = FloatingButtonState.normal;
         _animationController.reverse();
       }
     });
-  }
-
-  void _toggleMinimize() {
-    setState(() {
-      if (_buttonState == FloatingButtonState.minimized) {
-        _buttonState = FloatingButtonState.normal;
-      } else {
-        _buttonState = FloatingButtonState.minimized;
-        _animationController.reverse();
-      }
-    });
-  }
-
-  void _switchMode(FloatingButtonMode mode) {
-    setState(() {
-      _currentMode = mode;
-      _buttonState = FloatingButtonState.normal;
-      _animationController.reverse();
-    });
-
-    if (mode == FloatingButtonMode.chat) {
-      widget.onChatPressed();
-    } else {
-      widget.onChatbotPressed();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Positioned(
-      left: _position.dx,
-      top: _position.dy,
-      child: GestureDetector(
-        onPanUpdate: (details) {
-          setState(() {
-            _position = Offset(
-              (_position.dx + details.delta.dx)
-                  .clamp(0, screenWidth - (_buttonState == FloatingButtonState.minimized ? 16 : 48)),
-              (_position.dy + details.delta.dy)
-                  .clamp(0, screenHeight - (_buttonState == FloatingButtonState.minimized ? 80 : 48)),
-            );
-          });
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: _buttonState == FloatingButtonState.minimized
-              ? _buildMinimizedButton()
-              : _buildNormalButton(),
-        ),
-      ),
+    // Default position: bottom-right corner (above navbar)
+    final defaultPosition = Offset(
+      screenWidth - 76, // 60 (button) + 16 (margin)
+      screenHeight - bottomPadding - 160, // 60 (button) + 80 (navbar space)
     );
-  }
 
-  Widget _buildMinimizedButton() {
-    return GestureDetector(
-      onTap: _toggleMinimize,
-      child: Container(
-        width: 4,  // Giảm từ 6 → 4
-        height: 60,// Giảm từ 100 → 80
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade500], // Màu nhẹ hơn
-          ),
-          borderRadius: BorderRadius.circular(2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
-              blurRadius: 6,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    final currentPosition = _position ?? defaultPosition;
 
-  Widget _buildNormalButton() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+    return Stack(
       children: [
-        // Menu options
-        if (_buttonState == FloatingButtonState.expanded)
-          ScaleTransition(
-            scale: _scaleAnimation,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    icon: Icons.chat_bubble_outline,
-                    label: 'Chat',
-                    isSelected: _currentMode == FloatingButtonMode.chat,
-                    onTap: () => _switchMode(FloatingButtonMode.chat),
-                    color: Colors.blue,
-                  ),
-                  Divider(height: 1, color: Colors.grey.shade200),
-                  _buildMenuItem(
-                    icon: Icons.smart_toy_outlined,
-                    label: 'Chatbot AI',
-                    isSelected: _currentMode == FloatingButtonMode.chatbot,
-                    onTap: () => _switchMode(FloatingButtonMode.chatbot),
-                    color: Colors.purple,
-                  ),
-                  Divider(height: 1, color: Colors.grey.shade200),
-                  _buildMenuItem(
-                    icon: Icons.remove,
-                    label: 'Thu nhỏ',
-                    isSelected: false,
-                    onTap: _toggleMinimize,
-                    color: Colors.grey,
-                  ),
-                ],
+        // Expanded menu - position absolute phía trên button
+        if (_isExpanded)
+          Positioned(
+            right: screenWidth - currentPosition.dx - 65, // Căn phải với button
+            bottom: screenHeight - currentPosition.dy + 12, // 12px phía trên button
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              alignment: Alignment.bottomRight,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildMenuItem(
+                      icon: Icons.smart_toy_rounded,
+                      label: 'Chatbot AI',
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6C63FF), Color(0xFF4834DF)],
+                      ),
+                      onTap: () {
+                        _toggleExpand();
+                        widget.onChatbotPressed();
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.chat_bubble_rounded,
+                      label: 'Chat',
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                      ),
+                      onTap: () {
+                        _toggleExpand();
+                        widget.onChatPressed();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         
-        // Main button - Nhỏ gọn hơn
-        GestureDetector(
-          onTap: _toggleExpand,
-          child: Container(
-            width: 48,  // Giảm từ 60 → 48
-            height: 48, // Giảm từ 60 → 48
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade400, Colors.blue.shade600],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
-                  blurRadius: 12,
-                  spreadRadius: 2,
+        // Main button - position cố định
+        Positioned(
+          left: currentPosition.dx,
+          top: currentPosition.dy,
+          child: GestureDetector(
+            onPanUpdate: (details) {
+              setState(() {
+                _position = Offset(
+                  (currentPosition.dx + details.delta.dx)
+                      .clamp(0.0, screenWidth - 60.0),
+                  (currentPosition.dy + details.delta.dy)
+                      .clamp(0.0, screenHeight - 60.0),
+                );
+              });
+            },
+            child: GestureDetector(
+              onTap: _toggleExpand,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF42A5F5).withOpacity(0.4),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                _buttonState == FloatingButtonState.expanded
-                    ? Icons.close
-                    : Icons.forum, // Icon chung cho cả chat & chatbot
-                key: ValueKey(_buttonState == FloatingButtonState.expanded),
-                color: Colors.white,
-                size: 24, // Giảm từ 28 → 24
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return RotationTransition(
+                      turns: Tween<double>(begin: 0.0, end: 0.125)
+                          .animate(animation),
+                      child: child,
+                    );
+                  },
+                  child: Icon(
+                    _isExpanded ? Icons.close_rounded : Icons.add_rounded,
+                    key: ValueKey(_isExpanded),
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
               ),
             ),
           ),
@@ -247,45 +184,33 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
   Widget _buildMenuItem({
     required IconData icon,
     required String label,
-    required bool isSelected,
+    required Gradient gradient,
     required VoidCallback onTap,
-    required Color color,
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: isSelected ? color.withOpacity(0.1) : Colors.grey.shade100,
-                shape: BoxShape.circle,
-                border: isSelected 
-                    ? Border.all(color: color, width: 2)
-                    : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: gradient,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              child: Icon(
-                icon,
-                size: 18,
-                color: isSelected ? color : Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? color : Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(width: 6),
-          ],
+            ],
+          ),
+          child: Icon(
+            icon,
+            size: 24,
+            color: Colors.white,
+          ),
         ),
       ),
     );
