@@ -7,6 +7,7 @@ import 'interview_schedule_screen.dart';
 import 'partnership_requests_employer_screen.dart';
 import 'partnership/school_partnerships_screen.dart';
 import 'statistics/employer_statistics_screen.dart';
+import 'pending_recruitment_decisions_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -190,8 +191,16 @@ class ToolsPageEmployer extends StatelessWidget {
                             context,
                             icon: Icons.schedule,
                             title: 'Đang xử lý',
-                            subtitle: '12 UV',
+                            subtitle: 'Quyết định tuyển dụng',
                             color: Colors.yellow.shade700,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PendingRecruitmentDecisionsScreen(),
+                                ),
+                              );
+                            },
                           ),
                           _buildToolCard(
                             context,

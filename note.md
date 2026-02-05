@@ -53,3 +53,6 @@ Device:
 Notification:
 - Hiện tại đã tạo thông báo với ứng tuyển cv,từ chối và đồng ý chưa test cơ chế giống từ chối
 - Đã hiển thị thông báo khi sắp đến lịch phỏng vấn nhưng cần sửa lại giao diện hiển thị và chưa bấm vào được đang lỗi ( chưa thêm vào notification)
+
+AI:
+- Chưa hoàn thiện mới thêm vào cần kiểm tra lại kiến trúc và thêm các chức năng cần thiết

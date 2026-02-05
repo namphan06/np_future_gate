@@ -1,0 +1,25 @@
+-- 1. Thêm cột recruitment_result vào bảng jobs
+ALTER TABLE jobs 
+ADD COLUMN IF NOT EXISTS recruitment_result TEXT 
+CHECK (recruitment_result IN ('pending', 'accepted', 'rejected'));
+
+-- 2. Thêm cột recruitment_result vào bảng school_partnership_jobs
+ALTER TABLE school_partnership_jobs 
+ADD COLUMN IF NOT EXISTS recruitment_result TEXT 
+CHECK (recruitment_result IN ('pending', 'accepted', 'rejected'));
+
+-- 3. Thêm index cho tìm kiếm nhanh trên bảng jobs
+CREATE INDEX IF NOT EXISTS idx_jobs_recruitment_result 
+ON jobs(recruitment_result);
+
+-- 4. Thêm index cho tìm kiếm nhanh trên bảng school_partnership_jobs
+CREATE INDEX IF NOT EXISTS idx_school_partnership_jobs_recruitment_result 
+ON school_partnership_jobs(recruitment_result);
+
+-- 5. Thêm index kết hợp cho employer queries
+CREATE INDEX IF NOT EXISTS idx_jobs_creator_recruitment_result 
+ON jobs(creator_id, recruitment_result);
+
+-- 6. Thêm index kết hợp cho school queries
+CREATE INDEX IF NOT EXISTS idx_school_partnership_jobs_school_recruitment 
+ON school_partnership_jobs(school_id, recruitment_result);
