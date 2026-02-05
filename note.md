@@ -14,6 +14,7 @@ Employer:
 - Tại phần home danh sách các tin deadline đã được cập nhật nhưng lại hiện là hết hạn vừa xong kiểm tra lại logic (done)
 - Thêm bảng đánh giá quá trình đối với học sinh nhà trường (done)
 - Đặt lại lịch phỏng vấn đang lỗi
+- Đánh giá sau phỏng vấn hiện tại đang lưu thông tin vào interview có vẻ không ổn cần sửa lại 
 
 
 

@@ -93,20 +93,31 @@ class _PendingRecruitmentDecisionsScreenState
             for (var p in profiles as List) p['id']: p
           };
 
-          final enrichedInterviews = (interviews as List).map((interview) {
-            final interviewMap = interview as Map<String, dynamic>;
-            return <String, dynamic>{
-              ...interviewMap,
-              'candidate': profileMap[interviewMap['candidate_id']],
-            };
-          }).toList();
+          // Filter only interviews without recruitment decision (pending)
+          final enrichedInterviews = (interviews as List)
+              .map((interview) {
+                final interviewMap = interview as Map<String, dynamic>;
+                return <String, dynamic>{
+                  ...interviewMap,
+                  'candidate': profileMap[interviewMap['candidate_id']],
+                };
+              })
+              .where((interview) {
+                final evaluation = interview['evaluation'] as Map<String, dynamic>? ?? {};
+                final decision = evaluation['recruitment_decision'];
+                return decision == null || decision == 'pending';
+              })
+              .toList();
 
-          allJobs.add({
-            'job_id': job['id'],
-            'job_metadata': job['metadata'],
-            'job_type': 'regular',
-            'interviews': enrichedInterviews,
-          });
+          // Only add job if it has pending candidates
+          if (enrichedInterviews.isNotEmpty) {
+            allJobs.add({
+              'job_id': job['id'],
+              'job_metadata': job['metadata'],
+              'job_type': 'regular',
+              'interviews': enrichedInterviews,
+            });
+          }
         }
       }
 
@@ -135,20 +146,31 @@ class _PendingRecruitmentDecisionsScreenState
             for (var p in profiles as List) p['id']: p
           };
 
-          final enrichedInterviews = (interviews as List).map((interview) {
-            final interviewMap = interview as Map<String, dynamic>;
-            return <String, dynamic>{
-              ...interviewMap,
-              'candidate': profileMap[interviewMap['candidate_id']],
-            };
-          }).toList();
+          // Filter only interviews without recruitment decision (pending)
+          final enrichedInterviews = (interviews as List)
+              .map((interview) {
+                final interviewMap = interview as Map<String, dynamic>;
+                return <String, dynamic>{
+                  ...interviewMap,
+                  'candidate': profileMap[interviewMap['candidate_id']],
+                };
+              })
+              .where((interview) {
+                final evaluation = interview['evaluation'] as Map<String, dynamic>? ?? {};
+                final decision = evaluation['recruitment_decision'];
+                return decision == null || decision == 'pending';
+              })
+              .toList();
 
-          allJobs.add({
-            'job_id': job['id'],
-            'job_metadata': job['metadata'],
-            'job_type': 'partnership',
-            'interviews': enrichedInterviews,
-          });
+          // Only add job if it has pending candidates
+          if (enrichedInterviews.isNotEmpty) {
+            allJobs.add({
+              'job_id': job['id'],
+              'job_metadata': job['metadata'],
+              'job_type': 'partnership',
+              'interviews': enrichedInterviews,
+            });
+          }
         }
       }
 
@@ -348,11 +370,39 @@ class _PendingRecruitmentDecisionsScreenState
           .from('interview_schedules')
           .update({'evaluation': evaluation}).eq('id', interviewId);
 
-      // Cập nhật recruitment_result trong jobs hoặc school_partnership_jobs
-      final table = jobType == 'regular' ? 'jobs' : 'school_partnership_jobs';
-      await _supabase.from(table).update({
-        'recruitment_result': decision,
-      }).eq('id', jobId);
+      // Check if all interviews for this job have been decided
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId != null) {
+        final allInterviews = await _supabase
+            .from('interview_schedules')
+            .select('evaluation')
+            .eq('job_id', jobId)
+            .eq('employer_id', userId)
+            .eq('status', 'completed');
+
+        // Check if all candidates have decisions
+        bool allDecided = true;
+        bool hasAccepted = false;
+        for (var interview in allInterviews as List) {
+          final eval = interview['evaluation'] as Map<String, dynamic>? ?? {};
+          final dec = eval['recruitment_decision'];
+          if (dec == null || dec == 'pending') {
+            allDecided = false;
+            break;
+          }
+          if (dec == 'accepted') {
+            hasAccepted = true;
+          }
+        }
+
+        // Only update job status if all candidates processed
+        if (allDecided) {
+          final table = jobType == 'regular' ? 'jobs' : 'school_partnership_jobs';
+          await _supabase.from(table).update({
+            'recruitment_result': hasAccepted ? 'accepted' : 'rejected',
+          }).eq('id', jobId);
+        }
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
