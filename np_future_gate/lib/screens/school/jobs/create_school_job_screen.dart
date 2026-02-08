@@ -49,6 +49,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
   DateTime? _deadline;
   bool _isActive = true;
   bool _isNegotiable = false;
+  bool _isIntern = false;
   String? _selectedExperience;
   List<String> _workingRegions = [];
   List<String> _fields = [];
@@ -94,6 +95,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
     _deadline = job.deadline;
     _isActive = job.isActive;
     _isNegotiable = meta.salary.isNegotiable;
+    _isIntern = meta.isIntern ?? false;
     
     _workingRegions = List.from(meta.workingRegions);
     _fields = List.from(meta.fields);
@@ -124,6 +126,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
       
       _deadline = companyJob.deadline;
       _isNegotiable = meta.salary.isNegotiable;
+      _isIntern = meta.isIntern ?? false;
       
       _workingRegions = List.from(meta.workingRegions);
       _fields = List.from(meta.fields);
@@ -186,6 +189,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
         jobDescription: _jobDescription,
         candidateRequirements: _candidateRequirements,
         benefits: _benefits,
+        isIntern: _isIntern,
       );
 
       if (widget.isPartnership) {
@@ -329,6 +333,24 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
   }
 
   Future<void> _savePartnershipJob(String schoolId, JobMetadata metadata) async {
+    // If editing existing job, just update it
+    if (widget.job?.id != null) {
+      await Supabase.instance.client
+          .from('school_partnership_jobs')
+          .update({
+            'is_active': _isActive,
+            'deadline': _deadline?.toIso8601String(),
+            'metadata': metadata.toJson(),
+            'company_status': 'pending',
+            'admin_status': 'pending',
+            'company_reviewed_at': null,
+            'admin_reviewed_at': null,
+          })
+          .eq('id', widget.job!.id!);
+      return;
+    }
+    
+    // Below is for creating NEW partnership job
     // 1. Get School Profile for email
     final profileData = await Supabase.instance.client
         .from('profiles')
@@ -655,6 +677,18 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                             child: const Icon(Icons.calendar_today, color: AppMainColors.primary, size: 20),
                           ),
                           onTap: _pickDate,
+                        ),
+                        const Divider(height: 24),
+                        SwitchListTile(
+                          title: const Text('Công việc thực tập', style: TextStyle(fontWeight: FontWeight.w500)),
+                          subtitle: Text(
+                            _isIntern ? 'Đây là vị trí thực tập sinh' : 'Đây là vị trí chính thức',
+                            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                          ),
+                          value: _isIntern,
+                          onChanged: (v) => setState(() => _isIntern = v),
+                          activeColor: Colors.orange,
+                          contentPadding: EdgeInsets.zero,
                         ),
                         const Divider(height: 24),
                         SwitchListTile(

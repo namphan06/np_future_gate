@@ -5,6 +5,7 @@ import '../../../core/repositories/job_repository.dart';
 import '../../../core/theme/app_main_colors.dart';
 import '../../employer/jobs/job_applicants_screen.dart';
 import 'create_school_job_screen.dart';
+import 'assign_students_screen.dart';
 
 class SchoolJobsScreen extends StatefulWidget {
   const SchoolJobsScreen({super.key});
@@ -23,6 +24,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
   // Company info for partnership jobs
   Map<String, Map<String, dynamic>> _companyInfo = {}; // company_id -> {full_name, email, ...}
   Map<String, String> _jobToCompanyMap = {}; // job_id -> company_id
+  Map<String, Map<String, String>> _jobStatusMap = {}; // job_id -> {company_status, admin_status}
 
   // Filters
   String _searchQuery = '';
@@ -72,12 +74,20 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
         // Fetch company info for partnership jobs
         if (partnershipJobs.isNotEmpty) {
           final jobToCompanyMap = <String, String>{};
+          final jobStatusMap = <String, Map<String, String>>{};
           final companyIds = <String>{};
           
           for (var data in partnershipJobsData) {
             final jobId = data['id'] as String;
             final companyId = data['company_id'] as String;
+            final companyStatus = data['company_status'] as String? ?? 'pending';
+            final adminStatus = data['admin_status'] as String? ?? 'pending';
+            
             jobToCompanyMap[jobId] = companyId;
+            jobStatusMap[jobId] = {
+              'company_status': companyStatus,
+              'admin_status': adminStatus,
+            };
             companyIds.add(companyId);
           }
           
@@ -96,6 +106,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
             setState(() {
               _companyInfo = companyInfoMap;
               _jobToCompanyMap = jobToCompanyMap;
+              _jobStatusMap = jobStatusMap;
             });
           }
         }
@@ -435,12 +446,111 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
   }
 
   void _navigateToEditJob({JobModel? job, bool isPartnership = false}) async {
+    // Get company info for partnership jobs
+    String? companyId;
+    String? companyName;
+    
+    if (isPartnership && job?.id != null) {
+      companyId = _jobToCompanyMap[job!.id];
+      if (companyId != null) {
+        companyName = _companyInfo[companyId]?['full_name'];
+      }
+      
+      // Check if job is already approved - show warning
+      final statuses = _jobStatusMap[job.id];
+      if (statuses != null) {
+        final companyStatus = statuses['company_status'];
+        final adminStatus = statuses['admin_status'];
+        
+        if (companyStatus == 'accepted' || adminStatus == 'approved') {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+                  SizedBox(width: 12),
+                  Text('Xác nhận chỉnh sửa'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Tin này đã được duyệt:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  const SizedBox(height: 12),
+                  if (companyStatus == 'accepted')
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Công ty: ${_getStatusText(companyStatus!)}',
+                          style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  if (companyStatus == 'accepted' && adminStatus == 'approved')
+                    const SizedBox(height: 8),
+                  if (adminStatus == 'approved')
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle, color: Colors.blue, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Admin: ${_getStatusText(adminStatus!)}',
+                          style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: const Text(
+                      '⚠️ Nếu chỉnh sửa, tin sẽ phải chờ duyệt lại từ cả công ty và admin.',
+                      style: TextStyle(fontSize: 13, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Hủy'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Vẫn chỉnh sửa'),
+                ),
+              ],
+            ),
+          );
+          
+          if (confirm != true) return;
+        }
+      }
+    }
+    
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => CreateSchoolJobScreen(
           isPartnership: isPartnership,
           job: job,
+          preselectedCompanyId: companyId,
+          preselectedCompanyName: companyName,
         ),
       ),
     );
@@ -620,10 +730,19 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
 
   Widget _buildJobCard(JobModel job, {bool isPartnershipJob = false}) {
     String? companyName;
+    String? companyStatus;
+    String? adminStatus;
+    
     if (isPartnershipJob && job.id != null) {
       final companyId = _jobToCompanyMap[job.id];
       if (companyId != null) {
         companyName = _companyInfo[companyId]?['full_name'];
+      }
+      
+      final statuses = _jobStatusMap[job.id];
+      if (statuses != null) {
+        companyStatus = statuses['company_status'];
+        adminStatus = statuses['admin_status'];
       }
     }
 
@@ -662,6 +781,41 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                               color: Colors.black87,
                             ),
                           ),
+                          if (job.metadata.isIntern) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFF9800), Color(0xFFFF5722)],
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.orange.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.school, size: 12, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'THỰC TẬP',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           if (companyName != null)
                              Padding(
                                padding: const EdgeInsets.only(top: 4.0),
@@ -694,9 +848,21 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                 const SizedBox(height: 12),
                 Row(
                   children: [
+                    if (isPartnershipJob && companyStatus != null) ...[
+                      _buildStatusChip(
+                        label: 'DN: ${_getStatusText(companyStatus)}',
+                        color: _getStatusColor(companyStatus),
+                        isOutline: true,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     _buildStatusChip(
-                      label: _getApprovalStatusText(job.status),
-                      color: _getApprovalStatusColor(job.status),
+                      label: isPartnershipJob && adminStatus != null
+                          ? 'Admin: ${_getStatusText(adminStatus)}'
+                          : _getApprovalStatusText(job.status),
+                      color: isPartnershipJob && adminStatus != null
+                          ? _getStatusColor(adminStatus)
+                          : _getApprovalStatusColor(job.status),
                       isOutline: true,
                     ),
                     const Spacer(),
@@ -713,6 +879,28 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
             ),
           ),
           const Divider(height: 1),
+          if (job.metadata.isIntern) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ElevatedButton.icon(
+                onPressed: () => _showAssignStudentsDialog(job, isPartnershipJob),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.assignment_ind, size: 20),
+                label: Text(
+                  _getAssignedStudentsText(job),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+          ],
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -823,6 +1011,65 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
         return Colors.grey;
       default:
         return Colors.orange;
+    }
+  }
+  
+  String _getStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+      case 'approved':
+        return 'Đã duyệt';
+      case 'rejected':
+        return 'Từ chối';
+      case 'pending':
+        return 'Chờ duyệt';
+      default:
+        return status;
+    }
+  }
+  
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+      case 'approved':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      case 'pending':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+  
+  String _getAssignedStudentsText(JobModel job) {
+    final assignedStudents = job.metadata.toJson()['assigned_students'] as List? ?? [];
+    if (assignedStudents.isEmpty) {
+      return 'Phân công sinh viên thực tập';
+    }
+    return 'Đã phân công: ${assignedStudents.length} sinh viên';
+  }
+  
+  Future<void> _showAssignStudentsDialog(JobModel job, bool isPartnershipJob) async {
+    // Get assigned students from metadata
+    final metadata = job.metadata.toJson();
+    final assignedStudents = List<String>.from(metadata['assigned_students'] ?? []);
+    
+    // Navigate to assign students screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AssignStudentsScreen(
+          job: job,
+          assignedStudents: assignedStudents,
+          isPartnershipJob: isPartnershipJob,
+        ),
+      ),
+    );
+    
+    // Reload jobs if assignment was saved
+    if (result == true) {
+      _loadJobs();
     }
   }
 }

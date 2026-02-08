@@ -114,6 +114,7 @@ class JobMetadata {
   final List<String> jobDescription;
   final List<String> candidateRequirements;
   final List<String> benefits;
+  final bool isIntern;
 
   JobMetadata({
     required this.title,
@@ -127,6 +128,7 @@ class JobMetadata {
     this.jobDescription = const [],
     this.candidateRequirements = const [],
     this.benefits = const [],
+    this.isIntern = false,
   });
 
   factory JobMetadata.fromJson(Map<String, dynamic> json) {
@@ -142,6 +144,7 @@ class JobMetadata {
       jobDescription: List<String>.from(json['job_description'] ?? []),
       candidateRequirements: List<String>.from(json['candidate_requirements'] ?? []),
       benefits: List<String>.from(json['benefits'] ?? []),
+      isIntern: json['is_intern'] ?? false,
     );
   }
 
@@ -158,6 +161,7 @@ class JobMetadata {
       'job_description': jobDescription,
       'candidate_requirements': candidateRequirements,
       'benefits': benefits,
+      'is_intern': isIntern,
     };
   }
 }

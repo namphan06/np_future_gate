@@ -5,6 +5,7 @@ User:
 - Thêm kiểm soát trạng thái tin tuyển dụng
 - (Học sinh) Xem được đánh giá từ nhà tuyển dụng (đánh giá phỏng vấn, đánh giá quá trình làm việc) nếu được cấp quyền
 - Thêm quản lý thông báo về lịch phỏng vấn ( xem được lịch phỏng vấn thống báo lên app khi sắp đến thời gian phỏng vấn )
+- Đối với sinh viên hiển thị phân công thực tập để theo dõic tin nhắn qua strinhg và lịch thực tập 
 
 
 Employer:
@@ -15,6 +16,7 @@ Employer:
 - Thêm bảng đánh giá quá trình đối với học sinh nhà trường (done)
 - Đặt lại lịch phỏng vấn đang lỗi
 - Đánh giá sau phỏng vấn hiện tại đang lưu thông tin vào interview có vẻ không ổn cần sửa lại 
+- Các tin gắn thực tập cần thêm để hiển thị sinh viên đuwocj phân công và đặt lịch phỏng vấn 
 
 
 
@@ -30,6 +32,7 @@ School:
 - Homepage thống kê mặc định là 0 cho các chỉ số (done)
 - Hiện tại việc sửa tin liên kết có thể không khả thi vì công ty sẽ phải duyệt nhiều lần và thường sẽ lấy tin từ thông tin có sẵn nên có thể xem xét
 - Nhà trường chưa có phần thông báo
+- Xem lại cơ chế phân công có cần liên kết doanh nghiệp không hay bình thường cũng đuwocj
 
 
 Chung:

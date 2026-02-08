@@ -51,20 +51,18 @@ class _PendingRecruitmentDecisionsScreenState
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return;
 
-      // Lấy các job có recruitment_result = 'pending'
+      // Lấy tất cả các job của employer
       final jobsData = await _supabase
           .from('jobs')
-          .select('id, metadata, recruitment_result')
-          .eq('creator_id', userId)
-          .or('recruitment_result.eq.pending,recruitment_result.is.null');
+          .select('id, metadata, applicants')
+          .eq('creator_id', userId);
 
-      // Lấy các school_partnership_jobs có recruitment_result = 'pending'
+      // Lấy tất cả các school_partnership_jobs của employer
       final partnershipJobsData = await _supabase
           .from('school_partnership_jobs')
-          .select('id, metadata, recruitment_result')
+          .select('id, metadata, applicants')
           .eq('company_id', userId)
-          .eq('company_status', 'accepted')
-          .or('recruitment_result.eq.pending,recruitment_result.is.null');
+          .eq('company_status', 'accepted');
 
       List<Map<String, dynamic>> allJobs = [];
 
@@ -370,39 +368,60 @@ class _PendingRecruitmentDecisionsScreenState
           .from('interview_schedules')
           .update({'evaluation': evaluation}).eq('id', interviewId);
 
-      // Check if all interviews for this job have been decided
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId != null) {
-        final allInterviews = await _supabase
-            .from('interview_schedules')
-            .select('evaluation')
-            .eq('job_id', jobId)
-            .eq('employer_id', userId)
-            .eq('status', 'completed');
-
-        // Check if all candidates have decisions
-        bool allDecided = true;
-        bool hasAccepted = false;
-        for (var interview in allInterviews as List) {
-          final eval = interview['evaluation'] as Map<String, dynamic>? ?? {};
-          final dec = eval['recruitment_decision'];
-          if (dec == null || dec == 'pending') {
-            allDecided = false;
-            break;
-          }
-          if (dec == 'accepted') {
-            hasAccepted = true;
-          }
-        }
-
-        // Only update job status if all candidates processed
-        if (allDecided) {
-          final table = jobType == 'regular' ? 'jobs' : 'school_partnership_jobs';
-          await _supabase.from(table).update({
-            'recruitment_result': hasAccepted ? 'accepted' : 'rejected',
-          }).eq('id', jobId);
+      // Cập nhật trạng thái trong applicants array
+      final table = jobType == 'regular' ? 'jobs' : 'school_partnership_jobs';
+      
+      // Lấy thông tin job hiện tại
+      final jobData = await _supabase
+          .from(table)
+          .select('applicants')
+          .eq('id', jobId)
+          .single();
+      
+      // Lấy thông tin interview để tìm candidate_id
+      final interviewData = await _supabase
+          .from('interview_schedules')
+          .select('candidate_id, cv_id')
+          .eq('id', interviewId)
+          .single();
+      
+      final candidateId = interviewData['candidate_id'];
+      final cvId = interviewData['cv_id'];
+      
+      // Cập nhật applicants array
+      List<dynamic> applicants = List.from(jobData['applicants'] ?? []);
+      
+      // Tìm và cập nhật ứng viên
+      bool found = false;
+      for (int i = 0; i < applicants.length; i++) {
+        final applicant = applicants[i] as Map<String, dynamic>;
+        if (applicant['user_id'] == candidateId || 
+            (cvId != null && applicant['cv_id'] == cvId)) {
+          applicants[i] = {
+            ...applicant,
+            'recruitment_status': decision,
+            'decision_at': DateTime.now().toIso8601String(),
+          };
+          found = true;
+          break;
         }
       }
+      
+      // Nếu không tìm thấy trong applicants, thêm mới
+      if (!found && candidateId != null) {
+        applicants.add({
+          'user_id': candidateId,
+          'cv_id': cvId,
+          'recruitment_status': decision,
+          'decision_at': DateTime.now().toIso8601String(),
+          'applied_at': DateTime.now().toIso8601String(),
+        });
+      }
+      
+      // Lưu lại applicants array
+      await _supabase.from(table).update({
+        'applicants': applicants,
+      }).eq('id', jobId);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
