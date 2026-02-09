@@ -9,6 +9,7 @@ class JobCard extends StatelessWidget {
   final bool isApplied;
   final VoidCallback? onTap;
   final Widget? bottomAction;
+  final Widget? topRightBadge;
 
   const JobCard({
     super.key,
@@ -18,6 +19,7 @@ class JobCard extends StatelessWidget {
     this.isApplied = false,
     this.onTap,
     this.bottomAction,
+    this.topRightBadge,
   });
 
   String _getTimeAgo(DateTime? dateTime) {
@@ -58,12 +60,14 @@ class JobCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header: Logo, Title, Company, Save
@@ -231,9 +235,18 @@ class JobCard extends StatelessWidget {
               ],
             ],
           ),
-        ),
+          // Top right badge
+          if (topRightBadge != null)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: topRightBadge!,
+            ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildIconText(IconData icon, String text, Color color) {

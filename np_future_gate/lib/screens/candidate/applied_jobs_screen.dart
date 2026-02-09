@@ -51,6 +51,48 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
     }
   }
 
+  Color _getRecruitmentStatusColor(String? status) {
+    final actualStatus = status ?? 'pending'; // Default to pending
+    switch (actualStatus.toLowerCase()) {
+      case 'pending':
+        return Colors.amber;
+      case 'accepted':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getRecruitmentStatusText(String? status) {
+    final actualStatus = status ?? 'pending'; // Default to pending
+    switch (actualStatus.toLowerCase()) {
+      case 'pending':
+        return 'Chờ duyệt';
+      case 'accepted':
+        return 'Đã nhận';
+      case 'rejected':
+        return 'Đã từ chối';
+      default:
+        return actualStatus;
+    }
+  }
+
+  IconData _getRecruitmentStatusIcon(String? status) {
+    final actualStatus = status ?? 'pending'; // Default to pending
+    switch (actualStatus.toLowerCase()) {
+      case 'pending':
+        return Icons.access_time;
+      case 'accepted':
+        return Icons.check_circle;
+      case 'rejected':
+        return Icons.cancel;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
   Future<void> _viewEvaluation(String jobId, String jobTitle) async {
     if (_userId == null) return;
 
@@ -436,6 +478,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                             }
 
                             final status = activity['status'] ?? 'unknown';
+                            final recruitmentStatus = activity['recruitment_status'] as String?;
                             final appliedAt = activity['applied_at'] != null 
                                 ? DateTime.parse(activity['applied_at']) 
                                 : DateTime.now();
@@ -453,6 +496,43 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                                   ),
                                 );
                               },
+                              topRightBadge: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: _getRecruitmentStatusColor(recruitmentStatus),
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: _getRecruitmentStatusColor(recruitmentStatus).withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _getRecruitmentStatusIcon(recruitmentStatus),
+                                      size: 14,
+                                      color: _getRecruitmentStatusColor(recruitmentStatus),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _getRecruitmentStatusText(recruitmentStatus),
+                                      style: TextStyle(
+                                        color: _getRecruitmentStatusColor(recruitmentStatus),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               bottomAction: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 child: Row(

@@ -788,7 +788,7 @@ class JobRepository {
          }
       }
 
-      // 2. Fetch job info to initialize progress tracking
+      // 2. Fetch job info to initialize progress tracking (only for intern jobs)
       final jobData = await _supabase
           .from('school_partnership_jobs')
           .select('school_id, company_id, metadata')
@@ -797,27 +797,31 @@ class JobRepository {
 
       if (jobData != null) {
         final metadata = jobData['metadata'] as Map<String, dynamic>? ?? {};
-        final position = metadata['title'] ?? 'N/A';
-        final employmentTypes = metadata['employment_types'] as List?;
+        final isIntern = metadata['is_intern'] == true;
+        
+        // 3. Create entry in student_work_progress ONLY for intern jobs
+        if (isIntern) {
+          final position = metadata['title'] ?? 'N/A';
+          final employmentTypes = metadata['employment_types'] as List?;
 
-        // 3. Create entry in student_work_progress
-        // Check duplication first
-        final existing = await _supabase
-            .from('student_work_progress')
-            .select()
-            .eq('user_id', userId)
-            .eq('company_id', jobData['company_id'])
-            .maybeSingle();
+          // Check duplication first
+          final existing = await _supabase
+              .from('student_work_progress')
+              .select()
+              .eq('user_id', userId)
+              .eq('company_id', jobData['company_id'])
+              .maybeSingle();
 
-        if (existing == null) {
-          await _supabase.from('student_work_progress').insert({
-            'user_id': userId,
-            'school_id': jobData['school_id'],
-            'company_id': jobData['company_id'],
-            'position': position,
-            'work_duration': employmentTypes?.join(', '),
-            'applied_at': DateTime.now().toIso8601String(),
-          });
+          if (existing == null) {
+            await _supabase.from('student_work_progress').insert({
+              'user_id': userId,
+              'school_id': jobData['school_id'],
+              'company_id': jobData['company_id'],
+              'position': position,
+              'work_duration': employmentTypes?.join(', '),
+              'applied_at': DateTime.now().toIso8601String(),
+            });
+          }
         }
       }
     } catch (e) {

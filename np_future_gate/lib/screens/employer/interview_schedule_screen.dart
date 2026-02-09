@@ -53,20 +53,27 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
           _candidateProfiles = {for (var p in profiles) p.id: p};
         }
 
-        // 3. Get Jobs
+        // 3. Get Jobs (both regular and partnership jobs)
         final jobIds = interviews.map((e) => e.jobId).toSet().toList();
         if (jobIds.isNotEmpty) {
-          // We need a method to get multiple jobs or loop. 
-          // Since we don't have getJobsByIds, we might loop or add it.
-          // For now, let's loop as it's likely small number of active jobs.
-          // Or better, check if JobRepository has a way.
-          // Assuming we can fetch individually for now or if there is a list method.
-          // Let's just loop for now to be safe.
+          // Load regular jobs
           for (var id in jobIds) {
              final job = await _jobRepository.getJobById(id);
              if (job != null) {
                _jobs[id] = job;
              }
+          }
+          
+          // Load partnership jobs that weren't found in regular jobs
+          final missingJobIds = jobIds.where((id) => !_jobs.containsKey(id)).toList();
+          if (missingJobIds.isNotEmpty) {
+            // Fetch from school_partnership_jobs table
+            final partnershipJobs = await _jobRepository.getEmployerPartnershipJobs(userId);
+            for (var job in partnershipJobs) {
+              if (job.id != null && missingJobIds.contains(job.id)) {
+                _jobs[job.id!] = job;
+              }
+            }
           }
         }
 
@@ -369,12 +376,23 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                 final jobTitle = entry.key;
                                 final interviews = entry.value;
                                 final isPartnership = interviews.any((i) => i.isPartnership);
+                                
+                                // Check if any interview is for intern job
+                                final jobId = interviews.first.jobId;
+                                final job = _jobs[jobId];
+                                final isIntern = job?.metadata.isIntern ?? false;
 
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 16),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: isIntern 
+                                        ? Colors.deepPurple.withOpacity(0.03)
+                                        : Colors.white,
                                     borderRadius: BorderRadius.circular(12),
+                                    border: isIntern ? Border.all(
+                                      color: Colors.deepPurple,
+                                      width: 2,
+                                    ) : null,
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withOpacity(0.05),
@@ -386,6 +404,39 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      // Intern Badge at top if applicable
+                                      if (isIntern)
+                                        Container(
+                                          width: double.infinity,
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.deepPurple,
+                                            borderRadius: const BorderRadius.only(
+                                              topLeft: Radius.circular(10),
+                                              topRight: Radius.circular(10),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.school,
+                                                size: 16,
+                                                color: Colors.white,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              const Text(
+                                                'CHƯƠNG TRÌNH THỰC TẬP',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       // Job Title Header
                                       Padding(
                                         padding: const EdgeInsets.all(12),

@@ -503,10 +503,16 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
   }
 
   Widget _buildJobCard(JobModel job, {bool isPartnershipJob = false}) {
+    final isIntern = job.metadata.isIntern;
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isIntern ? Border.all(
+          color: Colors.deepPurple.withOpacity(0.3),
+          width: 2,
+        ) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -527,13 +533,50 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Text(
-                        job.metadata.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            job.metadata.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          if (isIntern) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.deepPurple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: Colors.deepPurple.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.school,
+                                    size: 14,
+                                    color: Colors.deepPurple,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Chương trình thực tập',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.deepPurple[700],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     _buildStatusChip(
