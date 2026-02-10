@@ -3,6 +3,7 @@ import 'package:np_future_gate/notification/screens/notifications_screen.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/services/cv_supabase_service.dart';
+import '../../core/services/subscription_service.dart';
 import '../../core/models/job_model.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/repositories/job_repository.dart';
@@ -11,6 +12,7 @@ import 'jobs/employer_jobs_screen.dart';
 import 'jobs/edit_job_screen.dart';
 import 'jobs/recent_applicants_screen.dart';
 import 'search_page_employer.dart';
+import 'subscription/upgrade_account_screen.dart';
 import '../cv/cv_setting/cv_display_manager.dart';
 
 class HomePageEmployer extends StatefulWidget {
@@ -25,6 +27,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
   final _jobRepository = JobRepository();
   final _candidateRepository = CandidateRepository(); // Keeping if needed for other things
   final _cvService = CVSupabaseService();
+  final _subscriptionService = SubscriptionService();
 
   List<JobModel> _jobs = [];
   List<Map<String, dynamic>> _applications = [];
@@ -34,11 +37,93 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
     'totalApplicantsCount': 0,
   };
   bool _isLoading = true;
+  SubscriptionInfo? _subscriptionInfo;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _checkSubscription();
+  }
+
+  Future<void> _checkSubscription() async {
+    try {
+      final subscription = await _subscriptionService.getCurrentSubscription();
+      if (mounted) {
+        setState(() => _subscriptionInfo = subscription);
+        
+        // Show notification if subscription expired or about to expire
+        if (subscription.wasExpired) {
+          _showSubscriptionExpiredNotification();
+        } else if (subscription.isAboutToExpire) {
+          _showSubscriptionExpiringNotification(subscription.daysRemaining);
+        }
+      }
+    } catch (e) {
+      print('Error checking subscription: $e');
+    }
+  }
+
+  void _showSubscriptionExpiredNotification() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: const [
+              Icon(Icons.warning_amber_rounded, color: Colors.white),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('Gói đăng ký đã hết hạn! Bạn đang dùng gói miễn phí.'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Gia hạn',
+            textColor: Colors.white,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
+              );
+            },
+          ),
+        ),
+      );
+    });
+  }
+
+  void _showSubscriptionExpiringNotification(int daysRemaining) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.access_time, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Gói đăng ký sẽ hết hạn trong $daysRemaining ngày.'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Gia hạn',
+            textColor: Colors.white,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
+              );
+            },
+          ),
+        ),
+      );
+    });
   }
 
   Future<void> _loadData() async {
@@ -371,6 +456,12 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                   ),
                 ),
               ),
+
+              // Subscription Info Card
+              if (_subscriptionInfo != null)
+                SliverToBoxAdapter(
+                  child: _buildSubscriptionInfoCard(),
+                ),
 
               // Job Postings Section
               SliverToBoxAdapter(
@@ -748,6 +839,113 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionInfoCard() {
+    final sub = _subscriptionInfo!;
+    final isExpiredOrFree = sub.wasExpired || sub.plan == SubscriptionPlan.free;
+    
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 5, 20, 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isExpiredOrFree
+              ? [Colors.grey[600]!, Colors.grey[500]!]
+              : [AppMainColors.primary, AppMainColors.primary.withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: (isExpiredOrFree ? Colors.grey : AppMainColors.primary).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
+          );
+        },
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                sub.wasExpired 
+                    ? Icons.warning_amber_rounded
+                    : sub.plan == SubscriptionPlan.free 
+                        ? Icons.card_giftcard 
+                        : Icons.workspace_premium,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        sub.wasExpired 
+                            ? 'Gói đã hết hạn' 
+                            : 'Gói ${sub.plan.displayName}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          sub.plan.code,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Còn ${sub.remainingJobs}/${sub.maxJobsPerMonth} tin${sub.daysRemaining > 0 ? ' • ${sub.daysRemaining} ngày' : ''}',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Arrow
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withOpacity(0.7),
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }

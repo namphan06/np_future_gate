@@ -14,9 +14,9 @@ Employer:
 - Cài đặt email thông báo còn thiếu với phần chấp nhận và tiêu đề chưa thể gán biến có sẵn , test thêm file và cải thiện giao diện
 - Tại phần home danh sách các tin deadline đã được cập nhật nhưng lại hiện là hết hạn vừa xong kiểm tra lại logic (done)
 - Thêm bảng đánh giá quá trình đối với học sinh nhà trường (done)
-- Đặt lại lịch phỏng vấn đang lỗi
+- Đặt lại lịch phỏng vấn đang lỗi (done)
 - Đánh giá sau phỏng vấn hiện tại đang lưu thông tin vào interview có vẻ không ổn cần sửa lại 
-- Các tin gắn thực tập cần thêm để hiển thị sinh viên đuwocj phân công và đặt lịch phỏng vấn 
+- Các tin gắn thực tập cần thêm để hiển thị sinh viên đuwocj phân công và đặt lịch phỏng vấn (done)
 
 
 

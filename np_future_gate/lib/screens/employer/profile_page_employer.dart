@@ -8,6 +8,8 @@ import '../../widgets/animated_avatar.dart';
 import 'edit_company_profile_screen.dart';
 import 'email_notification_settings_screen.dart';
 import '../settings/notification_settings_screen.dart';
+import 'subscription/upgrade_account_screen.dart';
+import 'subscription/payment_history_screen.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -268,7 +270,12 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           title: 'Nâng cấp tài khoản',
                           subtitle: 'Premium features',
                           color: Colors.amber,
-                          onTap: () => _showComingSoon(context, 'Nâng cấp'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const UpgradeAccountScreen(),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(
@@ -276,7 +283,12 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           title: 'Lịch sử thanh toán',
                           subtitle: 'Xem hóa đơn & giao dịch',
                           color: Colors.purple,
-                          onTap: () => _showComingSoon(context, 'Thanh toán'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PaymentHistoryScreen(),
+                            ),
+                          ),
                         ),
                       ],
                     ),

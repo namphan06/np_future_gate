@@ -1,0 +1,53 @@
+-- 1. Tạo bảng mi_questions
+CREATE TABLE IF NOT EXISTS public.mi_questions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    question_text TEXT NOT NULL,
+    intelligence_type TEXT NOT NULL, -- IA, IE, LO, LI, SP, BO, MU, NA, EX
+    "order" INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- 2. Bật tính năng Row Level Security (RLS)
+ALTER TABLE public.mi_questions ENABLE ROW LEVEL SECURITY;
+
+-- 3. Tạo chính sách bảo mật (Policies)
+
+-- Cho phép mọi người xem câu hỏi đang hoạt động (để làm trắc nghiệm)
+CREATE POLICY "Allow public read access for active questions" 
+ON public.mi_questions 
+FOR SELECT 
+USING (is_active = true);
+
+-- Cho phép Admin có toàn quyền (Xem, Thêm, Sửa, Xóa)
+-- Lưu ý: Policy này giả định bạn có cột 'role' trong bảng profiles hoặc sử dụng custom claims
+CREATE POLICY "Allow admins full access" 
+ON public.mi_questions 
+FOR ALL 
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE profiles.id = auth.uid() 
+        AND profiles.role = 'admin'
+    )
+);
+
+-- 4. Tự động cập nhật cột updated_at khi có chỉnh sửa
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_mi_questions_updated_at
+    BEFORE UPDATE ON public.mi_questions
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_updated_at_column();
+
+-- 5. Index để truy vấn nhanh hơn
+CREATE INDEX IF NOT EXISTS idx_mi_questions_type ON public.mi_questions(intelligence_type);
+CREATE INDEX IF NOT EXISTS idx_mi_questions_order ON public.mi_questions("order");

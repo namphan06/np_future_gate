@@ -1,8 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/job_model.dart';
+import '../services/subscription_service.dart';
 
 class JobRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
+  final SubscriptionService _subscriptionService = SubscriptionService();
 
   // --- Employer Features ---
 
@@ -17,40 +19,32 @@ class JobRepository {
     }
   }
   
-  /// Check if user has reached their post limit
+  /// Check if user has reached their post limit based on subscription
   Future<void> _checkPostLimit(String userId) async {
     try {
-      // Get user profile to check limit
-      final profileResponse = await _supabase
-          .from('profiles')
-          .select()
-          .eq('id', userId)
-          .single();
+      // Get current subscription info
+      final subscription = await _subscriptionService.getCurrentSubscription();
       
-      final metadata = profileResponse['metadata'] as Map<String, dynamic>?;
-      final limitPost = metadata?['limit_post'] as int?;
-      
-      // If no limit set, allow unlimited posts
-      if (limitPost == null) return;
-      
-      // Count current active jobs by this user
-      final jobsResponse = await _supabase
-          .from('jobs')
-          .select('id')
-          .eq('creator_id', userId);
-      
-      final currentCount = (jobsResponse as List).length;
+      // Check if subscription is expired (non-free plans)
+      if (subscription.isExpired && subscription.plan != SubscriptionPlan.free) {
+        throw Exception(
+          'Gói đăng ký của bạn đã hết hạn. '
+          'Bạn đang sử dụng gói miễn phí với giới hạn ${subscription.maxJobsPerMonth} tin/tháng.'
+        );
+      }
       
       // Check if limit reached
-      if (currentCount >= limitPost) {
+      if (!subscription.canPostJob) {
         throw Exception(
-          'Bạn đã đạt giới hạn đăng tin ($limitPost tin). '
-          'Vui lòng xóa bớt tin cũ hoặc liên hệ quản trị viên để tăng giới hạn.'
+          'Bạn đã đạt giới hạn đăng tin (${subscription.maxJobsPerMonth} tin/tháng). '
+          'Còn lại: ${subscription.remainingJobs} tin. '
+          'Vui lòng nâng cấp gói để đăng thêm tin tuyển dụng.'
         );
       }
     } catch (e) {
       // If error contains our custom message, rethrow it
-      if (e.toString().contains('Bạn đã đạt giới hạn')) {
+      if (e.toString().contains('Bạn đã đạt giới hạn') || 
+          e.toString().contains('Gói đăng ký')) {
         rethrow;
       }
       // Otherwise, log and allow (fail-safe)
