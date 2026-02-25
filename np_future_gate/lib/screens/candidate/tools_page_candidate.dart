@@ -6,6 +6,8 @@ import 'applied_jobs_screen.dart';
 import 'saved_jobs_screen.dart';
 import 'companies_list_screen.dart';
 import 'school_jobs_screen.dart';
+import 'interview_schedule_candidate_screen.dart';
+import 'mi_question_screen.dart';
 import '../career_news/career_news_screen.dart';
 import '../courses/courses_screen.dart';
 
@@ -146,6 +148,21 @@ class ToolsPageCandidate extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => const SchoolJobsForCandidateScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildToolCard(
+                              context,
+                              icon: Icons.event_note,
+                              title: 'Lịch phỏng vấn',
+                              subtitle: 'Xem lịch của tôi',
+                              color: Colors.blue,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const InterviewScheduleCandidateScreen(),
                                   ),
                                 );
                               },
@@ -345,7 +362,14 @@ class ToolsPageCandidate extends StatelessWidget {
                           title: 'MI Test',
                           subtitle: 'Đánh giá đa trí tuệ',
                           color: Colors.orange,
-                          onTap: () => _showComingSoon(context, 'MI Test'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MIQuestionScreen(),
+                              ),
+                            );
+                          },
                         ),
                         // const SizedBox(height: 12),
                         // _buildToolListItem(

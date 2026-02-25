@@ -131,6 +131,51 @@ class InterviewRepository {
     }
   }
 
+  Future<List<InterviewModel>> getInterviewsByCandidate(String candidateId) async {
+    try {
+      final response = await _client
+          .from('interview_schedules')
+          .select()
+          .eq('candidate_id', candidateId)
+          .order('interview_time', ascending: true);
+
+      // Fetch all job IDs from interviews
+      final jobIds = (response as List)
+          .map((e) => e['job_id'] as String)
+          .toSet()
+          .toList();
+
+      // Get partnership job IDs
+      final partnershipJobIds = <String>{};
+      if (jobIds.isNotEmpty) {
+        try {
+          final partnershipJobs = await _client
+              .from('school_partnership_jobs')
+              .select('id')
+              .inFilter('id', jobIds);
+          
+          for (var job in partnershipJobs as List) {
+            partnershipJobIds.add(job['id'] as String);
+          }
+        } catch (e) {
+          print('Error fetching partnership job IDs: $e');
+        }
+      }
+
+      // Map interviews and add isPartnership flag
+      return (response as List).map((e) {
+        final jobId = e['job_id'] as String;
+        final isPartnership = partnershipJobIds.contains(jobId);
+        final interviewData = Map<String, dynamic>.from(e as Map);
+        interviewData['is_partnership'] = isPartnership;
+        return InterviewModel.fromJson(interviewData);
+      }).toList();
+    } catch (e) {
+      print('Error fetching candidate interviews: $e');
+      return [];
+    }
+  }
+
   Future<void> updateEvaluation(String id, Map<String, dynamic> evaluation) async {
     try {
       await _client.from('interview_schedules').update({

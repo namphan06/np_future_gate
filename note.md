@@ -33,6 +33,7 @@ School:
 - Hiện tại việc sửa tin liên kết có thể không khả thi vì công ty sẽ phải duyệt nhiều lần và thường sẽ lấy tin từ thông tin có sẵn nên có thể xem xét
 - Nhà trường chưa có phần thông báo
 - Xem lại cơ chế phân công có cần liên kết doanh nghiệp không hay bình thường cũng đuwocj
+- Bổ sung payos
 
 
 Chung:

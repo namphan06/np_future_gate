@@ -8,7 +8,7 @@ class MistralService {
   MistralService._internal();
 
   final String _apiKey = dotenv.env['MISTRAL_API_KEY'] ?? '';
-  final String _model = dotenv.env['MISTRAL_MODEL'] ?? 'mistral-large-2411';
+  final String _model = dotenv.env['MISTRAL_MODEL'] ?? 'open-mistral-7b';
   final String _baseUrl = 'https://api.mistral.ai/v1';
 
   List<Map<String, String>> _conversationHistory = [];
@@ -50,7 +50,7 @@ Hãy trả lời thân thiện, chuyên nghiệp và súc tích bằng tiếng V
             ..._conversationHistory,
           ],
           'temperature': 0.7,
-          'max_tokens': 1000,
+          'max_tokens': 4000,
         }),
       );
 
