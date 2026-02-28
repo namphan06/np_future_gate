@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/conversation_model.dart';
 import '../../core/models/message_model.dart';
@@ -28,8 +30,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final ChatService _chatService = ChatService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _imagePicker = ImagePicker();
   
   bool _isSending = false;
+  bool _isUploadingImage = false;
   Map<String, dynamic>? _jobInfo;
   String? _currentJobId; // Track current job_id to detect changes
 
@@ -116,17 +120,210 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     setState(() => _isSending = false);
 
     if (message != null) {
-      // Scroll to bottom
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+      _scrollToBottom();
     }
+  }
+
+  /// Show image source picker (camera or gallery)
+  void _showImageSourcePicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Gửi ảnh',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.camera_alt, color: Colors.blue.shade700),
+                ),
+                title: const Text('Chụp ảnh'),
+                subtitle: const Text('Sử dụng camera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAndSendImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.photo_library, color: Colors.green.shade700),
+                ),
+                title: const Text('Thư viện ảnh'),
+                subtitle: const Text('Chọn ảnh từ bộ sưu tập'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAndSendImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Pick image and send as message
+  Future<void> _pickAndSendImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() => _isUploadingImage = true);
+
+      // Upload to Supabase Storage
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not authenticated');
+
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${pickedFile.name}';
+      final filePath = '$userId/${widget.conversation.id}/$fileName';
+      final fileBytes = await File(pickedFile.path).readAsBytes();
+
+      // Determine content type
+      final ext = pickedFile.name.split('.').last.toLowerCase();
+      String contentType = 'image/jpeg';
+      if (ext == 'png') contentType = 'image/png';
+      if (ext == 'gif') contentType = 'image/gif';
+      if (ext == 'webp') contentType = 'image/webp';
+
+      await Supabase.instance.client.storage
+          .from('chat_attachments')
+          .uploadBinary(
+            filePath,
+            fileBytes,
+            fileOptions: FileOptions(contentType: contentType),
+          );
+
+      // Get public URL
+      final imageUrl = Supabase.instance.client.storage
+          .from('chat_attachments')
+          .getPublicUrl(filePath);
+
+      // Get file size
+      final fileSize = fileBytes.length;
+
+      // Send as image message
+      final message = await _chatService.sendMessage(
+        conversationId: widget.conversation.id,
+        content: '📷 Hình ảnh',
+        messageType: 'image',
+        attachmentUrl: imageUrl,
+        attachmentName: pickedFile.name,
+        attachmentSize: fileSize,
+      );
+
+      setState(() => _isUploadingImage = false);
+
+      if (message != null) {
+        _scrollToBottom();
+      }
+    } catch (e) {
+      setState(() => _isUploadingImage = false);
+      print('❌ Error sending image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi gửi ảnh: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  /// Show full screen image viewer
+  void _showFullImage(String imageUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.download, color: Colors.white),
+                onPressed: () {
+                  // TODO: Implement download
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Tính năng đang phát triển')),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: progress.expectedTotalBytes != null
+                          ? progress.cumulativeBytesLoaded / progress.expectedTotalBytes!
+                          : null,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -277,6 +474,30 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           ),
 
+          // Upload progress indicator
+          if (_isUploadingImage)
+            Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.blue.shade50,
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Đang gửi ảnh...',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // Pinned Job Info Card (nếu có)
           if (_jobInfo != null)
             Container(
@@ -401,11 +622,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
                   children: [
+                    // Image picker button
                     IconButton(
-                      icon: Icon(Icons.add_circle_outline, color: AppMainColors.primary),
-                      onPressed: () {
-                        // TODO: Implement attachment
-                      },
+                      icon: Icon(Icons.image, color: AppMainColors.primary),
+                      onPressed: _isUploadingImage ? null : _showImageSourcePicker,
+                      tooltip: 'Gửi ảnh',
                     ),
                     Expanded(
                       child: Container(
@@ -531,6 +752,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     // Tin nhắn thường
     final isSentByMe = message.isSentByMe;
+    final isImageMessage = message.messageType == 'image' && message.attachmentUrl != null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -564,43 +786,121 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               crossAxisAlignment:
                   isSentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: isSentByMe
-                        ? const LinearGradient(
-                            colors: [
-                              AppMainColors.primary,
-                              AppMainColors.accent,
-                            ],
-                          )
-                        : null,
-                    color: isSentByMe ? null : Colors.grey.shade200,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: Radius.circular(isSentByMe ? 18 : 4),
-                      bottomRight: Radius.circular(isSentByMe ? 4 : 18),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
+                // Image message
+                if (isImageMessage)
+                  GestureDetector(
+                    onTap: () => _showFullImage(message.attachmentUrl!),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.65,
+                        maxHeight: 280,
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    message.content,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: isSentByMe ? Colors.white : Colors.black87,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(18),
+                          topRight: const Radius.circular(18),
+                          bottomLeft: Radius.circular(isSentByMe ? 18 : 4),
+                          bottomRight: Radius.circular(isSentByMe ? 4 : 18),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(18),
+                          topRight: const Radius.circular(18),
+                          bottomLeft: Radius.circular(isSentByMe ? 18 : 4),
+                          bottomRight: Radius.circular(isSentByMe ? 4 : 18),
+                        ),
+                        child: Image.network(
+                          message.attachmentUrl!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              width: 200,
+                              height: 150,
+                              color: Colors.grey.shade200,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 200,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.broken_image, color: Colors.grey.shade400, size: 40),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Không tải được ảnh',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  )
+                // Text message
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: isSentByMe
+                          ? const LinearGradient(
+                              colors: [
+                                AppMainColors.primary,
+                                AppMainColors.accent,
+                              ],
+                            )
+                          : null,
+                      color: isSentByMe ? null : Colors.grey.shade200,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(18),
+                        topRight: const Radius.circular(18),
+                        bottomLeft: Radius.circular(isSentByMe ? 18 : 4),
+                        bottomRight: Radius.circular(isSentByMe ? 4 : 18),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      message.content,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: isSentByMe ? Colors.white : Colors.black87,
+                      ),
                     ),
                   ),
-                ),
                 const SizedBox(height: 4),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),

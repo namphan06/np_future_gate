@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../auth/change_password_screen.dart';
 import '../auth/login_screen.dart';
 import '../../core/services/supabase_service.dart';
+import '../../core/services/chat_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../widgets/animated_avatar.dart';
 import 'edit_company_profile_screen.dart';
@@ -10,6 +12,7 @@ import 'email_notification_settings_screen.dart';
 import '../settings/notification_settings_screen.dart';
 import 'subscription/upgrade_account_screen.dart';
 import 'subscription/payment_history_screen.dart';
+import '../chat/chat_detail_screen.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -372,9 +375,9 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                         _buildSettingCard(
                           icon: Icons.support_agent,
                           title: 'Hỗ trợ khách hàng',
-                          subtitle: 'Liên hệ đội ngũ hỗ trợ',
+                          subtitle: 'Chat với đội ngũ Admin',
                           color: Colors.lightGreen,
-                          onTap: () => _showComingSoon(context, 'Hỗ trợ'),
+                          onTap: () => _openChatWithAdmin(context),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(
@@ -541,6 +544,81 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
         ),
       ),
     );
+  }
+
+  Future<void> _openChatWithAdmin(BuildContext context) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Find admin user from profiles
+      final adminResponse = await Supabase.instance.client
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('role', 'admin')
+          .limit(1)
+          .maybeSingle();
+
+      if (adminResponse == null) {
+        if (mounted) Navigator.pop(context); // Close loading
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không tìm thấy Admin. Vui lòng thử lại sau.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      final adminId = adminResponse['id'] as String;
+      final adminName = adminResponse['full_name'] as String? ?? 'Admin';
+      final adminAvatar = adminResponse['avatar_url'] as String? ?? '';
+
+      // Create or get existing conversation with admin
+      final chatService = ChatService();
+      final conversation = await chatService.getOrCreateConversation(
+        otherUserId: adminId,
+        otherUserType: 'admin',
+      );
+
+      if (mounted) Navigator.pop(context); // Close loading
+
+      if (conversation != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatDetailScreen(
+              conversation: conversation,
+              otherUserName: adminName,
+              otherUserAvatar: adminAvatar,
+            ),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Close loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showComingSoon(BuildContext context, String feature) {
