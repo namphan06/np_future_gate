@@ -46,6 +46,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   bool _isLoading = true;
   late List<JobApplication> _currentApplicants;
   String? _jobTitle;
+  JobModel? _jobModel;
   
   // Filters
   String _statusFilter = 'All';
@@ -92,6 +93,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       if (job != null) {
         setState(() {
           _jobTitle = job.metadata.title;
+          _jobModel = job;
         });
       }
     } catch (e) {
@@ -489,6 +491,13 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           .eq('response_type', 'rejected')
           .maybeSingle();
 
+      // Prepare all variable values from job model
+      final jobField = _jobModel?.metadata.fields.join(', ') ?? '';
+      final jobLocation = _jobModel?.metadata.workLocations.join(', ') ?? '';
+      final salaryRange = _jobModel != null ? _formatSalaryRange(_jobModel!.metadata.salary) : '';
+      final employmentType = _jobModel?.metadata.employmentTypes.join(', ') ?? '';
+      final companyAddress = employerProfile?.metadata['company_address'] ?? '';
+
       String subject;
       String messageBody;
 
@@ -497,21 +506,38 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
         subject = templateResponse['subject'] as String? ?? 'Thông báo kết quả ứng tuyển';
         messageBody = templateResponse['body'] as String? ?? '';
 
-        // Replace variables in subject
-        subject = subject
-            .replaceAll('{{candidate_name}}', candidateName)
-            .replaceAll('{{job_title}}', jobTitle)
-            .replaceAll('{{company_name}}', companyName);
+        // Replace ALL variables in subject and body
+        subject = _replaceTemplateVariables(
+          subject,
+          candidateName: candidateName,
+          candidateEmail: candidateEmail,
+          candidatePhone: profile.phone ?? '',
+          jobTitle: jobTitle,
+          jobField: jobField,
+          jobLocation: jobLocation,
+          salaryRange: salaryRange,
+          employmentType: employmentType,
+          companyName: companyName,
+          employerEmail: employerProfile?.email ?? '',
+          employerPhone: employerProfile?.phone ?? '',
+          companyAddress: companyAddress,
+        );
 
-        // Replace variables in body
-        messageBody = messageBody
-            .replaceAll('{{candidate_name}}', candidateName)
-            .replaceAll('{{candidate_email}}', candidateEmail)
-            .replaceAll('{{candidate_phone}}', profile.phone ?? '')
-            .replaceAll('{{job_title}}', jobTitle)
-            .replaceAll('{{company_name}}', companyName)
-            .replaceAll('{{employer_email}}', employerProfile?.email ?? '')
-            .replaceAll('{{employer_phone}}', employerProfile?.phone ?? '');
+        messageBody = _replaceTemplateVariables(
+          messageBody,
+          candidateName: candidateName,
+          candidateEmail: candidateEmail,
+          candidatePhone: profile.phone ?? '',
+          jobTitle: jobTitle,
+          jobField: jobField,
+          jobLocation: jobLocation,
+          salaryRange: salaryRange,
+          employmentType: employmentType,
+          companyName: companyName,
+          employerEmail: employerProfile?.email ?? '',
+          employerPhone: employerProfile?.phone ?? '',
+          companyAddress: companyAddress,
+        );
 
         print('📧 Using custom template for rejection email');
       } else {
@@ -533,12 +559,23 @@ $employerName
 ''';
         print('📧 Using default rejection email template');
       }
+      // Get attachments from template 
+      List<Map<String, dynamic>> attachments = [];
+      if (templateResponse != null) {
+        final attachmentsData = templateResponse['attachments'];
+        if (attachmentsData != null && attachmentsData is List) {
+          attachments = List<Map<String, dynamic>>.from(
+            attachmentsData.map((e) => Map<String, dynamic>.from(e)),
+          );
+        }
+      }
 
       final success = await _emailService.sendEmployerResponse(
         toEmail: candidateEmail,
         toName: candidateName,
         subject: subject,
         messageBody: messageBody,
+        attachments: attachments.isNotEmpty ? attachments : null,
       );
 
       if (success) {
@@ -550,6 +587,64 @@ $employerName
       print('❌ Error sending rejection email: $e');
       // Don't show error to user as this is a background operation
     }
+  }
+
+  /// Replace all template variables in a text string
+  String _replaceTemplateVariables(
+    String text, {
+    required String candidateName,
+    required String candidateEmail,
+    required String candidatePhone,
+    required String jobTitle,
+    required String jobField,
+    required String jobLocation,
+    required String salaryRange,
+    required String employmentType,
+    required String companyName,
+    required String employerEmail,
+    required String employerPhone,
+    required String companyAddress,
+    String interviewDate = '',
+    String interviewTime = '',
+    String interviewLocation = '',
+    String interviewType = '',
+  }) {
+    return text
+        // Candidate variables
+        .replaceAll('{{candidate_name}}', candidateName)
+        .replaceAll('{{candidate_email}}', candidateEmail)
+        .replaceAll('{{candidate_phone}}', candidatePhone)
+        // Job variables
+        .replaceAll('{{job_title}}', jobTitle)
+        .replaceAll('{{job_field}}', jobField)
+        .replaceAll('{{job_location}}', jobLocation)
+        .replaceAll('{{salary_range}}', salaryRange)
+        .replaceAll('{{employment_type}}', employmentType)
+        // Company variables
+        .replaceAll('{{company_name}}', companyName)
+        .replaceAll('{{employer_email}}', employerEmail)
+        .replaceAll('{{employer_phone}}', employerPhone)
+        .replaceAll('{{company_address}}', companyAddress)
+        // Interview variables
+        .replaceAll('{{interview_date}}', interviewDate)
+        .replaceAll('{{interview_time}}', interviewTime)
+        .replaceAll('{{interview_location}}', interviewLocation)
+        .replaceAll('{{interview_type}}', interviewType);
+  }
+
+  /// Format salary range for template variable
+  String _formatSalaryRange(JobSalary salary) {
+    if (salary.isNegotiable) return 'Thỏa thuận';
+    if (salary.min != null && salary.max != null) {
+      return '${salary.min!.toStringAsFixed(0)} - ${salary.max!.toStringAsFixed(0)} ${salary.currency}';
+    }
+    if (salary.min != null) {
+      return 'Từ ${salary.min!.toStringAsFixed(0)} ${salary.currency}';
+    }
+    if (salary.max != null) {
+      return 'Đến ${salary.max!.toStringAsFixed(0)} ${salary.currency}';
+    }
+    return 'Thỏa thuận';
   }
 
   Color _getStatusColor(String status) {

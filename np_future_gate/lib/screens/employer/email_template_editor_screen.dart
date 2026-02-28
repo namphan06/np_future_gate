@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/models/employer_response_model.dart';
 import '../../core/repositories/employer_response_repository.dart';
 import '../../core/services/supabase_service.dart';
 
@@ -41,10 +39,16 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
   late TextEditingController _subjectController;
   late TextEditingController _bodyController;
   
+  // Track which text field was last focused
+  late FocusNode _subjectFocusNode;
+  late FocusNode _bodyFocusNode;
+  TextEditingController? _lastFocusedController;
+  
   final _repository = EmployerResponseRepository();
   final _supabaseService = SupabaseService.instance;
   
-  List<PlatformFile> _attachments = [];
+  List<PlatformFile> _attachments = []; // Newly picked files (not uploaded yet)
+  List<Map<String, dynamic>> _savedAttachments = []; // Already uploaded files from DB
   bool _isVariablesPanelExpanded = false;
   bool _isSaving = false;
   
@@ -53,6 +57,22 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
     super.initState();
     _subjectController = TextEditingController();
     _bodyController = TextEditingController();
+    
+    _subjectFocusNode = FocusNode();
+    _bodyFocusNode = FocusNode();
+    
+    // Listen to focus changes to track which field was last focused
+    _subjectFocusNode.addListener(() {
+      if (_subjectFocusNode.hasFocus) {
+        _lastFocusedController = _subjectController;
+      }
+    });
+    _bodyFocusNode.addListener(() {
+      if (_bodyFocusNode.hasFocus) {
+        _lastFocusedController = _bodyController;
+      }
+    });
+    
     _loadTemplate();
   }
 
@@ -72,6 +92,16 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
       if (response != null) {
         _subjectController.text = response['subject'] as String? ?? '';
         _bodyController.text = response['body'] as String? ?? '';
+        
+        // Load saved attachments
+        final attachmentsData = response['attachments'];
+        if (attachmentsData != null && attachmentsData is List) {
+          setState(() {
+            _savedAttachments = List<Map<String, dynamic>>.from(
+              attachmentsData.map((e) => Map<String, dynamic>.from(e)),
+            );
+          });
+        }
       }
     } catch (e) {
       print('Error loading template: $e');
@@ -79,9 +109,15 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
   }
 
   void _insertVariable(String variable) {
-    final controller = _bodyController;
-    final currentPosition = controller.selection.base.offset;
+    // Use the last focused controller, default to body if none was focused
+    final controller = _lastFocusedController ?? _bodyController;
     final currentText = controller.text;
+    
+    // Get cursor position; if invalid (-1), append to the end
+    int currentPosition = controller.selection.base.offset;
+    if (currentPosition < 0 || currentPosition > currentText.length) {
+      currentPosition = currentText.length;
+    }
     
     final newText = currentText.substring(0, currentPosition) +
         variable +
@@ -119,6 +155,8 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
 
   @override
   void dispose() {
+    _subjectFocusNode.dispose();
+    _bodyFocusNode.dispose();
     _subjectController.dispose();
     _bodyController.dispose();
     super.dispose();
@@ -179,6 +217,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
           const SizedBox(height: 8),
           TextField(
             controller: _subjectController,
+            focusNode: _subjectFocusNode,
             decoration: InputDecoration(
               hintText: 'Nhập tiêu đề email',
               filled: true,
@@ -211,6 +250,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
           const SizedBox(height: 8),
           TextField(
             controller: _bodyController,
+            focusNode: _bodyFocusNode,
             maxLines: 12,
             decoration: InputDecoration(
               hintText: 'Nhập nội dung email',
@@ -256,6 +296,12 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
               ),
             ],
           ),
+          if (_savedAttachments.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ..._savedAttachments.asMap().entries.map(
+              (entry) => _buildSavedAttachmentItem(entry.key, entry.value),
+            ),
+          ],
           if (_attachments.isNotEmpty) ...[
             const SizedBox(height: 8),
             ..._attachments.map((file) => _buildAttachmentItem(file)),
@@ -440,6 +486,50 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
     );
   }
 
+  Widget _buildSavedAttachmentItem(int index, Map<String, dynamic> attachment) {
+    final name = attachment['name'] as String? ?? 'File';
+    final size = attachment['size'] as int? ?? 0;
+    final sizeInMB = (size / 1048576).toStringAsFixed(2);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_done, color: Colors.green.shade600, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '$sizeInMB MB • Đã lưu',
+                  style: TextStyle(fontSize: 11, color: Colors.green.shade600),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close, size: 18, color: Colors.red.shade400),
+            onPressed: () {
+              setState(() => _savedAttachments.removeAt(index));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAttachmentItem(PlatformFile file) {
     final sizeInMB = (file.size / 1048576).toStringAsFixed(2);
     return Container(
@@ -609,12 +699,30 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
         throw Exception('User not authenticated');
       }
 
+      // Upload new attachment files to Supabase Storage
+      List<Map<String, dynamic>> allAttachments = List.from(_savedAttachments);
+      
+      for (var file in _attachments) {
+        try {
+          final url = await _repository.uploadAttachment(file, employerId);
+          allAttachments.add({
+            'url': url,
+            'name': file.name,
+            'size': file.size,
+            'type': _getContentType(file.extension),
+          });
+        } catch (e) {
+          print('Error uploading file ${file.name}: $e');
+        }
+      }
+
       // UPSERT - tự động insert hoặc update
       await _supabaseService.client.from('email_templates').upsert({
         'employer_id': employerId,
         'response_type': widget.templateType,
         'subject': _subjectController.text,
         'body': _bodyController.text,
+        'attachments': allAttachments,
       });
 
       if (mounted) {
@@ -639,6 +747,24 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
       if (mounted) {
         setState(() => _isSaving = false);
       }
+    }
+  }
+
+  String _getContentType(String? extension) {
+    switch (extension?.toLowerCase()) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      default:
+        return 'application/octet-stream';
     }
   }
 }

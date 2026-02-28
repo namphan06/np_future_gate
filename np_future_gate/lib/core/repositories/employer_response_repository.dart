@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
@@ -12,9 +13,12 @@ class EmployerResponseRepository {
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${file.name}';
       final filePath = '$employerId/$fileName';
       
+      // On mobile, file.bytes is null - read from file path instead
+      final bytes = file.bytes ?? await File(file.path!).readAsBytes();
+      
       await _client.storage.from('email_request').uploadBinary(
             filePath,
-            file.bytes!,
+            bytes,
             fileOptions: FileOptions(
               contentType: _getContentType(file.extension),
             ),

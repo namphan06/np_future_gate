@@ -6,6 +6,7 @@ create table public.email_templates (
   response_type text not null check (response_type in ('accepted', 'rejected', 'interview')),
   subject text not null,
   body text not null,
+  attachments jsonb default '[]'::jsonb,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   
@@ -44,3 +45,24 @@ create trigger on_email_templates_updated
 comment on table public.email_templates is 'Email templates cho employers để gửi phản hồi ứng viên';
 comment on column public.email_templates.subject is 'Tiêu đề email với biến {{variable}}';
 comment on column public.email_templates.body is 'Nội dung email với biến {{variable}}';
+comment on column public.email_templates.attachments is 'Danh sách file đính kèm: [{url, name, size, type}]';
+
+/*
+  Nếu bảng đã tồn tại, chạy migration:
+  ALTER TABLE public.email_templates 
+    ADD COLUMN IF NOT EXISTS attachments jsonb DEFAULT '[]'::jsonb;
+    
+  Cấu trúc attachments JSON:
+  [
+    {
+      "url": "https://xxx.supabase.co/storage/v1/object/public/email_request/employer_id/file.pdf",
+      "name": "offer_letter.pdf",
+      "size": 102400,
+      "type": "application/pdf"
+    }
+  ]
+  
+  EmailJS không hỗ trợ gửi file đính kèm qua REST API.
+  Giải pháp: Upload file lên Supabase Storage → lưu URL → 
+  thêm link download vào nội dung email khi gửi.
+*/
