@@ -257,9 +257,16 @@ class Cv2 extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(company, style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w500)),
+              Expanded(
+                child: Text(
+                  company, 
+                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.w500),
+                  softWrap: true,
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(duration, style: const TextStyle(color: Colors.grey, fontSize: 12)),
             ],
           ),

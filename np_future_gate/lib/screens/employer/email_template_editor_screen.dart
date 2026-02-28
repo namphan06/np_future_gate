@@ -618,6 +618,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
+                        softWrap: true,
                       ),
                     ],
                   ),
@@ -633,6 +634,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
                   child: Text(
                     body,
                     style: const TextStyle(fontSize: 13, height: 1.5),
+                    softWrap: true,
                   ),
                 ),
                 if (_attachments.isNotEmpty) ...[

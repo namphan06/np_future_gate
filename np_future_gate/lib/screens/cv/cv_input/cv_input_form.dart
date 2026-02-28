@@ -54,6 +54,9 @@ class _CV1InputFormState extends State<CV1InputForm> {
     // Summary
     _createControllerIfNeeded('summary', (_localData['summary'] ?? '').toString());
 
+    // Interests
+    _createControllerIfNeeded('interests', (_localData['interests'] ?? '').toString());
+
     // Personal info
     final info = _localData['personal_info'] ?? {};
     _createControllerIfNeeded('personal_info::full_name', (info['full_name'] ?? '').toString());
@@ -78,8 +81,8 @@ class _CV1InputFormState extends State<CV1InputForm> {
     }
 
     createListControllers('experiences', List<Map<String, dynamic>>.from(_localData['experiences'] ?? []), ['position', 'company', 'duration', 'description']);
-    createListControllers('projects', List<Map<String, dynamic>>.from(_localData['projects'] ?? []), ['name', 'description']);
-    createListControllers('education', List<Map<String, dynamic>>.from(_localData['education'] ?? []), ['degree', 'school', 'year']);
+    createListControllers('projects', List<Map<String, dynamic>>.from(_localData['projects'] ?? []), ['name', 'client', 'description', 'team_size', 'position', 'role', 'technologies']);
+    createListControllers('education', List<Map<String, dynamic>>.from(_localData['education'] ?? []), ['degree', 'school', 'year', 'detail']);
     createListControllers('skills', List<Map<String, dynamic>>.from(_localData['skills'] ?? []), ['name', 'level']);
     createListControllers('certifications', List<Map<String, dynamic>>.from(_localData['certifications'] ?? []), ['name', 'issuer', 'year']);
     createListControllers('activities', List<Map<String, dynamic>>.from(_localData['activities'] ?? []), ['organization', 'role', 'duration', 'description']);
@@ -194,6 +197,8 @@ class _CV1InputFormState extends State<CV1InputForm> {
         return 'Ngôn ngữ';
       case 'references':
         return 'Người tham chiếu';
+      case 'interests':
+        return 'Sở thích';
       default:
         return section;
     }
@@ -210,6 +215,8 @@ class _CV1InputFormState extends State<CV1InputForm> {
         return _buildAvatarForm();
       case 'summary':
         return _buildSummaryForm();
+      case 'interests':
+        return _buildInterestsForm();
       case 'experiences':
         return _buildExperiencesForm();
       case 'projects':
@@ -372,6 +379,21 @@ class _CV1InputFormState extends State<CV1InputForm> {
     );
   }
 
+  // Interests Form
+  Widget _buildInterestsForm() {
+    return _buildTextField(
+      label: 'Sở thích',
+      value: _localData['interests'],
+      controllerKey: 'interests',
+      onChanged: (val) {
+        _localData['interests'] = val;
+        _updateData();
+      },
+      maxLines: 5,
+      icon: Icons.interests,
+    );
+  }
+
   // Experiences Form
   Widget _buildExperiencesForm() {
     final experiences = _localData['experiences'] ?? [];
@@ -483,7 +505,12 @@ class _CV1InputFormState extends State<CV1InputForm> {
             setState(() {
               projects.add({
                 'name': '',
+                'client': '',
                 'description': '',
+                'team_size': '',
+                'position': '',
+                'role': '',
+                'technologies': '',
               });
               _rebuildControllersFromData();
               _updateData();
@@ -531,12 +558,49 @@ class _CV1InputFormState extends State<CV1InputForm> {
               },
             ),
             _buildTextField(
+              label: 'Khách hàng',
+              value: proj['client'],
+              controllerKey: 'projects::$index::client',
+              onChanged: (val) {
+                proj['client'] = val;
+                _updateData();
+              },
+            ),
+            _buildTextField(
               label: 'Mô tả',
               value: proj['description'],
               controllerKey: 'projects::$index::description',
               maxLines: 3,
               onChanged: (val) {
                 proj['description'] = val;
+                _updateData();
+              },
+            ),
+            _buildTextField(
+              label: 'Số lượng thành viên',
+              value: proj['team_size'],
+              controllerKey: 'projects::$index::team_size',
+              onChanged: (val) {
+                proj['team_size'] = val;
+                _updateData();
+              },
+            ),
+            _buildTextField(
+              label: 'Vai trò trong dự án',
+              value: proj['role'],
+              controllerKey: 'projects::$index::role',
+              maxLines: 2,
+              onChanged: (val) {
+                proj['role'] = val;
+                _updateData();
+              },
+            ),
+            _buildTextField(
+              label: 'Công nghệ sử dụng',
+              value: proj['technologies'],
+              controllerKey: 'projects::$index::technologies',
+              onChanged: (val) {
+                proj['technologies'] = val;
                 _updateData();
               },
             ),

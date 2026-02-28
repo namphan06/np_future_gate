@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import '../cv_template/cv_ui/cv1.dart';
 import '../cv_template/cv_ui/cv2.dart';
 import '../cv_template/cv_ui/cv3.dart';
+import '../cv_template/cv_ui/cv4.dart';
+import '../cv_template/cv_ui/cv5.dart';
 import '../cv_input/cv1_input_screen.dart';
 import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
+import '../cv_input/cv4_input_screen.dart';
+import '../cv_input/cv5_input_screen.dart';
 import '../cv_upload_edit_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -46,6 +50,22 @@ class CVDisplayManager {
         return _buildScaffold(
           title: cvData['title'] ?? 'Xem CV',
           child: Cv3(
+            data: cvData['data'] ?? cvData,
+            onSectionTap: null,
+          ),
+        );
+      case 'CV004':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv4(
+            data: cvData['data'] ?? cvData,
+            onSectionTap: null,
+          ),
+        );
+      case 'CV005':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv5(
             data: cvData['data'] ?? cvData,
             onSectionTap: null,
           ),
@@ -96,6 +116,10 @@ class CVDisplayManager {
         return CV2InputScreen(cvId: cvId);
       case 'CV003':
         return CV3InputScreen(cvId: cvId);
+      case 'CV004':
+        return CV4InputScreen(cvId: cvId);
+      case 'CV005':
+        return CV5InputScreen(cvId: cvId);
       default:
         return CV1InputScreen(cvId: cvId);
     }

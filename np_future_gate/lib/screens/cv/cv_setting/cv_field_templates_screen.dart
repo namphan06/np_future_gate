@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'cv_metadata.dart';
 import '../cv_input/cv1_input_screen.dart';
+import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
+import '../cv_input/cv4_input_screen.dart';
+import '../cv_input/cv5_input_screen.dart';
 
 class CVFieldCategory {
   final String name;
@@ -372,10 +375,25 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const CV1InputScreen()),
               );
+            } else if (t.mcv == 'CV002') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV2InputScreen()),
+              );
             } else if (t.mcv == 'CV003') {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CV3InputScreen()),
+              );
+            } else if (t.mcv == 'CV004') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV4InputScreen()),
+              );
+            } else if (t.mcv == 'CV005') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV5InputScreen()),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(

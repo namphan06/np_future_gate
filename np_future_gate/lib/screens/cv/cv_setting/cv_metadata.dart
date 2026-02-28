@@ -147,22 +147,37 @@ class CVRegistry {
     ));
 
 
-    // CV4 - Technical Template
+    // CV4 - Technical IT Template (User Provided)
     register(CVMetadata(
       mcv: 'CV004',
-      title: 'Y tế CV',
-      description: 'Mẫu CV kỹ thuật cho IT, Developer',
+      title: 'Technical IT CV',
+      description: 'Mẫu CV kỹ thuật tối giản phối màu Cam - Đen chuyên nghiệp',
       type: 'field',
-      typeField: 'Y tế',
-      icon: Icons.code,
-      thumbnailPath: 'assets/cv_thumbnails/cv3_thumb.png',
-      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv3.dart',
+      typeField: 'Công nghệ',
+      icon: Icons.computer_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv4_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv4.dart',
       tags: [
-        CVTag(label: 'Technical', color: Colors.indigo, icon: Icons.computer),
-        CVTag(label: 'Developer', color: Colors.cyan, icon: Icons.code),
-        CVTag(label: 'Detailed', color: Colors.blueGrey, icon: Icons.list),
+        CVTag(label: 'Technical', color: Colors.orange, icon: Icons.code),
+        CVTag(label: 'IT Engineer', color: Colors.black87, icon: Icons.terminal),
+        CVTag(label: 'Modern', color: Colors.blue, icon: Icons.auto_awesome),
+      ],
+    ));
+
+    // CV5 - Business Administration Template (User Provided)
+    register(CVMetadata(
+      mcv: 'CV005',
+      title: 'Business Administration CV',
+      description: 'Mẫu CV quản trị kinh doanh chuyên nghiệp với bảng dự án chi tiết',
+      type: 'general',
+      icon: Icons.business_center_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv5_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv5.dart',
+      tags: [
+        CVTag(label: 'Business', color: Colors.blue, icon: Icons.business),
+        CVTag(label: 'Sales', color: Colors.green, icon: Icons.trending_up),
+        CVTag(label: 'Professional', color: Colors.indigo, icon: Icons.verified),
       ],
     ));
   }
-  
 }

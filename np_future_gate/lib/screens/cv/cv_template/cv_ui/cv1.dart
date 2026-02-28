@@ -45,14 +45,17 @@ class Cv1 extends StatelessWidget {
                           textAlign: TextAlign.center,
                         )),
                       ),
-                      Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: Text(
-                          personalInfo['title'] ?? "Nhân viên tư vấn",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey),
+                      const Spacer(),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Text(
+                            personalInfo['title'] ?? "Nhân viên tư vấn",
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey),
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                       )
                     ],
@@ -363,8 +366,6 @@ class Cv1 extends StatelessWidget {
               child: Text(
                 company,
                 style: TextStyle(fontWeight: FontWeight.bold),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
             SizedBox(width: 8),
@@ -390,8 +391,6 @@ class Cv1 extends StatelessWidget {
                   child: Text(
                     item1s[index],
                     style: TextStyle(fontSize: 13),
-                    maxLines: 6,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -425,16 +424,16 @@ class Cv1 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Trường Đại học Mẫu", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text("2020 - 2024"),
-                      ],
+                    child: Text(
+                      "Trường Đại học Mẫu", 
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
+                  SizedBox(width: 10),
+                  Text("2020 - 2024"),
                 ],
               ),
               Text("Chuyên ngành"),
@@ -445,16 +444,16 @@ class Cv1 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(e['school'] ?? "", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(e['year'] ?? ""),
-                      ],
+                    child: Text(
+                      e['school'] ?? "", 
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
+                  SizedBox(width: 10),
+                  Text(e['year'] ?? ""),
                 ],
               ),
               Text(e['degree'] ?? ""),
@@ -524,17 +523,19 @@ class Cv1 extends StatelessWidget {
         ),
         if (list.isEmpty)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: Text("Giải thưởng mẫu")),
+              SizedBox(width: 10),
               Text("2024"),
             ],
           )
         else
           ...list.map((a) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: Text(a['name'] ?? "")),
+              SizedBox(width: 10),
               Text(a['year'] ?? ""),
             ],
           )),
@@ -562,17 +563,19 @@ class Cv1 extends StatelessWidget {
         ),
         if (list.isEmpty)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: Text("Chứng chỉ mẫu")),
+              SizedBox(width: 10),
               Text("2024"),
             ],
           )
         else
           ...list.map((c) => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: Text(c['name'] ?? "")),
+              SizedBox(width: 10),
               Text(c['year'] ?? ""),
             ],
           )),

@@ -145,16 +145,23 @@ class Cv3 extends StatelessWidget {
   }
 
   Widget _buildContactItem(IconData icon, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: const Color(0xFF4A5568)),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748), fontWeight: FontWeight.w500),
-        ),
-      ],
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 250),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFF4A5568)),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748), fontWeight: FontWeight.w500),
+              softWrap: true,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
