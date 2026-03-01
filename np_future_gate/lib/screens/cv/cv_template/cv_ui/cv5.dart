@@ -180,13 +180,15 @@ class Cv5 extends StatelessWidget {
           children: [
             Container(width: 4, height: 24, color: primaryColor),
             const SizedBox(width: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                color: primaryColor,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.1,
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: primaryColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.1,
+                ),
               ),
             ),
           ],
@@ -336,9 +338,11 @@ class Cv5 extends StatelessWidget {
               children: [
                 const Icon(Icons.check_circle_outline, size: 16, color: accentColor),
                 const SizedBox(width: 12),
-                Text(
-                  skill['name'] ?? skill.toString(),
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textMain),
+                Expanded(
+                  child: Text(
+                    skill['name'] ?? skill.toString(),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textMain),
+                  ),
                 ),
               ],
             ),
@@ -405,18 +409,20 @@ class Cv5 extends StatelessWidget {
 
   Widget _buildReferees(List<dynamic>? list) {
     final items = list ?? [];
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            "Sẵn sàng cung cấp khi có yêu cầu.",
-            style: TextStyle(color: textLight, fontStyle: FontStyle.italic),
+    if (items.isEmpty) {
+      return const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              "Sẵn sàng cung cấp khi có yêu cầu.",
+              style: TextStyle(color: textLight, fontStyle: FontStyle.italic),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

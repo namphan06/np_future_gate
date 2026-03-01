@@ -4,11 +4,19 @@ import '../cv_template/cv_ui/cv2.dart';
 import '../cv_template/cv_ui/cv3.dart';
 import '../cv_template/cv_ui/cv4.dart';
 import '../cv_template/cv_ui/cv5.dart';
+import '../cv_template/cv_ui/cv6.dart';
+import '../cv_template/cv_ui/cv7.dart';
+import '../cv_template/cv_ui/cv8.dart';
+import '../cv_template/cv_ui/cv9.dart';
 import '../cv_input/cv1_input_screen.dart';
 import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
 import '../cv_input/cv4_input_screen.dart';
 import '../cv_input/cv5_input_screen.dart';
+import '../cv_input/cv6_input_screen.dart';
+import '../cv_input/cv7_input_screen.dart';
+import '../cv_input/cv8_input_screen.dart';
+import '../cv_input/cv9_input_screen.dart';
 import '../cv_upload_edit_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -70,6 +78,38 @@ class CVDisplayManager {
             onSectionTap: null,
           ),
         );
+      case 'CV006':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv6(
+            data: cvData['data'] ?? cvData,
+            onSectionTap: null,
+          ),
+        );
+      case 'CV007':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv7(
+            data: cvData['data'] ?? cvData,
+            onSectionTap: null,
+          ),
+        );
+      case 'CV008':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv8(
+            data: cvData['data'] ?? cvData,
+            onSectionTap: null,
+          ),
+        );
+      case 'CV009':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv9(
+            data: cvData['data'] ?? cvData,
+            onSectionTap: null,
+          ),
+        );
       default:
         // Fallback to CV1 if unknown or null (though null usually implies upload or error)
         return _buildScaffold(
@@ -120,6 +160,14 @@ class CVDisplayManager {
         return CV4InputScreen(cvId: cvId);
       case 'CV005':
         return CV5InputScreen(cvId: cvId);
+      case 'CV006':
+        return CV6InputScreen(cvId: cvId);
+      case 'CV007':
+        return CV7InputScreen(cvId: cvId);
+      case 'CV008':
+        return CV8InputScreen(cvId: cvId);
+      case 'CV009':
+        return CV9InputScreen(cvId: cvId);
       default:
         return CV1InputScreen(cvId: cvId);
     }

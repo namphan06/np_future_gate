@@ -164,12 +164,13 @@ class CVRegistry {
       ],
     ));
 
-    // CV5 - Business Administration Template (User Provided)
+    // CV5 - Business Administration Template
     register(CVMetadata(
       mcv: 'CV005',
       title: 'Business Administration CV',
       description: 'Mẫu CV quản trị kinh doanh chuyên nghiệp với bảng dự án chi tiết',
-      type: 'general',
+      type: 'field',
+      typeField: 'Kinh doanh',
       icon: Icons.business_center_outlined,
       thumbnailPath: 'assets/cv_thumbnails/cv5_thumb.png',
       templatePath: 'lib/screens/cv/cv_template/cv_ui/cv5.dart',
@@ -177,6 +178,74 @@ class CVRegistry {
         CVTag(label: 'Business', color: Colors.blue, icon: Icons.business),
         CVTag(label: 'Sales', color: Colors.green, icon: Icons.trending_up),
         CVTag(label: 'Professional', color: Colors.indigo, icon: Icons.verified),
+      ],
+    ));
+
+    // CV6 - Marketing Template
+    register(CVMetadata(
+      mcv: 'CV006',
+      title: 'Marketing Strategy CV',
+      description: 'Mẫu CV Marketing hiện đại, tập trung vào chiến dịch và kết quả',
+      type: 'field',
+      typeField: 'Marketing',
+      icon: Icons.campaign_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv6_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv6.dart',
+      tags: [
+        CVTag(label: 'Marketing', color: Colors.orange, icon: Icons.campaign),
+        CVTag(label: 'Creative', color: Colors.red, icon: Icons.auto_awesome),
+        CVTag(label: 'Branding', color: Colors.blue, icon: Icons.star),
+      ],
+    ));
+
+    // CV7 - Creative Design Template
+    register(CVMetadata(
+      mcv: 'CV007',
+      title: 'Creative Design CV',
+      description: 'Mẫu CV thiết kế tối giản, sang trọng theo phong cách editorial',
+      type: 'field',
+      typeField: 'Thiết kế',
+      icon: Icons.palette_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv7_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv7.dart',
+      tags: [
+        CVTag(label: 'Design', color: Colors.black, icon: Icons.brush),
+        CVTag(label: 'Minimalist', color: Colors.grey, icon: Icons.exposure_zero),
+        CVTag(label: 'Elegant', color: Colors.amber, icon: Icons.workspace_premium),
+      ],
+    ));
+
+    // CV8 - Finance & Banking Template
+    register(CVMetadata(
+      mcv: 'CV008',
+      title: 'Finance & Banking CV',
+      description: 'Mẫu CV tài chính ngân hàng truyền thống, chuyên nghiệp và tin cậy',
+      type: 'field',
+      typeField: 'Tài chính',
+      icon: Icons.account_balance_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv8_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv8.dart',
+      tags: [
+        CVTag(label: 'Finance', color: Colors.indigo, icon: Icons.account_balance),
+        CVTag(label: 'Analysis', color: Colors.blueGrey, icon: Icons.analytics),
+        CVTag(label: 'Banking', color: Colors.blue, icon: Icons.savings),
+      ],
+    ));
+
+    // CV9 - Healthcare & Medical Template
+    register(CVMetadata(
+      mcv: 'CV009',
+      title: 'Healthcare & Medical CV',
+      description: 'Mẫu CV y tế sạch sẽ, chính xác và chuyên nghiệp',
+      type: 'field',
+      typeField: 'Y tế',
+      icon: Icons.medical_services_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv9_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv9.dart',
+      tags: [
+        CVTag(label: 'Medical', color: Colors.teal, icon: Icons.local_hospital),
+        CVTag(label: 'Precise', color: Colors.cyan, icon: Icons.biotech),
+        CVTag(label: 'Healthcare', color: Colors.green, icon: Icons.health_and_safety),
       ],
     ));
   }

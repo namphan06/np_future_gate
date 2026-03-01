@@ -76,6 +76,7 @@ dependencies:
   flutter_widget_from_html: ^0.15.2
   youtube_player_flutter: ^9.0.3
   fl_chart: ^0.69.2
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:

@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'cv_metadata.dart';
+import '../cv_template/cv_ui/cv6.dart';
+import '../cv_template/cv_ui/cv7.dart';
+import '../cv_template/cv_ui/cv8.dart';
+import '../cv_template/cv_ui/cv9.dart';
 import '../cv_input/cv1_input_screen.dart';
 import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
 import '../cv_input/cv4_input_screen.dart';
 import '../cv_input/cv5_input_screen.dart';
+import '../cv_input/cv6_input_screen.dart';
+import '../cv_input/cv7_input_screen.dart';
+import '../cv_input/cv8_input_screen.dart';
+import '../cv_input/cv9_input_screen.dart';
 import '../cv_management_screen.dart';
 
 /// Screen showing general CV templates
@@ -306,6 +314,26 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CV5InputScreen()),
+              );
+            } else if (t.mcv == 'CV006') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV6InputScreen()),
+              );
+            } else if (t.mcv == 'CV007') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV7InputScreen()),
+              );
+            } else if (t.mcv == 'CV008') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV8InputScreen()),
+              );
+            } else if (t.mcv == 'CV009') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CV9InputScreen()),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
