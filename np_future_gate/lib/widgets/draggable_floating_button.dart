@@ -1,4 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme/app_colors.dart';
 
 class DraggableFloatingButton extends StatefulWidget {
   final VoidCallback onChatPressed;
@@ -16,29 +19,45 @@ class DraggableFloatingButton extends StatefulWidget {
 }
 
 class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
-    with SingleTickerProviderStateMixin {
-  Offset? _position; // null = chưa set, sẽ dùng default bottom-right
+    with TickerProviderStateMixin {
+  Offset? _position;
   bool _isExpanded = false;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+  bool _isDragging = false;
+  
+  late AnimationController _expandController;
+  late Animation<double> _expandAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
     
-    _animationController = AnimationController(
+    _expandController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 300),
     );
     
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    _expandAnimation = CurvedAnimation(
+      parent: _expandController,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeInBack,
+    );
+    
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _expandController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -46,133 +65,98 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
-        _animationController.forward();
+        _expandController.forward();
       } else {
-        _animationController.reverse();
+        _expandController.reverse();
       }
+    });
+  }
+
+  void _snapToEdge(Size screenSize, double bottomPadding) {
+    if (_position == null) return;
+
+    double x = _position!.dx;
+    double y = _position!.dy;
+
+    // Magnet to edges
+    if (x < screenSize.width / 2) {
+      x = 16.0; // Left margin
+    } else {
+      x = screenSize.width - 76.0; // Right margin (60 button + 16 margin)
+    }
+
+    // Keep within vertical bounds
+    y = y.clamp(80.0, screenSize.height - bottomPadding - 100.0);
+
+    setState(() {
+      _position = Offset(x, y);
+      _isDragging = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenSize = MediaQuery.of(context).size;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    // Default position: bottom-right corner (above navbar)
+    // Default position: bottom-right
     final defaultPosition = Offset(
-      screenWidth - 76, // 60 (button) + 16 (margin)
-      screenHeight - bottomPadding - 160, // 60 (button) + 80 (navbar space)
+      screenSize.width - 76,
+      screenSize.height - bottomPadding - 140,
     );
 
     final currentPosition = _position ?? defaultPosition;
+    final isAtLeft = currentPosition.dx < screenSize.width / 2;
 
     return Stack(
       children: [
-        // Expanded menu - position absolute phía trên button
+        // Overlay background when expanded
         if (_isExpanded)
-          Positioned(
-            right: screenWidth - currentPosition.dx - 65, // Căn phải với button
-            bottom: screenHeight - currentPosition.dy + 12, // 12px phía trên button
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              alignment: Alignment.bottomRight,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildMenuItem(
-                      icon: Icons.smart_toy_rounded,
-                      label: 'Chatbot AI',
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6C63FF), Color(0xFF4834DF)],
-                      ),
-                      onTap: () {
-                        _toggleExpand();
-                        widget.onChatbotPressed();
-                      },
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.chat_bubble_rounded,
-                      label: 'Chat',
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
-                      ),
-                      onTap: () {
-                        _toggleExpand();
-                        widget.onChatPressed();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        
-        // Main button - position cố định
-        Positioned(
-          left: currentPosition.dx,
-          top: currentPosition.dy,
-          child: GestureDetector(
-            onPanUpdate: (details) {
-              setState(() {
-                _position = Offset(
-                  (currentPosition.dx + details.delta.dx)
-                      .clamp(0.0, screenWidth - 60.0),
-                  (currentPosition.dy + details.delta.dy)
-                      .clamp(0.0, screenHeight - 60.0),
-                );
-              });
-            },
+          Positioned.fill(
             child: GestureDetector(
               onTap: _toggleExpand,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF42A5F5).withOpacity(0.4),
-                      blurRadius: 16,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) {
-                    return RotationTransition(
-                      turns: Tween<double>(begin: 0.0, end: 0.125)
-                          .animate(animation),
-                      child: child,
-                    );
-                  },
-                  child: Icon(
-                    _isExpanded ? Icons.close_rounded : Icons.add_rounded,
-                    key: ValueKey(_isExpanded),
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
+        // Menu items
+        Positioned(
+          left: isAtLeft ? currentPosition.dx + 70 : null,
+          right: !isAtLeft ? (screenSize.width - currentPosition.dx) : null,
+          top: currentPosition.dy - 10,
+          child: FadeTransition(
+            opacity: _expandAnimation,
+            child: ScaleTransition(
+              scale: _expandAnimation,
+              alignment: isAtLeft ? Alignment.centerLeft : Alignment.centerRight,
+              child: _buildExpandedMenu(isAtLeft),
+            ),
+          ),
+        ),
+
+        // Main Button
+        AnimatedPositioned(
+          duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
+          curve: Curves.easeOutBack,
+          left: currentPosition.dx,
+          top: currentPosition.dy,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onPanStart: (_) => setState(() => _isDragging = true),
+              onPanUpdate: (details) {
+                setState(() {
+                  _position = Offset(
+                    (currentPosition.dx + details.delta.dx).clamp(0.0, screenSize.width - 60.0),
+                    (currentPosition.dy + details.delta.dy).clamp(0.0, screenSize.height - 60.0),
+                  );
+                });
+              },
+              onPanEnd: (_) => _snapToEdge(screenSize, bottomPadding),
+              onTap: _toggleExpand,
+              child: ScaleTransition(
+                scale: _pulseAnimation,
+                child: _buildMainButton(),
               ),
             ),
           ),
@@ -181,38 +165,146 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     );
   }
 
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String label,
-    required Gradient gradient,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: gradient,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+  Widget _buildMainButton() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [AppColors.primaryBlue, AppColors.primaryPurple],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryBlue.withOpacity(0.3),
+            blurRadius: 15,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Rotating ring effect
+              RotationTransition(
+                turns: _pulseController,
+                child: Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Icon(
+                  _isExpanded ? Icons.close_rounded : Icons.auto_awesome,
+                  key: ValueKey(_isExpanded),
+                  color: Colors.white,
+                  size: 30,
+                ),
               ),
             ],
-          ),
-          child: Icon(
-            icon,
-            size: 24,
-            color: Colors.white,
           ),
         ),
       ),
     );
   }
+
+  Widget _buildExpandedMenu(bool isAtLeft) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildMenuItem(
+            icon: Icons.smart_toy_rounded,
+            label: 'AI Assistant',
+            color: AppColors.primaryPurple,
+            onTap: () {
+              _toggleExpand();
+              widget.onChatbotPressed();
+            },
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 1,
+            height: 30,
+            color: Colors.grey.withOpacity(0.2),
+          ),
+          const SizedBox(width: 8),
+          _buildMenuItem(
+            icon: Icons.chat_bubble_rounded,
+            label: 'Support Chat',
+            color: AppColors.primaryBlue,
+            onTap: () {
+              _toggleExpand();
+              widget.onChatPressed();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

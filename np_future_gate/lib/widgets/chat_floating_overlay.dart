@@ -20,7 +20,7 @@ class ChatFloatingOverlay extends StatefulWidget {
 
 class _ChatFloatingOverlayState extends State<ChatFloatingOverlay> {
   bool _isLoggedIn = false;
-  bool _isVisible = false; // Ẩn mặc định, hiển thị sau vài giây
+  bool _isVisible = false; 
 
   @override
   void initState() {
@@ -28,8 +28,12 @@ class _ChatFloatingOverlayState extends State<ChatFloatingOverlay> {
     _checkAuthState();
     _listenAuthChanges();
     
-    // Delay hiển thị button 1.5s sau khi vào màn hình (tránh hiện ngay khi login)
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Đợi 2.5 giây để splash screen và các data ban đầu load xong
+    _startDisplayTimer(2500);
+  }
+
+  void _startDisplayTimer(int milliseconds) {
+    Future.delayed(Duration(milliseconds: milliseconds), () {
       if (mounted && _isLoggedIn) {
         setState(() => _isVisible = true);
       }
@@ -46,16 +50,18 @@ class _ChatFloatingOverlayState extends State<ChatFloatingOverlay> {
   void _listenAuthChanges() {
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final session = data.session;
+      final bool wasLoggedIn = _isLoggedIn;
+      
       setState(() {
         _isLoggedIn = session != null;
-        // Reset visibility khi logout
+        
+        // Nếu vừa logout, ẩn ngay lập tức
         if (!_isLoggedIn) {
           _isVisible = false;
-        } else {
-          // Delay hiển thị khi login
-          Future.delayed(const Duration(milliseconds: 1500), () {
-            if (mounted) setState(() => _isVisible = true);
-          });
+        } 
+        // Nếu vừa login thành công, đợi 2s rồi mới hiện
+        else if (!wasLoggedIn) {
+          _startDisplayTimer(2000);
         }
       });
     });
@@ -68,28 +74,36 @@ class _ChatFloatingOverlayState extends State<ChatFloatingOverlay> {
       child: Stack(
         children: [
           widget.child,
-          // Chỉ hiển thị floating button khi đã login VÀ visible
-          if (_isLoggedIn && _isVisible)
-            DraggableFloatingButton(
-              onChatPressed: () {
-                // Navigate to chat list
-                widget.navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => const ChatListScreen(),
-                  ),
-                );
-              },
-              onChatbotPressed: () {
-                // Navigate to chatbot screen
-                widget.navigatorKey.currentState?.push(
-                  MaterialPageRoute(
-                    builder: (context) => const ChatbotScreen(),
-                  ),
-                );
-              },
+          // Sử dụng AnimatedOpacity để nút hiện ra mượt mà
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !(_isLoggedIn && _isVisible),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOut,
+                opacity: (_isLoggedIn && _isVisible) ? 1.0 : 0.0,
+                child: DraggableFloatingButton(
+                  onChatPressed: () {
+                    widget.navigatorKey.currentState?.push(
+                      MaterialPageRoute(
+                        builder: (context) => const ChatListScreen(),
+                      ),
+                    );
+                  },
+                  onChatbotPressed: () {
+                    widget.navigatorKey.currentState?.push(
+                      MaterialPageRoute(
+                        builder: (context) => const ChatbotScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
+          ),
         ],
       ),
     );
   }
 }
+
