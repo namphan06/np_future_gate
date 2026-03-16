@@ -180,7 +180,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: 1.2,
+            childAspectRatio: 1.1,
             children: [
               _buildStatCard(
                 title: 'Tổng người dùng',
@@ -394,6 +394,8 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
@@ -402,6 +404,8 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                   fontSize: 12,
                   color: Colors.grey.shade600,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

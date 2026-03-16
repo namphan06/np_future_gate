@@ -14,6 +14,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/notification/application_notification_service.dart';
 import '../../cv/cv_setting/cv_display_manager.dart';
 import '../../../core/theme/app_main_colors.dart';
+import '../../../core/services/ai_matching_service.dart';
+import 'cv_analysis_screen.dart';
 
 class JobApplicantsScreen extends StatefulWidget {
   final String jobId;
@@ -51,6 +53,9 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
   // Filters
   String _statusFilter = 'All';
   DateTimeRange? _dateRange;
+  final AIMatchingService _aiMatchingService = AIMatchingService();
+  final Set<String> _selectedUserIds = {};
+  bool _isSelectionMode = false;
 
   @override
   void initState() {
@@ -441,12 +446,6 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
             builder: (context) => CVDisplayManager.buildViewWidget(context, cvData),
           ),
         );
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('CV không tồn tại hoặc đã bị xóa')),
-          );
-        }
       }
     } catch (e) {
       // Hide loading indicator if error
@@ -458,6 +457,182 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
         );
       }
     }
+  }
+
+  Future<void> _analyzeAI(JobApplication applicant, Profile profile) async {
+    if (_jobModel == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final cvData = await _cvService.getCVFullDataForEmployer(applicant.cvId);
+      if (mounted) Navigator.pop(context);
+
+      if (cvData != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CVAnalysisScreen(
+              job: _jobModel!,
+              cvData: cvData,
+              applicantName: profile.fullName ?? 'Ứng viên',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+    }
+  }
+
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) _selectedUserIds.clear();
+    });
+  }
+
+  Future<void> _compareSelectedCVs() async {
+    if (_selectedUserIds.length < 2 || _jobModel == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn ít nhất 2 ứng viên để so sánh')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final List<Map<String, dynamic>> cvsToCompare = [];
+      for (final userId in _selectedUserIds) {
+        final applicant = widget.applicants.firstWhere((a) => a.userId == userId);
+        final data = await _cvService.getCVFullDataForEmployer(applicant.cvId);
+        if (data != null) cvsToCompare.add(data);
+      }
+
+      final comparisonResult = await _aiMatchingService.compareCVs(
+        cvsData: cvsToCompare,
+        job: _jobModel!,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        _showComparisonResult(comparisonResult);
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+    }
+  }
+
+  void _showComparisonResult(String result) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // Handle Bar
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.analytics_outlined, color: Colors.blue, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'So sánh ứng viên (AI)',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.grey),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.orange.shade100),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.lightbulb_outline, color: Colors.orange),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Phân tích dựa trên kỹ năng, kinh nghiệm và yêu cầu công việc.',
+                              style: TextStyle(fontSize: 13, color: Colors.orange, height: 1.4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      result,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.8,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _sendRejectionEmail(String userId) async {
@@ -1070,8 +1245,28 @@ $employerName
             ),
             onPressed: () => _showFilterDialog(),
           ),
+          IconButton(
+            icon: Icon(_isSelectionMode ? Icons.close : Icons.compare_arrows, color: Colors.blue),
+            onPressed: _toggleSelectionMode,
+          ),
         ],
       ),
+      bottomNavigationBar: _selectedUserIds.isNotEmpty
+          ? Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.white,
+              child: ElevatedButton.icon(
+                onPressed: _compareSelectedCVs,
+                icon: const Icon(Icons.analytics, color: Colors.white),
+                label: Text('So sánh ${_selectedUserIds.length} ứng viên chọn lọc (AI)', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppMainColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : filteredApplicants.isEmpty
@@ -1141,6 +1336,19 @@ $employerName
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (_isSelectionMode)
+                                  Checkbox(
+                                    value: _selectedUserIds.contains(applicant.userId),
+                                    onChanged: (v) {
+                                      setState(() {
+                                        if (v == true) {
+                                          _selectedUserIds.add(applicant.userId);
+                                        } else {
+                                          _selectedUserIds.remove(applicant.userId);
+                                        }
+                                      });
+                                    },
+                                  ),
                                 GestureDetector(
                                   onTap: () => _showCandidateDetail(profile),
                                   child: Container(
@@ -1262,9 +1470,25 @@ $employerName
                                     ),
                                   ),
                                 ),
-                              ],
+                                const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => _analyzeAI(applicant, profile),
+                                      icon: const Icon(Icons.auto_awesome, size: 18),
+                                      label: const Text('Phân tích AI'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.orange,
+                                        side: const BorderSide(color: Colors.orange),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
                           if (['pending', 'viewed'].contains(applicant.status.toLowerCase()) && !widget.isReadOnly)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),

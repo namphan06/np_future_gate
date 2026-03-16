@@ -10,6 +10,7 @@ import '../../../core/theme/app_main_colors.dart';
 import '../chat/chat_list_screen.dart';
 import '../chat/chat_detail_screen.dart';
 import 'cv_selection_screen.dart';
+import 'job_interview_ai_page.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final JobModel job;
@@ -225,6 +226,15 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     );
   }
 
+  void _openAIInterview() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => JobInterviewAIPage(job: widget.job),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -421,6 +431,12 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                         icon: Icons.chat_bubble_outline,
                         color: AppMainColors.primary,
                         onTap: _openChatWithEmployer,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildCircleButton(
+                        icon: Icons.auto_awesome,
+                        color: Colors.purple.shade600,
+                        onTap: _openAIInterview,
                       ),
                       const SizedBox(width: 8),
                       _buildCircleButton(
