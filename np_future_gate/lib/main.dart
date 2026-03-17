@@ -11,7 +11,7 @@ import 'core/services/supabase_service.dart';
 import 'core/services/fcm_service.dart';
 import 'core/repositories/auth_repository.dart';
 import 'screens/splash/splash_screen.dart';
-import 'widgets/chat_floating_overlay.dart';
+// import 'widgets/chat_floating_overlay.dart';
 import 'notification/notification_navigation_setup.dart';
 
 // Global navigator key để access navigator từ bất kỳ đâu
@@ -192,10 +192,11 @@ class _MyAppState extends State<MyApp> {
       builder: (context, child) {
         // Wrap toàn bộ app với ChatFloatingOverlay
         // để nút chat hiển thị trên mọi màn hình
-        return ChatFloatingOverlay(
-          navigatorKey: navigatorKey,
-          child: child ?? const SizedBox.shrink(),
-        );
+        // return ChatFloatingOverlay(
+        //   navigatorKey: navigatorKey,
+        //   child: child ?? const SizedBox.shrink(),
+        // );
+        return child ?? const SizedBox.shrink();
       },
     );
   }

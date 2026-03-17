@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS conversations (
     
     -- Thông tin người tham gia
     participant1_id UUID NOT NULL,
-    participant1_type VARCHAR(20) NOT NULL CHECK (participant1_type IN ('admin', 'employer', 'candidate')),
+    participant1_type VARCHAR(20) NOT NULL CHECK (participant1_type IN ('admin', 'employer', 'candidate', 'school')),
     
     participant2_id UUID NOT NULL,
-    participant2_type VARCHAR(20) NOT NULL CHECK (participant2_type IN ('admin', 'employer', 'candidate')),
+    participant2_type VARCHAR(20) NOT NULL CHECK (participant2_type IN ('admin', 'employer', 'candidate', 'school')),
     
     -- Thông tin liên quan (nếu chat về một job cụ thể)
     job_id UUID,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS message_read_status (
     
     -- User và message cuối cùng đã đọc
     user_id UUID NOT NULL,
-    user_type VARCHAR(20) NOT NULL CHECK (user_type IN ('admin', 'employer', 'candidate')),
+    user_type VARCHAR(20) NOT NULL CHECK (user_type IN ('admin', 'employer', 'candidate', 'school')),
     
     last_read_message_id UUID REFERENCES messages(id) ON DELETE SET NULL,
     last_read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

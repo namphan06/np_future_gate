@@ -4,6 +4,8 @@ import '../../core/models/profile_model.dart';
 import '../../core/models/auth_models.dart';
 import '../../core/repositories/admin_user_repository.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../core/services/chat_service.dart';
+import '../chat/chat_detail_screen.dart';
 
 class UserDetailScreen extends StatefulWidget {
   final Profile user;
@@ -313,6 +315,19 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () => _openChatWithUser(context),
+            icon: const Icon(Icons.chat_bubble_outline, size: 20),
+            label: const Text('Nhắn tin cho người dùng'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: roleColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ],
       ),
@@ -1107,5 +1122,58 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _openChatWithUser(BuildContext context) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final chatService = ChatService();
+      String otherUserType = _user.role.value;
+      // Map 'company' to 'employer' if needed for chat constraints
+      if (otherUserType == 'company') otherUserType = 'employer';
+
+      final conversation = await chatService.getOrCreateConversation(
+        otherUserId: _user.id,
+        otherUserType: otherUserType,
+      );
+
+      if (mounted) Navigator.pop(context); // Close loading
+
+      if (conversation != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatDetailScreen(
+              conversation: conversation,
+              otherUserName: _user.fullName ?? 'Người dùng',
+              otherUserAvatar: _user.avatarUrl ?? '',
+            ),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Close loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

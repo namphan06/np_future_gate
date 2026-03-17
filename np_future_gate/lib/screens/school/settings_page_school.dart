@@ -5,6 +5,9 @@ import '../../core/repositories/auth_repository.dart';
 import '../../widgets/animated_avatar.dart';
 import '../auth/login_screen.dart';
 import '../auth/change_password_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/services/chat_service.dart';
+import '../chat/chat_detail_screen.dart';
 import 'school_email_setup_screen.dart';
 import '../settings/notification_settings_screen.dart';
 
@@ -202,14 +205,14 @@ class _SettingsPageSchoolState extends State<SettingsPageSchool> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        _buildSettingCard(
-                          icon: Icons.security,
-                          title: 'Bảo mật & Quyền riêng tư',
-                          subtitle: 'Cài đặt bảo mật tài khoản',
-                          color: Colors.red,
-                          onTap: () => _showComingSoon(context, 'Bảo mật'),
-                        ),
+                        // const SizedBox(height: 12),
+                        // _buildSettingCard(
+                        //   icon: Icons.security,
+                        //   title: 'Bảo mật & Quyền riêng tư',
+                        //   subtitle: 'Cài đặt bảo mật tài khoản',
+                        //   color: Colors.red,
+                        //   onTap: () => _showComingSoon(context, 'Bảo mật'),
+                        // ),
                       ],
                     ),
                   ),
@@ -325,9 +328,9 @@ class _SettingsPageSchoolState extends State<SettingsPageSchool> {
                         _buildSettingCard(
                           icon: Icons.support_agent,
                           title: 'Hỗ trợ khách hàng',
-                          subtitle: 'Liên hệ đội ngũ hỗ trợ',
+                          subtitle: 'Chat với đội ngũ Admin',
                           color: Colors.lightGreen,
-                          onTap: () => _showComingSoon(context, 'Hỗ trợ'),
+                          onTap: () => _openChatWithAdmin(context),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(
@@ -602,5 +605,80 @@ class _SettingsPageSchoolState extends State<SettingsPageSchool> {
         ],
       ),
     );
+  }
+
+  Future<void> _openChatWithAdmin(BuildContext context) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Find admin user from profiles
+      final adminResponse = await Supabase.instance.client
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('role', 'admin')
+          .limit(1)
+          .maybeSingle();
+
+      if (adminResponse == null) {
+        if (context.mounted) Navigator.pop(context); // Close loading
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không tìm thấy Admin. Vui lòng thử lại sau.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      final adminId = adminResponse['id'] as String;
+      final adminName = adminResponse['full_name'] as String? ?? 'Admin';
+      final adminAvatar = adminResponse['avatar_url'] as String? ?? '';
+
+      // Create or get existing conversation with admin
+      final chatService = ChatService();
+      final conversation = await chatService.getOrCreateConversation(
+        otherUserId: adminId,
+        otherUserType: 'admin',
+      );
+
+      if (context.mounted) Navigator.pop(context); // Close loading
+
+      if (conversation != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatDetailScreen(
+              conversation: conversation,
+              otherUserName: adminName,
+              otherUserAvatar: adminAvatar,
+            ),
+          ),
+        );
+      } else if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context); // Close loading
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

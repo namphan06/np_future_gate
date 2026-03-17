@@ -97,24 +97,24 @@ class _ChatListScreenState extends State<ChatListScreen>
                     padding: const EdgeInsets.fromLTRB(16, 16, 20, 16),
                     child: Row(
                       children: [
-                        // Back Button - Stylish
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              size: 20,
-                              color: Colors.black87,
+                        if (Navigator.canPop(context))
+                          Container(
+                            margin: const EdgeInsets.only(right: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            onPressed: () => Navigator.pop(context),
-                            padding: const EdgeInsets.all(10),
-                            constraints: const BoxConstraints(),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                size: 20,
+                                color: Colors.black87,
+                              ),
+                              onPressed: () => Navigator.pop(context),
+                              padding: const EdgeInsets.all(10),
+                              constraints: const BoxConstraints(),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
                         const Expanded(
                           child: Text(
                             'Tin nhắn',

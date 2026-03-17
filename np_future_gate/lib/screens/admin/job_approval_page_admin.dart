@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../../core/models/job_model.dart';
 import '../../core/repositories/job_repository.dart';
 import '../candidate/job_detail_screen.dart';
+import '../../core/services/chat_service.dart';
+import '../chat/chat_detail_screen.dart';
 
 class JobApprovalPageAdmin extends StatefulWidget {
   const JobApprovalPageAdmin({super.key});
@@ -277,6 +279,28 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
           ],
 
           const SizedBox(height: 24),
+          
+          // Chat button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pop(context); // Close bottom sheet
+                _openChatWithUser(profile, type);
+              },
+              icon: const Icon(Icons.chat_bubble_outline),
+              label: const Text('Nhắn tin trao đổi'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: color,
+                side: BorderSide(color: color),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
 
           // Close button
           SizedBox(
@@ -1296,5 +1320,60 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
     }
 
     return 'Chưa xác định';
+  }
+
+  Future<void> _openChatWithUser(Map<String, dynamic> profile, String type) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final chatService = ChatService();
+      final userId = profile['id'] as String;
+      
+      // Ensure role is compatible with chat constants
+      String mappedType = type;
+      if (mappedType == 'company') mappedType = 'employer';
+
+      final conversation = await chatService.getOrCreateConversation(
+        otherUserId: userId,
+        otherUserType: mappedType,
+      );
+
+      if (mounted) Navigator.pop(context); // Close loading
+
+      if (conversation != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatDetailScreen(
+              conversation: conversation,
+              otherUserName: profile['full_name'] ?? 'Người dùng',
+              otherUserAvatar: profile['avatar_url'] ?? '',
+            ),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Close loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

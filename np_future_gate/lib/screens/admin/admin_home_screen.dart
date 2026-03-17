@@ -10,6 +10,7 @@ import 'content_management_page_admin.dart';
 import 'reports_page_admin.dart';
 import 'test_page_admin.dart';
 import 'settings_page_admin.dart';
+import '../chat/chat_list_screen.dart';
 import '../candidate/candidate_home_screen.dart';
 import '../demo/demo_candidate_home.dart';
 import '../demo/demo_employer_home.dart';
@@ -31,6 +32,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     UsersManagementPageAdmin(),
     ContentManagementPageAdmin(),
     ReportsPageAdmin(),
+    const ChatListScreen(),
     TestPageAdmin(),
     SettingsPageAdmin(),
   ];
@@ -61,6 +63,12 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       'subtitle': 'Reports & Analytics',
     },
     {
+      'icon': Icons.chat_outlined,
+      'activeIcon': Icons.chat,
+      'title': 'Tin nhắn',
+      'subtitle': 'Quản lý tin nhắn & Hỗ trợ',
+    },
+    {
       'icon': Icons.science_outlined,
       'activeIcon': Icons.science,
       'title': 'Test',
@@ -78,11 +86,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget build(BuildContext context) {
     final currentUser = supabaseService.currentUser;
 
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white,
         title: Row(
           children: [
             Container(
@@ -356,6 +374,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ),
       ),
       body: _pages[_currentIndex],
+      ),
     );
   }
 

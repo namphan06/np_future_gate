@@ -216,14 +216,14 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           color: Colors.blue,
                           onTap: _navigateToEditProfile,
                         ),
-                        const SizedBox(height: 12),
-                        _buildSettingCard(
-                          icon: Icons.verified,
-                          title: 'Xác minh doanh nghiệp',
-                          subtitle: 'Xác thực công ty của bạn',
-                          color: Colors.green,
-                          onTap: () => _showComingSoon(context, 'Xác minh'),
-                        ),
+                        // const SizedBox(height: 12),
+                        // _buildSettingCard(
+                        //   icon: Icons.verified,
+                        //   title: 'Xác minh doanh nghiệp',
+                        //   subtitle: 'Xác thực công ty của bạn',
+                        //   color: Colors.green,
+                        //   onTap: () => _showComingSoon(context, 'Xác minh'),
+                        // ),
                         const SizedBox(height: 12),
                         _buildSettingCard(
                           icon: Icons.lock_outline,

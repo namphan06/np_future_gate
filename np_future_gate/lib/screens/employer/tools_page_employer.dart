@@ -8,6 +8,10 @@ import 'partnership_requests_employer_screen.dart';
 import 'partnership/school_partnerships_screen.dart';
 import 'statistics/employer_statistics_screen.dart';
 import 'pending_recruitment_decisions_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/services/chat_service.dart';
+import '../chat/chat_list_screen.dart';
+import '../chat/chat_detail_screen.dart';
 
 class ToolsPageEmployer extends StatelessWidget {
   const ToolsPageEmployer({super.key});
@@ -318,19 +322,36 @@ class ToolsPageEmployer extends StatelessWidget {
                       const SizedBox(height: 10),
                       _buildToolListItem(
                         context,
-                        icon: Icons.chat_bubble_outline,
-                        title: 'Tin nhắn',
-                        subtitle: 'Chat với ứng viên',
-                        color: Colors.green,
+                        icon: Icons.support_agent_outlined,
+                        title: 'Hỗ trợ khách hàng',
+                        subtitle: 'Chat với đội ngũ Admin',
+                        color: Colors.purple,
+                        onTap: () => _openChatWithAdmin(context),
                       ),
                       const SizedBox(height: 10),
                       _buildToolListItem(
                         context,
-                        icon: Icons.notifications_active,
-                        title: 'Thông báo tự động',
-                        subtitle: 'Cài đặt thông báo',
-                        color: Colors.red,
+                        icon: Icons.chat_bubble_outline,
+                        title: 'Tin nhắn',
+                        subtitle: 'Chat với ứng viên',
+                        color: Colors.green,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChatListScreen(),
+                            ),
+                          );
+                        },
                       ),
+                      // const SizedBox(height: 10),
+                      // _buildToolListItem(
+                      //   context,
+                      //   icon: Icons.notifications_active,
+                      //   title: 'Thông báo tự động',
+                      //   subtitle: 'Cài đặt thông báo',
+                      //   color: Colors.red,
+                      // ),
                     ],
                   ),
                 ),
@@ -513,5 +534,80 @@ class ToolsPageEmployer extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openChatWithAdmin(BuildContext context) async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Find admin user from profiles
+      final adminResponse = await Supabase.instance.client
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .eq('role', 'admin')
+          .limit(1)
+          .maybeSingle();
+
+      if (adminResponse == null) {
+        if (context.mounted) Navigator.pop(context); // Close loading
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không tìm thấy Admin. Vui lòng thử lại sau.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      final adminId = adminResponse['id'] as String;
+      final adminName = adminResponse['full_name'] as String? ?? 'Admin';
+      final adminAvatar = adminResponse['avatar_url'] as String? ?? '';
+
+      // Create or get existing conversation with admin
+      final chatService = ChatService();
+      final conversation = await chatService.getOrCreateConversation(
+        otherUserId: adminId,
+        otherUserType: 'admin',
+      );
+
+      if (context.mounted) Navigator.pop(context); // Close loading
+
+      if (conversation != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatDetailScreen(
+              conversation: conversation,
+              otherUserName: adminName,
+              otherUserAvatar: adminAvatar,
+            ),
+          ),
+        );
+      } else if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context); // Close loading
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
