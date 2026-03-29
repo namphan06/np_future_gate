@@ -202,7 +202,7 @@ class _CareerNewsScreenState extends State<CareerNewsScreen> with SingleTickerPr
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 200,
+                      height: 220,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -487,7 +487,7 @@ class _CareerNewsScreenState extends State<CareerNewsScreen> with SingleTickerPr
                             color: Colors.grey.shade500,
                             height: 1.3,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       const SizedBox(height: 8),
