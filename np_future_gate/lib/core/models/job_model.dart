@@ -207,12 +207,14 @@ class JobApplication {
   final String cvId;
   final DateTime appliedAt;
   final String status; // 'pending', 'accepted', 'rejected'
+  final String? recruitmentStatus; // Additional recruitment tracking
 
   JobApplication({
     required this.userId,
     required this.cvId,
     required this.appliedAt,
     this.status = 'pending',
+    this.recruitmentStatus,
   });
 
   factory JobApplication.fromJson(Map<String, dynamic> json) {
@@ -221,6 +223,7 @@ class JobApplication {
       cvId: json['cv_id'],
       appliedAt: DateTime.parse(json['applied_at']),
       status: json['status'] ?? 'pending',
+      recruitmentStatus: json['recruitment_status'],
     );
   }
 
@@ -230,6 +233,7 @@ class JobApplication {
       'cv_id': cvId,
       'applied_at': appliedAt.toIso8601String(),
       'status': status,
+      if (recruitmentStatus != null) 'recruitment_status': recruitmentStatus,
     };
   }
 }

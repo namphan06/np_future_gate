@@ -4,7 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'mistral_service.dart';
+import 'ocr_service.dart';
 import '../models/job_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 /// Model cho kết quả phân tích độ phù hợp của CV
 class CVMatchingResult {
@@ -49,7 +53,7 @@ class AIMatchingService {
     required Map<String, dynamic> cvData,
     required JobModel job,
   }) async {
-    final String? fileUrl = cvData['file_url'];
+    final String? fileUrl = cvData['file_url'] ?? cvData['data']?['file_url'];
     
     print('🚀 Đang bắt đầu phân tích AI...');
     print('🔗 Server AI URL: $_pythonApiUrl');
@@ -71,24 +75,69 @@ class AIMatchingService {
 
   Future<CVMatchingResult> _analyzeWithRealEngine(String fileUrl, JobModel job) async {
     try {
+      print('🔍 Using OcrService for analysis...');
+      
+      // 1. Download file to temp location
+      final responseFile = await http.get(Uri.parse(fileUrl)).timeout(const Duration(seconds: 15));
+      if (responseFile.statusCode != 200) throw Exception("Tải file thất bại");
+
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/temp_cv_${DateTime.now().millisecondsSinceEpoch}.pdf');
+      await tempFile.writeAsBytes(responseFile.bodyBytes);
+
+      // 2. OCR Extraction via Render Server
+      final ocrResult = await OcrService.extractText(file: tempFile);
+      
+      // Clean up temp file
+      if (await tempFile.exists()) await tempFile.delete();
+
+      if (ocrResult['success'] == false) {
+        throw Exception(ocrResult['error'] ?? 'OCR failed');
+      }
+
+      final String extractedText = ocrResult['text'] ?? '';
+      if (extractedText.isEmpty) throw Exception("Không trích xuất được văn bản");
+
+      // 3. Analyze text with LLM
       final jobDesc = job.metadata.jobDescription.join('\n');
       final jobReq = job.metadata.candidateRequirements.join('\n');
 
-      // 1. Tải file CV
-      final responseFile = await http.get(Uri.parse(fileUrl)).timeout(const Duration(seconds: 10));
-      if (responseFile.statusCode != 200) throw Exception("Tải file thất bại");
+      final prompt = '''
+      HÃY PHÂN TÍCH ĐỘ PHÙ HỢP CỦA CV VỚI CÔNG VIỆC
+      
+      [VĂN BẢN CV TRÍCH XUẤT]
+      $extractedText
+      
+      [YÊU CẦU CÔNG VIỆC]
+      Vị trí: ${job.metadata.title}
+      Mô tả: $jobDesc
+      Yêu cầu: $jobReq
+      
+      NHIỆM VỤ:
+      1. Đánh giá độ phù hợp (0-100).
+      2. Tính semantic similarity (0-1).
+      3. Tính keyword matching score (0-100).
+      4. Tóm tắt nhận xét (Tiếng Việt).
+      5. Liệt kê điểm mạnh (matching_points).
+      6. Liệt kê điểm còn thiếu (missing_points).
+      
+      TRẢ VỀ JSON:
+      {
+        "overall_score": number,
+        "semantic_similarity": number,
+        "keyword_match_score": number,
+        "summary": "string",
+        "matching_points": ["string"],
+        "missing_points": ["string"],
+        "parsed_data": {}
+      }
+      ''';
 
-      // 2. Gửi tới Python Backend
-      var request = http.MultipartRequest('POST', Uri.parse(_pythonApiUrl));
-      request.fields['job_description'] = jobDesc;
-      request.fields['requirements'] = jobReq;
-      request.files.add(http.MultipartFile.fromBytes('cv_file', responseFile.bodyBytes, filename: 'cv.pdf'));
-
-      var streamedResponse = await request.send().timeout(const Duration(seconds: 60));
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        final result = jsonDecode(response.body);
+      final aiResponse = await _mistralService.sendMessage(prompt);
+      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(aiResponse);
+      
+      if (jsonMatch != null) {
+        final result = jsonDecode(jsonMatch);
         return CVMatchingResult(
           overallScore: (result['overall_score'] as num).toDouble(),
           semanticSimilarity: (result['semantic_similarity'] as num).toDouble(),
@@ -99,11 +148,11 @@ class AIMatchingService {
           parsedData: result['parsed_data'] ?? {},
         );
       } else {
-        throw Exception("Server trả về mã ${response.statusCode}");
+        throw Exception("AI response was not valid JSON");
       }
     } catch (e) {
-      debugPrint('Error in RealEngine: $e');
-      rethrow; // Ném lỗi để analyzeCVMatching biết và fallback
+      debugPrint('Error in RealEngine (OCR + LLM): $e');
+      rethrow;
     }
   }
 

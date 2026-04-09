@@ -1,0 +1,37 @@
+@startuml
+skinparam handwritten false
+skinparam monochrome false
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName "Arial"
+skinparam arrowColor #333333
+
+title Thiết kế tổng quan - Dự án NP FutureGate
+
+package "Views (Giao diện người dùng)" as views #White
+package "Main (Khởi tạo & Cấu hình)" as main #White
+
+package "Hạt nhân hệ thống (Core)" #AliceBlue {
+    package "Job (Quản lý việc làm)" as job #White
+    package "Interview (Quản lý phỏng vấn)" as interview #White
+    package "Application (Đơn ứng tuyển)" as app #White
+    package "Profile & CV (Hồ sơ cá nhân)" as cv #White
+}
+
+package "Admin (Quản trị hệ thống)" as admin #GhostWhite
+package "User (Ứng viên & Nhà tuyển dụng)" as user #Ivory
+
+' Arrows matching the sample structure
+views -down-> main
+main -down-> job
+main -down-> interview
+main -down-> app
+main -down-> cv
+
+user -up-> admin : Phân quyền / Yêu cầu
+admin -up-> job
+admin -up-> interview
+admin -up-> app
+admin -up-> cv
+
+@enduml

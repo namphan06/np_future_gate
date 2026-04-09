@@ -1321,6 +1321,9 @@ $employerName
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
+                        border: applicant.recruitmentStatus?.toLowerCase() == 'accepted' 
+                          ? Border.all(color: Colors.green, width: 2) 
+                          : null,
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.05),
@@ -1437,45 +1440,61 @@ $employerName
                           const Divider(height: 1),
                           Padding(
                             padding: const EdgeInsets.all(12),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => _viewCV(applicant.cvId, applicant.userId, applicant.status),
-                                    icon: const Icon(Icons.description_outlined, size: 18),
-                                    label: const Text('Xem CV'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.blue,
-                                      side: const BorderSide(color: Colors.blue),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 100,
+                                    child: OutlinedButton(
+                                      onPressed: () => _viewCV(applicant.cvId, applicant.userId, applicant.status),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.blue,
+                                        side: const BorderSide(color: Colors.blue),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.description_outlined, size: 16),
+                                          const SizedBox(width: 4),
+                                          const Text('Xem CV', style: TextStyle(fontSize: 12)),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: () => _showCandidateDetail(profile),
-                                    icon: const Icon(Icons.person_outline, size: 18),
-                                    label: const Text('Profile'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.purple,
-                                      side: const BorderSide(color: Colors.purple),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 100,
+                                    child: OutlinedButton(
+                                      onPressed: () => _showCandidateDetail(profile),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.purple,
+                                        side: const BorderSide(color: Colors.purple),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.person_outline, size: 16),
+                                          const SizedBox(width: 4),
+                                          const Text('Profile', style: TextStyle(fontSize: 12)),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                  Expanded(
-                                    child: OutlinedButton.icon(
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 120,
+                                    child: OutlinedButton(
                                       onPressed: () => _analyzeAI(applicant, profile),
-                                      icon: const Icon(Icons.auto_awesome, size: 18),
-                                      label: const Text('Phân tích AI'),
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: Colors.orange,
                                         side: const BorderSide(color: Colors.orange),
@@ -1484,11 +1503,20 @@ $employerName
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                       ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.auto_awesome, size: 16),
+                                          const SizedBox(width: 4),
+                                          const Text('Phân tích AI', style: TextStyle(fontSize: 12)),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                          ),
                           if (['pending', 'viewed'].contains(applicant.status.toLowerCase()) && !widget.isReadOnly)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),

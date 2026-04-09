@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/cv_supabase_service.dart';
+import '../../../core/services/ocr_service.dart';
+import '../../../core/services/mistral_service.dart';
 import '../../core/enums/job_fields.dart';
 import '../../widgets/speech_text_field.dart';
 
@@ -29,6 +32,9 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
   File? _selectedFile;
   String? _fileName;
   bool _isLoading = false;
+  bool _isAnalyzing = false;
+  
+  final MistralService _mistralService = MistralService();
   
   // Tag management
   final List<String> _availableTags = [
@@ -97,6 +103,100 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi chọn file: $e')),
       );
+    }
+  }
+
+  Future<void> _analyzeCV() async {
+    if (_selectedFile == null) return;
+
+    setState(() => _isAnalyzing = true);
+
+    try {
+      // 1. OCR Extraction
+      final result = await OcrService.extractText(
+        file: _selectedFile!,
+        language: 'vie', // Default to Vietnamese for local context
+      );
+
+      if (result['success'] == false) {
+        throw Exception(result['error'] ?? 'Lỗi trích xuất OCR');
+      }
+
+      final String extractedText = result['text'] ?? '';
+      if (extractedText.isEmpty) {
+        throw Exception('Không tìm thấy văn bản trong file');
+      }
+
+      // 2. LLM Parsing
+      final prompt = '''
+      Hãy trích xuất thông tin cá nhân từ văn bản CV sau đây và trả về dưới dạng JSON. 
+      Các trường cần trích xuất:
+      - full_name (Họ tên)
+      - email (Email)
+      - phone (Số điện thoại)
+      - job_title (Vị trí công việc/Tiêu đề CV)
+      - field (Chọn một trong các lĩnh vực sau: ${JobField.valuesList.join(', ')})
+      - summary (Mô tả ngắn gọn)
+      - tags (Danh sách các từ khóa kỹ năng chính, tối đa 5)
+
+      Văn bản CV:
+      $extractedText
+
+      Quy tắc:
+      1. Chỉ trả về JSON, không giải thích thêm.
+      2. Nếu không tìm thấy thông tin, hãy để giá trị null.
+      3. Trường field phải trùng khớp chính xác với danh sách cung cấp.
+      ''';
+
+      final aiResponse = await _mistralService.sendMessage(prompt);
+      
+      // Extract JSON from AI response
+      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(aiResponse);
+      if (jsonMatch != null) {
+        final data = json.decode(jsonMatch);
+        
+        setState(() {
+          if (data['full_name'] != null && _nameController.text.isEmpty) {
+            _nameController.text = data['full_name'];
+          }
+          if (data['email'] != null && _emailController.text.isEmpty) {
+            _emailController.text = data['email'];
+          }
+          if (data['phone'] != null && _phoneController.text.isEmpty) {
+            _phoneController.text = data['phone'];
+          }
+          if (data['job_title'] != null && _titleController.text.isEmpty) {
+            _titleController.text = data['job_title'];
+          }
+          if (data['summary'] != null && _descriptionController.text.isEmpty) {
+            _descriptionController.text = data['summary'];
+          }
+          if (data['field'] != null && JobField.valuesList.contains(data['field'])) {
+            _selectedField = data['field'];
+          }
+          if (data['tags'] != null && data['tags'] is List) {
+            for (var tag in data['tags']) {
+              if (tag != null && !_addedTags.contains(tag.toString())) {
+                _addedTags.add(tag.toString());
+              }
+            }
+          }
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đã trích xuất thông tin tự động!'), backgroundColor: Colors.blue),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi phân tích AI: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAnalyzing = false);
     }
   }
 
@@ -461,6 +561,25 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
               ),
             ),
           ),
+          if (_selectedFile != null) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isAnalyzing ? null : _analyzeCV,
+                icon: _isAnalyzing 
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.auto_awesome, color: Colors.white),
+                label: Text(_isAnalyzing ? 'Đang phân tích...' : 'Tự động điền thông tin bằng AI'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[800],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

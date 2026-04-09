@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../core/models/cv_model.dart';
+import '../../core/models/job_model.dart';
+import '../../core/services/ai_matching_service.dart';
 import '../../core/enums/job_fields.dart';
 
 /// Enhanced CV Selection Screen with search and filters
 class CVSelectionScreen extends StatefulWidget {
   final List<CVModel> cvs;
   final Function(String cvId) onCVSelected;
+  final JobModel? targetJob;
 
   const CVSelectionScreen({
     super.key,
     required this.cvs,
     required this.onCVSelected,
+    this.targetJob,
   });
 
   @override
@@ -22,6 +26,10 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
   String? _selectedField;
   String? _selectedType;
   List<CVModel> _filteredCVs = [];
+  
+  final AIMatchingService _matchingService = AIMatchingService();
+  final Map<String, CVMatchingResult> _scores = {};
+  bool _isCalculatingScores = false;
 
   @override
   void initState() {
@@ -57,6 +65,58 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
         return matchesSearch && matchesField && matchesType;
       }).toList();
     });
+  }
+
+  Future<void> _calculateScores() async {
+    if (widget.targetJob == null || _isCalculatingScores) return;
+
+    setState(() => _isCalculatingScores = true);
+
+    try {
+      // Calculate scores for all filtered CVs that don't have a score yet
+      for (var cv in _filteredCVs) {
+        if (!_scores.containsKey(cv.id)) {
+          final result = await _matchingService.analyzeCVMatching(
+            cvData: cv.data,
+            job: widget.targetJob!,
+          );
+          if (mounted) {
+            setState(() {
+              _scores[cv.id] = result;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print('Error calculating scores: $e');
+    } finally {
+      if (mounted) setState(() => _isCalculatingScores = false);
+    }
+  }
+
+  Future<void> _calculateSingleScore(CVModel cv) async {
+    if (widget.targetJob == null) return;
+    
+    // Set a temporary loading state for this CV if we wanted, 
+    // but for now let's just use the global state or just do it.
+    
+    try {
+      final result = await _matchingService.analyzeCVMatching(
+        cvData: cv.data,
+        job: widget.targetJob!,
+      );
+      if (mounted) {
+        setState(() {
+          _scores[cv.id] = result;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi phân tích: $e')),
+        );
+      }
+    }
   }
 
   void _clearFilters() {
@@ -513,6 +573,14 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                   ),
                 ],
                 
+                // Match Score Section
+                if (widget.targetJob != null) ...[
+                  const SizedBox(height: 12),
+                  const Divider(height: 1),
+                  const SizedBox(height: 12),
+                  _buildMatchScoreRow(cv),
+                ],
+
                 // Updated Date
                 const SizedBox(height: 12),
                 Row(
@@ -669,6 +737,92 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
         });
         Navigator.pop(context);
       },
+    );
+  }
+
+  Widget _buildMatchScoreRow(CVModel cv) {
+    final score = _scores[cv.id];
+    
+    if (score == null) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 16, color: Colors.purple[300]),
+              const SizedBox(width: 8),
+              Text(
+                'Chưa phân tích độ phù hợp',
+                style: TextStyle(fontSize: 13, color: Colors.grey[500], fontStyle: FontStyle.italic),
+              ),
+            ],
+          ),
+          TextButton(
+            onPressed: () => _calculateSingleScore(cv),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('Phân tích ngay'),
+          ),
+        ],
+      );
+    }
+
+    final overallScore = score.overallScore;
+    Color scoreColor = Colors.red;
+    if (overallScore >= 75) scoreColor = Colors.green;
+    else if (overallScore >= 50) scoreColor = Colors.orange;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, size: 18, color: Colors.purple[700]),
+                const SizedBox(width: 8),
+                Text(
+                  'Độ phù hợp AI:',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.purple[900]),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: scoreColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: scoreColor.withOpacity(0.5)),
+              ),
+              child: Text(
+                '${overallScore.toStringAsFixed(0)}%',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: scoreColor),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LinearProgressIndicator(
+          value: overallScore / 100,
+          backgroundColor: Colors.grey[200],
+          valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+          borderRadius: BorderRadius.circular(4),
+          minHeight: 6,
+        ),
+        if (score.matchingSummary.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            score.matchingSummary,
+            style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.4),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
     );
   }
 

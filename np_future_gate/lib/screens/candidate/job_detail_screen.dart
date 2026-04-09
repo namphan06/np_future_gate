@@ -119,6 +119,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         MaterialPageRoute(
           builder: (context) => CVSelectionScreen(
             cvs: cvs,
+            targetJob: widget.job,
             onCVSelected: (cvId) {
               Navigator.pop(context); // Close selection screen
               _applyForJob(cvId);
