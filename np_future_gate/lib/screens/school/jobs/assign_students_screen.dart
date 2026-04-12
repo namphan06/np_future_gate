@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
@@ -25,6 +27,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
   final CVSupabaseService _cvService = CVSupabaseService();
   List<dynamic> _students = [];
   List<dynamic> _filteredStudents = [];
+  Map<String, List<Map<String, dynamic>>> _studentAssignedJobsMap = {};
   List<String> _selectedStudents = [];
   List<String> _originalAssignedStudents = []; // Track original assignments
   String _searchQuery = '';
@@ -38,12 +41,12 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
     _loadStudents();
   }
 
-
-
   Future<void> _loadJobMetadata() async {
     try {
-      final table = widget.isPartnershipJob ? 'school_partnership_jobs' : 'jobs';
-      
+      final table = widget.isPartnershipJob
+          ? 'school_partnership_jobs'
+          : 'jobs';
+
       // Get current metadata from database
       final jobData = await Supabase.instance.client
           .from(table)
@@ -52,14 +55,18 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
           .single();
 
       final metadata = jobData['metadata'] as Map<String, dynamic>? ?? {};
-      final assignedStudents = (metadata['assigned_students'] as List?)
-          ?.map((e) => e.toString())
-          .toList() ?? [];
+      final assignedStudents =
+          (metadata['assigned_students'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [];
 
       setState(() {
         _selectedStudents = List.from(assignedStudents);
         _originalAssignedStudents = List.from(assignedStudents);
       });
+
+      await _loadAssignedJobsMap(currentJobAssignedStudents: assignedStudents);
     } catch (e) {
       // Fallback to widget data if error
       setState(() {
@@ -67,6 +74,10 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
         _originalAssignedStudents = List.from(widget.assignedStudents);
       });
       print('Error loading job metadata: $e');
+
+      await _loadAssignedJobsMap(
+        currentJobAssignedStudents: widget.assignedStudents,
+      );
     }
   }
 
@@ -76,14 +87,14 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) return;
 
-      // Get school's email domain
       final schoolProfile = await Supabase.instance.client
           .from('profiles')
           .select('metadata')
           .eq('id', userId)
           .single();
 
-      final schoolMetadata = schoolProfile['metadata'] as Map<String, dynamic>? ?? {};
+      final schoolMetadata =
+          schoolProfile['metadata'] as Map<String, dynamic>? ?? {};
       final schoolEmail = schoolMetadata['school_email'] as String?;
 
       if (schoolEmail == null || !schoolEmail.contains('@')) {
@@ -100,7 +111,6 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
 
       final schoolDomain = '@${schoolEmail.split('@').last}';
 
-      // Get students with matching email domain (exclude current user)
       final studentsData = await Supabase.instance.client
           .from('profiles')
           .select('id, full_name, email, metadata, role, created_at')
@@ -116,11 +126,451 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải sinh viên: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi tải sinh viên: $e')));
       }
     }
+  }
+
+  Future<void> _loadAssignedJobsMap({
+    List<String>? currentJobAssignedStudents,
+  }) async {
+    try {
+      final schoolId = Supabase.instance.client.auth.currentUser?.id;
+      if (schoolId == null) return;
+
+      final partnershipJobsData = await Supabase.instance.client
+          .from('school_partnership_jobs')
+          .select('id, metadata, created_at, deadline')
+          .eq('school_id', schoolId)
+          .order('created_at', ascending: false);
+
+      final regularJobsData = await Supabase.instance.client
+          .from('jobs')
+          .select('id, metadata, created_at, deadline')
+          .eq('creator_id', schoolId)
+          .order('created_at', ascending: false);
+
+      final assignedJobsMap = <String, List<Map<String, dynamic>>>{};
+
+      void addRowsToAssignedMap(
+        List<dynamic> rows, {
+        required String expireKey,
+      }) {
+        for (final row in rows) {
+          final rowMap = Map<String, dynamic>.from(row as Map);
+          final metadata = _parseMetadata(rowMap['metadata']);
+          final assignedStudents = _extractAssignedStudentIds(metadata);
+          if (assignedStudents.isEmpty) continue;
+
+          final title =
+              (metadata['title'] ?? rowMap['title'] ?? 'Tin không có tiêu đề')
+                  .toString();
+          final jobInfo = {
+            'id': rowMap['id'].toString(),
+            'title': title,
+            'created_at': rowMap['created_at'],
+            'expired_at': rowMap[expireKey],
+          };
+
+          for (final studentId in assignedStudents) {
+            assignedJobsMap.putIfAbsent(studentId, () => []).add(jobInfo);
+          }
+        }
+      }
+
+      addRowsToAssignedMap(
+        partnershipJobsData as List<dynamic>,
+        expireKey: 'deadline',
+      );
+      addRowsToAssignedMap(
+        regularJobsData as List<dynamic>,
+        expireKey: 'deadline',
+      );
+
+      for (final entry in assignedJobsMap.entries) {
+        final uniqueById = <String, Map<String, dynamic>>{};
+        for (final item in entry.value) {
+          final id = (item['id'] ?? '').toString();
+          if (id.isEmpty) continue;
+          uniqueById.putIfAbsent(id, () => item);
+        }
+        assignedJobsMap[entry.key] = uniqueById.values.toList();
+      }
+
+      final currentJobAssigned =
+          (currentJobAssignedStudents ?? const <String>[])
+              .map(_normalizeStudentId)
+              .where((id) => id.isNotEmpty)
+              .toSet()
+              .toList();
+      final currentJobId = (widget.job.id ?? '').toString();
+      if (currentJobId.isNotEmpty && currentJobAssigned.isNotEmpty) {
+        final currentJobInfo = {
+          'id': currentJobId,
+          'title': widget.job.metadata.title,
+          'created_at': widget.job.createdAt?.toIso8601String(),
+          'expired_at': widget.job.deadline?.toIso8601String(),
+        };
+
+        for (final studentId in currentJobAssigned) {
+          final jobs = assignedJobsMap.putIfAbsent(studentId, () => []);
+          final hasCurrentJob = jobs.any(
+            (job) => (job['id']?.toString() ?? '') == currentJobId,
+          );
+          if (!hasCurrentJob) {
+            jobs.add(currentJobInfo);
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _studentAssignedJobsMap = assignedJobsMap;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+    }
+  }
+
+  Map<String, dynamic> _parseMetadata(dynamic rawMetadata) {
+    if (rawMetadata is Map<String, dynamic>) {
+      return rawMetadata;
+    }
+    if (rawMetadata is Map) {
+      return Map<String, dynamic>.from(rawMetadata);
+    }
+    if (rawMetadata is String && rawMetadata.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawMetadata);
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {
+        return <String, dynamic>{};
+      }
+    }
+    return <String, dynamic>{};
+  }
+
+  String _normalizeStudentId(dynamic value) {
+    return value?.toString().trim().toLowerCase() ?? '';
+  }
+
+  List<String> _extractAssignedStudentIds(Map<String, dynamic> metadata) {
+    final raw = metadata['assigned_students'];
+    final ids = <String>[];
+
+    if (raw is List) {
+      for (final item in raw) {
+        if (item is Map) {
+          final itemMap = Map<String, dynamic>.from(item);
+          final candidateId =
+              itemMap['student_id'] ??
+              itemMap['user_id'] ??
+              itemMap['candidate_id'] ??
+              itemMap['id'];
+          final id = _normalizeStudentId(candidateId);
+          if (id.isNotEmpty) ids.add(id);
+        } else {
+          final id = _normalizeStudentId(item);
+          if (id.isNotEmpty) ids.add(id);
+        }
+      }
+      return ids.toSet().toList();
+    }
+
+    if (raw is String && raw.trim().isNotEmpty) {
+      final rawText = raw.trim();
+
+      try {
+        final decoded = jsonDecode(rawText);
+        if (decoded is List) {
+          for (final item in decoded) {
+            if (item is Map) {
+              final itemMap = Map<String, dynamic>.from(item);
+              final candidateId =
+                  itemMap['student_id'] ??
+                  itemMap['user_id'] ??
+                  itemMap['candidate_id'] ??
+                  itemMap['id'];
+              final id = _normalizeStudentId(candidateId);
+              if (id.isNotEmpty) ids.add(id);
+            } else {
+              final id = _normalizeStudentId(item);
+              if (id.isNotEmpty) ids.add(id);
+            }
+          }
+          return ids.toSet().toList();
+        }
+
+        if (decoded is String && decoded.trim().isNotEmpty) {
+          final secondPass = decoded.trim();
+          if (secondPass.startsWith('[') && secondPass.endsWith(']')) {
+            final secondDecoded = jsonDecode(secondPass);
+            if (secondDecoded is List) {
+              for (final item in secondDecoded) {
+                final id = _normalizeStudentId(item);
+                if (id.isNotEmpty) ids.add(id);
+              }
+              return ids.toSet().toList();
+            }
+          }
+        }
+      } catch (_) {
+        if (rawText.startsWith('{') && rawText.endsWith('}')) {
+          final pgArrayItems = rawText
+              .substring(1, rawText.length - 1)
+              .split(',')
+              .map((e) => e.replaceAll('"', '').trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          for (final item in pgArrayItems) {
+            final id = _normalizeStudentId(item);
+            if (id.isNotEmpty) ids.add(id);
+          }
+          return ids.toSet().toList();
+        }
+
+        if (rawText.contains(',')) {
+          final csvItems = rawText
+              .split(',')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          for (final item in csvItems) {
+            final id = _normalizeStudentId(item);
+            if (id.isNotEmpty) ids.add(id);
+          }
+          return ids.toSet().toList();
+        }
+
+        final id = _normalizeStudentId(rawText);
+        if (id.isNotEmpty) ids.add(id);
+      }
+    }
+
+    return ids.toSet().toList();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchAssignedJobsForStudent(
+    String normalizedStudentId,
+  ) async {
+    final schoolId = Supabase.instance.client.auth.currentUser?.id;
+    if (schoolId == null || normalizedStudentId.isEmpty) {
+      return <Map<String, dynamic>>[];
+    }
+
+    final rows = await Supabase.instance.client
+        .from('school_partnership_jobs')
+        .select('id, metadata, created_at, deadline')
+        .eq('school_id', schoolId)
+        .order('created_at', ascending: false);
+
+    final result = <Map<String, dynamic>>[];
+    for (final row in rows as List<dynamic>) {
+      final rowMap = Map<String, dynamic>.from(row as Map);
+      final metadata = _parseMetadata(rowMap['metadata']);
+      final assignedIds = _extractAssignedStudentIds(metadata);
+      final hasStudent = assignedIds.any((id) => id == normalizedStudentId);
+      if (!hasStudent) continue;
+
+      result.add({
+        'id': rowMap['id']?.toString() ?? '',
+        'title': (metadata['title'] ?? 'Tin không có tiêu đề').toString(),
+        'created_at': rowMap['created_at'],
+        'expired_at': rowMap['deadline'],
+      });
+    }
+
+    final uniqueById = <String, Map<String, dynamic>>{};
+    for (final item in result) {
+      final id = (item['id'] ?? '').toString();
+      if (id.isEmpty) continue;
+      uniqueById.putIfAbsent(id, () => item);
+    }
+
+    return uniqueById.values.toList();
+  }
+
+  Future<void> _showAssignedJobsDialog(Map<String, dynamic> student) async {
+    final studentId = _normalizeStudentId(student['id']);
+    final mappedJobs = await _fetchAssignedJobsForStudent(studentId);
+    if (!mounted) return;
+
+    final isAssignedInCurrentJob =
+        _selectedStudents.any((id) => _normalizeStudentId(id) == studentId) ||
+        _originalAssignedStudents.any(
+          (id) => _normalizeStudentId(id) == studentId,
+        );
+    final currentJobId = (widget.job.id ?? '').toString();
+    if (isAssignedInCurrentJob && currentJobId.isNotEmpty) {
+      final hasCurrentJob = mappedJobs.any(
+        (job) => (job['id']?.toString() ?? '') == currentJobId,
+      );
+      if (!hasCurrentJob) {
+        mappedJobs.add({
+          'id': currentJobId,
+          'title': widget.job.metadata.title,
+          'created_at': widget.job.createdAt?.toIso8601String(),
+          'expired_at': widget.job.deadline?.toIso8601String(),
+        });
+      }
+    }
+
+    final jobsById = <String, Map<String, dynamic>>{};
+    for (final job in mappedJobs) {
+      final jobId = (job['id'] ?? '').toString();
+      if (jobId.isEmpty) continue;
+      jobsById.putIfAbsent(jobId, () => job);
+    }
+    final jobs = jobsById.values.toList();
+
+    jobs.sort((a, b) {
+      final aDate = DateTime.tryParse((a['created_at'] ?? '').toString());
+      final bDate = DateTime.tryParse((b['created_at'] ?? '').toString());
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return bDate.compareTo(aDate);
+    });
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Lịch sử phân công: ${student['full_name'] ?? 'Sinh viên'}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (jobs.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'Sinh viên này chưa được phân công vào tin thực tập nào.',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: jobs.length,
+                      separatorBuilder: (_, __) => const Divider(height: 16),
+                      itemBuilder: (context, index) {
+                        final item = jobs[index];
+                        final isCurrentJob =
+                            item['id'].toString() == widget.job.id;
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              isCurrentJob
+                                  ? Icons.push_pin
+                                  : Icons.work_outline,
+                              color: isCurrentJob
+                                  ? Colors.orange
+                                  : AppMainColors.primary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['title']?.toString() ??
+                                        'Tin không có tiêu đề',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isCurrentJob
+                                              ? Colors.orange.shade100
+                                              : Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          isCurrentJob
+                                              ? 'Tin hiện tại'
+                                              : 'Tin khác',
+                                          style: TextStyle(
+                                            color: isCurrentJob
+                                                ? Colors.orange.shade900
+                                                : Colors.blue.shade700,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ),
+                                      if (item['created_at'] != null)
+                                        Text(
+                                          'Đăng: ${_formatDate(item['created_at'].toString())}',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade700,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatDate(String value) {
+    final dt = DateTime.tryParse(value);
+    if (dt == null) return value;
+    final day = dt.day.toString().padLeft(2, '0');
+    final month = dt.month.toString().padLeft(2, '0');
+    return '$day/$month/${dt.year}';
   }
 
   void _filterStudents(String query) {
@@ -147,13 +597,17 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
 
     if (unassignedStudents.isNotEmpty) {
       // Show confirmation dialog
-      final shouldContinue = await _showUnassignConfirmDialog(unassignedStudents);
+      final shouldContinue = await _showUnassignConfirmDialog(
+        unassignedStudents,
+      );
       if (shouldContinue != true) return;
     }
 
     setState(() => _isSaving = true);
     try {
-      final table = widget.isPartnershipJob ? 'school_partnership_jobs' : 'jobs';
+      final table = widget.isPartnershipJob
+          ? 'school_partnership_jobs'
+          : 'jobs';
 
       // Get current metadata
       final jobData = await Supabase.instance.client
@@ -183,9 +637,9 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi lưu: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi lưu: $e')));
       }
     }
   }
@@ -234,7 +688,9 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                       itemBuilder: (context, index) {
                         final student = unassignedStudents[index];
                         final studentId = student['id'] as String;
-                        final isReselected = _selectedStudents.contains(studentId);
+                        final isReselected = _selectedStudents.contains(
+                          studentId,
+                        );
 
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
@@ -254,7 +710,9 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                               student['full_name'] ?? 'Không có tên',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                decoration: isReselected ? TextDecoration.lineThrough : null,
+                                decoration: isReselected
+                                    ? TextDecoration.lineThrough
+                                    : null,
                                 color: isReselected ? Colors.grey : null,
                               ),
                             ),
@@ -263,11 +721,15 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                               style: const TextStyle(fontSize: 12),
                             ),
                             secondary: CircleAvatar(
-                              backgroundColor: isReselected ? Colors.grey : Colors.red.shade100,
+                              backgroundColor: isReselected
+                                  ? Colors.grey
+                                  : Colors.red.shade100,
                               child: Text(
                                 (student['full_name'] ?? 'N')[0].toUpperCase(),
                                 style: TextStyle(
-                                  color: isReselected ? Colors.white : Colors.red,
+                                  color: isReselected
+                                      ? Colors.white
+                                      : Colors.red,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -289,7 +751,11 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.blue.shade700,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -346,7 +812,10 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
               padding: const EdgeInsets.only(right: 8),
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange,
                     borderRadius: BorderRadius.circular(20),
@@ -391,7 +860,11 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                     color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.assignment_ind, color: Colors.white, size: 28),
+                  child: const Icon(
+                    Icons.assignment_ind,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -436,7 +909,10 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
               onChanged: _filterStudents,
             ),
@@ -449,207 +925,303 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredStudents.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.people_outline, size: 80, color: Colors.grey[300]),
-                            const SizedBox(height: 16),
-                            Text(
-                              _searchQuery.isEmpty
-                                  ? 'Chưa có sinh viên nào'
-                                  : 'Không tìm thấy sinh viên',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 80,
+                          color: Colors.grey[300],
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _filteredStudents.length,
-                        itemBuilder: (context, index) {
-                          final student = _filteredStudents[index];
-                          final studentId = student['id'] as String;
-                          final isSelected = _selectedStudents.contains(studentId);
-                          final wasOriginallyAssigned = _originalAssignedStudents.contains(studentId);
-                          final metadata = student['metadata'] as Map<String, dynamic>? ?? {};
-                          
-                          // Extract info from metadata
-                          final education = metadata['education'] as String?;
-                          final address = metadata['address'] as String?;
-                          final interestedFields = metadata['interested_fields'] as List?;
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isEmpty
+                              ? 'Chưa có sinh viên nào'
+                              : 'Không tìm thấy sinh viên',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _filteredStudents.length,
+                    itemBuilder: (context, index) {
+                      final student = _filteredStudents[index];
+                      final studentId = student['id'] as String;
+                      final normalizedStudentId = _normalizeStudentId(
+                        studentId,
+                      );
+                      final isSelected = _selectedStudents.contains(studentId);
+                      final wasOriginallyAssigned = _originalAssignedStudents
+                          .contains(studentId);
+                      final assignedJobs =
+                          _studentAssignedJobsMap[normalizedStudentId] ??
+                          const <Map<String, dynamic>>[];
+                      final assignedOtherJobsCount = assignedJobs
+                          .where((job) => job['id'].toString() != widget.job.id)
+                          .length;
+                      final metadata =
+                          student['metadata'] as Map<String, dynamic>? ?? {};
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            elevation: isSelected ? 4 : 1,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              side: BorderSide(
-                                color: isSelected ? Colors.orange : Colors.transparent,
-                                width: 2,
-                              ),
-                            ),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    _selectedStudents.remove(studentId);
-                                  } else {
-                                    _selectedStudents.add(studentId);
-                                  }
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                      // Extract info from metadata
+                      final education = metadata['education'] as String?;
+                      final address = metadata['address'] as String?;
+                      final interestedFields =
+                          metadata['interested_fields'] as List?;
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: isSelected ? 4 : 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: isSelected
+                                ? Colors.orange
+                                : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            setState(() {
+                              if (isSelected) {
+                                _selectedStudents.remove(studentId);
+                              } else {
+                                _selectedStudents.add(studentId);
+                              }
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    Row(
-                                      children: [
-                                        // Avatar
-                                        CircleAvatar(
-                                          radius: 30,
-                                          backgroundColor: isSelected ? Colors.orange : AppMainColors.primary,
-                                          child: Text(
-                                            (student['full_name'] ?? 'N')[0].toUpperCase(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                    // Avatar
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundColor: isSelected
+                                          ? Colors.orange
+                                          : AppMainColors.primary,
+                                      child: Text(
+                                        (student['full_name'] ?? 'N')[0]
+                                            .toUpperCase(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        const SizedBox(width: 16),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
 
-                                        // Basic Info
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                    // Basic Info
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
                                             children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      student['full_name'] ?? 'Không có tên',
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
+                                              Expanded(
+                                                child: Text(
+                                                  student['full_name'] ??
+                                                      'Không có tên',
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                  if (wasOriginallyAssigned) ...[
-                                                    const SizedBox(width: 8),
-                                                    Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.green.shade50,
-                                                        borderRadius: BorderRadius.circular(12),
-                                                        border: Border.all(color: Colors.green.shade300),
-                                                      ),
-                                                      child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          Icon(Icons.check_circle, size: 12, color: Colors.green.shade700),
-                                                          const SizedBox(width: 4),
-                                                          Text(
-                                                            'Đã phân công',
-                                                            style: TextStyle(
-                                                              fontSize: 10,
-                                                              color: Colors.green.shade700,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ],
+                                                ),
                                               ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  const Icon(Icons.email, size: 14, color: Colors.grey),
-                                                  const SizedBox(width: 4),
-                                                  Expanded(
-                                                    child: Text(
-                                                      student['email'] ?? '',
-                                                      style: const TextStyle(
-                                                        fontSize: 13,
-                                                        color: Colors.grey,
+                                              if (wasOriginallyAssigned) ...[
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4,
                                                       ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green.shade50,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                    border: Border.all(
+                                                      color:
+                                                          Colors.green.shade300,
                                                     ),
                                                   ),
-                                                ],
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.check_circle,
+                                                        size: 12,
+                                                        color: Colors
+                                                            .green
+                                                            .shade700,
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        'Đã phân công',
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          color: Colors
+                                                              .green
+                                                              .shade700,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.email,
+                                                size: 14,
+                                                color: Colors.grey,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  student['email'] ?? '',
+                                                  style: const TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
                                               ),
                                             ],
                                           ),
-                                        ),
-
-                                        // Checkbox
-                                        Checkbox(
-                                          value: isSelected,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              if (value == true) {
-                                                _selectedStudents.add(studentId);
-                                              } else {
-                                                _selectedStudents.remove(studentId);
-                                              }
-                                            });
-                                          },
-                                          activeColor: Colors.orange,
-                                        ),
-                                      ],
-                                    ),
-                                    
-                                    // Additional Info Chips
-                                    if (education != null || address != null || interestedFields != null) ...[
-                                      const SizedBox(height: 12),
-                                      const Divider(height: 1),
-                                      const SizedBox(height: 12),
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 8,
-                                        children: [
-                                          if (education != null)
-                                            _buildInfoChip(Icons.school, education, Colors.blue),
-                                          if (address != null)
-                                            _buildInfoChip(Icons.location_on, address, Colors.green),
-                                          if (interestedFields != null && interestedFields.isNotEmpty)
-                                            _buildInfoChip(
-                                              Icons.work_outline,
-                                              '${interestedFields.length} lĩnh vực',
-                                              Colors.purple,
-                                            ),
                                         ],
                                       ),
-                                    ],
-                                    
-                                    // View Profile Button
-                                    const SizedBox(height: 12),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () => _viewStudentProfile(student),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: AppMainColors.primary,
-                                          side: BorderSide(color: AppMainColors.primary),
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                        ),
-                                        icon: const Icon(Icons.person_outline, size: 18),
-                                        label: const Text('Xem profile đầy đủ'),
-                                      ),
+                                    ),
+
+                                    // Checkbox
+                                    Checkbox(
+                                      value: isSelected,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          if (value == true) {
+                                            _selectedStudents.add(studentId);
+                                          } else {
+                                            _selectedStudents.remove(studentId);
+                                          }
+                                        });
+                                      },
+                                      activeColor: Colors.orange,
                                     ),
                                   ],
                                 ),
-                              ),
+
+                                // Additional Info Chips
+                                if (education != null ||
+                                    address != null ||
+                                    interestedFields != null) ...[
+                                  const SizedBox(height: 12),
+                                  const Divider(height: 1),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      if (education != null)
+                                        _buildInfoChip(
+                                          Icons.school,
+                                          education,
+                                          Colors.blue,
+                                        ),
+                                      if (address != null)
+                                        _buildInfoChip(
+                                          Icons.location_on,
+                                          address,
+                                          Colors.green,
+                                        ),
+                                      if (interestedFields != null &&
+                                          interestedFields.isNotEmpty)
+                                        _buildInfoChip(
+                                          Icons.work_outline,
+                                          '${interestedFields.length} lĩnh vực',
+                                          Colors.purple,
+                                        ),
+                                    ],
+                                  ),
+                                ],
+
+                                // View Profile Button
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () =>
+                                        _viewStudentProfile(student),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppMainColors.primary,
+                                      side: BorderSide(
+                                        color: AppMainColors.primary,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.person_outline,
+                                      size: 18,
+                                    ),
+                                    label: const Text('Xem profile đầy đủ'),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () =>
+                                        _showAssignedJobsDialog(student),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.deepOrange,
+                                      side: BorderSide(
+                                        color: Colors.deepOrange.shade200,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.assignment_turned_in_outlined,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      assignedOtherJobsCount > 0
+                                          ? 'Xem tin đã phân công ($assignedOtherJobsCount tin khác)'
+                                          : 'Xem tin đã phân công',
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -688,7 +1260,9 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                   )
                 : const Icon(Icons.save),
             label: Text(
-              _isSaving ? 'Đang lưu...' : 'Lưu phân công (${_selectedStudents.length})',
+              _isSaving
+                  ? 'Đang lưu...'
+                  : 'Lưu phân công (${_selectedStudents.length})',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
@@ -696,7 +1270,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
       ),
     );
   }
-  
+
   Widget _buildInfoChip(IconData icon, String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -726,9 +1300,9 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
 
 class StudentProfileDetailScreen extends StatelessWidget {
   final Map<String, dynamic> student;
-  final CVSupabaseService _cvService =  CVSupabaseService();
+  final CVSupabaseService _cvService = CVSupabaseService();
 
-   StudentProfileDetailScreen({super.key, required this.student});
+  StudentProfileDetailScreen({super.key, required this.student});
 
   @override
   Widget build(BuildContext context) {
@@ -739,9 +1313,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text('Thông tin sinh viên'),
-      ),
+      appBar: AppBar(title: const Text('Thông tin sinh viên')),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -753,7 +1325,10 @@ class StudentProfileDetailScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppMainColors.primary, AppMainColors.primary.withOpacity(0.8)],
+                  colors: [
+                    AppMainColors.primary,
+                    AppMainColors.primary.withOpacity(0.8),
+                  ],
                 ),
               ),
               child: Column(
@@ -803,7 +1378,10 @@ class StudentProfileDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -849,13 +1427,14 @@ class StudentProfileDetailScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Thông tin cơ bản',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  _buildInfoRow(Icons.email, 'Email', student['email'] ?? 'Chưa có'),
+                  _buildInfoRow(
+                    Icons.email,
+                    'Email',
+                    student['email'] ?? 'Chưa có',
+                  ),
                   if (createdAt != null) ...[
                     const Divider(height: 24),
                     _buildInfoRow(
@@ -888,19 +1467,23 @@ class StudentProfileDetailScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.account_box_rounded, color: AppMainColors.primary, size: 24),
+                      Icon(
+                        Icons.account_box_rounded,
+                        color: AppMainColors.primary,
+                        size: 24,
+                      ),
                       const SizedBox(width: 12),
                       const Text(
                         'Profile chi tiết',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      )
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
+
                   if (metadata.isEmpty || !_hasAnyProfileData(metadata))
                     Center(
                       child: Padding(
@@ -950,86 +1533,113 @@ class StudentProfileDetailScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       const Divider(height: 32),
                     ],
-                    
+
                     // Education
                     if (metadata['education'] != null) ...[
-                      _buildInfoRow(Icons.school, 'Trình độ', metadata['education'].toString()),
+                      _buildInfoRow(
+                        Icons.school,
+                        'Trình độ',
+                        metadata['education'].toString(),
+                      ),
                       const SizedBox(height: 12),
                     ],
-                    
+
                     // Date of birth
                     if (metadata['date_of_birth'] != null) ...[
                       _buildInfoRow(
                         Icons.cake,
                         'Ngày sinh',
-                        DateTime.parse(metadata['date_of_birth']).toString().split(' ')[0],
+                        DateTime.parse(
+                          metadata['date_of_birth'],
+                        ).toString().split(' ')[0],
                       ),
                       const SizedBox(height: 12),
                     ],
-                    
+
                     // Address
-                    if (metadata['address'] != null && metadata['address'].toString().trim().isNotEmpty) ...[
-                      _buildInfoRow(Icons.location_on, 'Địa chỉ', metadata['address'].toString()),
+                    if (metadata['address'] != null &&
+                        metadata['address'].toString().trim().isNotEmpty) ...[
+                      _buildInfoRow(
+                        Icons.location_on,
+                        'Địa chỉ',
+                        metadata['address'].toString(),
+                      ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // CV Files
-                    if (metadata['cv_ids'] != null && (metadata['cv_ids'] as List).isNotEmpty) ...[
+                    if (metadata['cv_ids'] != null &&
+                        (metadata['cv_ids'] as List).isNotEmpty) ...[
                       _buildSection(
                         'Hồ sơ CV',
                         Icons.description,
                         Colors.red,
                         child: Column(
-                          children: (metadata['cv_ids'] as List).asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final cvId = entry.value;
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.withOpacity(0.3)),
-                              ),
-                              child: ListTile(
-                                dense: true,
-                                leading: Container(
-                                  padding: const EdgeInsets.all(8),
+                          children: (metadata['cv_ids'] as List)
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                                final index = entry.key;
+                                final cvId = entry.value;
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
                                   decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.1),
+                                    color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.red.withOpacity(0.3),
+                                    ),
                                   ),
-                                  child: Icon(Icons.picture_as_pdf, color: Colors.red, size: 24),
-                                ),
-                                title: Text(
-                                  'CV ${index + 1}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                  child: ListTile(
+                                    dense: true,
+                                    leading: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        Icons.picture_as_pdf,
+                                        color: Colors.red,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      'CV ${index + 1}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      'ID: ${cvId.toString().substring(0, 8)}...',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    trailing: IconButton(
+                                      icon: const Icon(
+                                        Icons.visibility_outlined,
+                                        size: 20,
+                                      ),
+                                      onPressed: () =>
+                                          _viewCV(context, cvId.toString()),
+                                      color: Colors.red,
+                                      tooltip: 'Xem CV',
+                                    ),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  'ID: ${cvId.toString().substring(0, 8)}...',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.visibility_outlined, size: 20),
-                                  onPressed: () => _viewCV(context, cvId.toString()),
-                                  color: Colors.red,
-                                  tooltip: 'Xem CV',
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                                );
+                              })
+                              .toList(),
                         ),
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // Interested Fields
-                    if (metadata['interested_fields'] != null && (metadata['interested_fields'] as List).isNotEmpty) ...[
+                    if (metadata['interested_fields'] != null &&
+                        (metadata['interested_fields'] as List).isNotEmpty) ...[
                       _buildSection(
                         'Lĩnh vực quan tâm',
                         Icons.interests,
@@ -1037,18 +1647,27 @@ class StudentProfileDetailScreen extends StatelessWidget {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: (metadata['interested_fields'] as List).map((field) => Chip(
-                            label: Text(field.toString()),
-                            backgroundColor: Colors.purple.withOpacity(0.1),
-                            side: BorderSide(color: Colors.purple.withOpacity(0.3)),
-                          )).toList(),
+                          children: (metadata['interested_fields'] as List)
+                              .map(
+                                (field) => Chip(
+                                  label: Text(field.toString()),
+                                  backgroundColor: Colors.purple.withOpacity(
+                                    0.1,
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.purple.withOpacity(0.3),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // Work Locations
-                    if (metadata['work_locations'] != null && (metadata['work_locations'] as List).isNotEmpty) ...[
+                    if (metadata['work_locations'] != null &&
+                        (metadata['work_locations'] as List).isNotEmpty) ...[
                       _buildSection(
                         'Địa điểm làm việc mong muốn',
                         Icons.location_city,
@@ -1056,18 +1675,27 @@ class StudentProfileDetailScreen extends StatelessWidget {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: (metadata['work_locations'] as List).map((loc) => Chip(
-                            label: Text(loc.toString()),
-                            backgroundColor: Colors.green.withOpacity(0.1),
-                            side: BorderSide(color: Colors.green.withOpacity(0.3)),
-                          )).toList(),
+                          children: (metadata['work_locations'] as List)
+                              .map(
+                                (loc) => Chip(
+                                  label: Text(loc.toString()),
+                                  backgroundColor: Colors.green.withOpacity(
+                                    0.1,
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.green.withOpacity(0.3),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // Work Types
-                    if (metadata['work_types'] != null && (metadata['work_types'] as List).isNotEmpty) ...[
+                    if (metadata['work_types'] != null &&
+                        (metadata['work_types'] as List).isNotEmpty) ...[
                       _buildSection(
                         'Hình thức làm việc',
                         Icons.work_outline,
@@ -1075,18 +1703,27 @@ class StudentProfileDetailScreen extends StatelessWidget {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: (metadata['work_types'] as List).map((type) => Chip(
-                            label: Text(type.toString()),
-                            backgroundColor: Colors.orange.withOpacity(0.1),
-                            side: BorderSide(color: Colors.orange.withOpacity(0.3)),
-                          )).toList(),
+                          children: (metadata['work_types'] as List)
+                              .map(
+                                (type) => Chip(
+                                  label: Text(type.toString()),
+                                  backgroundColor: Colors.orange.withOpacity(
+                                    0.1,
+                                  ),
+                                  side: BorderSide(
+                                    color: Colors.orange.withOpacity(0.3),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // Tags/Skills
-                    if (metadata['tags'] != null && (metadata['tags'] as List).isNotEmpty) ...[
+                    if (metadata['tags'] != null &&
+                        (metadata['tags'] as List).isNotEmpty) ...[
                       _buildSection(
                         'Kỹ năng',
                         Icons.sell,
@@ -1094,19 +1731,29 @@ class StudentProfileDetailScreen extends StatelessWidget {
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: (metadata['tags'] as List).map((tag) => Chip(
-                            label: Text(tag.toString()),
-                            avatar: const Icon(Icons.check_circle, size: 16),
-                            backgroundColor: Colors.blue.withOpacity(0.1),
-                            side: BorderSide(color: Colors.blue.withOpacity(0.3)),
-                          )).toList(),
+                          children: (metadata['tags'] as List)
+                              .map(
+                                (tag) => Chip(
+                                  label: Text(tag.toString()),
+                                  avatar: const Icon(
+                                    Icons.check_circle,
+                                    size: 16,
+                                  ),
+                                  backgroundColor: Colors.blue.withOpacity(0.1),
+                                  side: BorderSide(
+                                    color: Colors.blue.withOpacity(0.3),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                       const SizedBox(height: 16),
                     ],
-                    
+
                     // Experience
-                    if (metadata['experience'] != null && (metadata['experience'] as List).isNotEmpty) ...[
+                    if (metadata['experience'] != null &&
+                        (metadata['experience'] as List).isNotEmpty) ...[
                       _buildSection(
                         'Kinh nghiệm làm việc',
                         Icons.business_center,
@@ -1154,7 +1801,10 @@ class StudentProfileDetailScreen extends StatelessWidget {
                                     const SizedBox(height: 8),
                                     Text(
                                       expMap['description'],
-                                      style: const TextStyle(fontSize: 13, height: 1.5),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -1176,7 +1826,12 @@ class StudentProfileDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(String title, IconData icon, Color color, {required Widget child}) {
+  Widget _buildSection(
+    String title,
+    IconData icon,
+    Color color, {
+    required Widget child,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1222,12 +1877,17 @@ class StudentProfileDetailScreen extends StatelessWidget {
         metadata['education'] != null ||
         metadata['date_of_birth'] != null ||
         metadata['address'] != null ||
-        (metadata['cv_ids'] != null && (metadata['cv_ids'] as List).isNotEmpty) ||
-        (metadata['interested_fields'] != null && (metadata['interested_fields'] as List).isNotEmpty) ||
-        (metadata['work_locations'] != null && (metadata['work_locations'] as List).isNotEmpty) ||
-        (metadata['work_types'] != null && (metadata['work_types'] as List).isNotEmpty) ||
+        (metadata['cv_ids'] != null &&
+            (metadata['cv_ids'] as List).isNotEmpty) ||
+        (metadata['interested_fields'] != null &&
+            (metadata['interested_fields'] as List).isNotEmpty) ||
+        (metadata['work_locations'] != null &&
+            (metadata['work_locations'] as List).isNotEmpty) ||
+        (metadata['work_types'] != null &&
+            (metadata['work_types'] as List).isNotEmpty) ||
         (metadata['tags'] != null && (metadata['tags'] as List).isNotEmpty) ||
-        (metadata['experience'] != null && (metadata['experience'] as List).isNotEmpty);
+        (metadata['experience'] != null &&
+            (metadata['experience'] as List).isNotEmpty);
   }
 
   void _viewCV(BuildContext context, String cvId) async {
@@ -1241,7 +1901,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
 
       // Use getCVFullDataForEmployer for school access (similar to employer)
       final cvData = await _cvService.getCVFullDataForEmployer(cvId);
-      
+
       // Hide loading indicator
       if (context.mounted) Navigator.pop(context);
 
@@ -1249,7 +1909,8 @@ class StudentProfileDetailScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CVDisplayManager.buildViewWidget(context, cvData),
+            builder: (context) =>
+                CVDisplayManager.buildViewWidget(context, cvData),
           ),
         );
       } else {
@@ -1262,11 +1923,11 @@ class StudentProfileDetailScreen extends StatelessWidget {
     } catch (e) {
       // Hide loading indicator if error
       if (context.mounted && Navigator.canPop(context)) Navigator.pop(context);
-      
+
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải CV: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi tải CV: $e')));
       }
     }
   }
