@@ -8,6 +8,7 @@ import 'companies_list_screen.dart';
 import 'school_jobs_screen.dart';
 import 'interview_schedule_candidate_screen.dart';
 import 'mi_question_screen.dart';
+import 'mbti_question_screen.dart';
 import '../career_news/career_news_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/chat_service.dart';
@@ -72,7 +73,11 @@ class ToolsPageCandidate extends StatelessWidget {
                                 color: Colors.blue.shade50,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Icon(Icons.work, color: Colors.blue.shade700, size: 20),
+                              child: Icon(
+                                Icons.work,
+                                color: Colors.blue.shade700,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             const Text(
@@ -86,7 +91,7 @@ class ToolsPageCandidate extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 15),
-                        
+
                         // Job management cards
                         GridView.count(
                           shrinkWrap: true,
@@ -106,7 +111,8 @@ class ToolsPageCandidate extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const AppliedJobsScreen(),
+                                    builder: (context) =>
+                                        const AppliedJobsScreen(),
                                   ),
                                 );
                               },
@@ -121,7 +127,8 @@ class ToolsPageCandidate extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const SavedJobsScreen(),
+                                    builder: (context) =>
+                                        const SavedJobsScreen(),
                                   ),
                                 );
                               },
@@ -136,7 +143,8 @@ class ToolsPageCandidate extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const CompaniesListScreen(),
+                                    builder: (context) =>
+                                        const CompaniesListScreen(),
                                   ),
                                 );
                               },
@@ -151,7 +159,8 @@ class ToolsPageCandidate extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const SchoolJobsForCandidateScreen(),
+                                    builder: (context) =>
+                                        const SchoolJobsForCandidateScreen(),
                                   ),
                                 );
                               },
@@ -166,7 +175,8 @@ class ToolsPageCandidate extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const InterviewScheduleCandidateScreen(),
+                                    builder: (context) =>
+                                        const InterviewScheduleCandidateScreen(),
                                   ),
                                 );
                               },
@@ -193,7 +203,11 @@ class ToolsPageCandidate extends StatelessWidget {
                                 color: Colors.green.shade50,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Icon(Icons.description, color: Colors.green.shade700, size: 20),
+                              child: Icon(
+                                Icons.description,
+                                color: Colors.green.shade700,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             const Text(
@@ -207,12 +221,15 @@ class ToolsPageCandidate extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 15),
-                        
+
                         // CV management - Featured card for "Tạo CV mới"
                         Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [Colors.green.shade400, Colors.green.shade600],
+                              colors: [
+                                Colors.green.shade400,
+                                Colors.green.shade600,
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -229,13 +246,14 @@ class ToolsPageCandidate extends StatelessWidget {
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
-                              onTap: (){
+                              onTap: () {
                                 Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => const CVCreationScreen(),
-  ),
-);
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CVCreationScreen(),
+                                  ),
+                                );
                               },
                               child: Padding(
                                 padding: const EdgeInsets.all(20),
@@ -247,12 +265,17 @@ class ToolsPageCandidate extends StatelessWidget {
                                         color: Colors.white.withOpacity(0.3),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Icon(Icons.add_circle, color: Colors.white, size: 32),
+                                      child: const Icon(
+                                        Icons.add_circle,
+                                        color: Colors.white,
+                                        size: 32,
+                                      ),
                                     ),
                                     const SizedBox(width: 16),
                                     const Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'Tạo CV mới',
@@ -273,7 +296,11 @@ class ToolsPageCandidate extends StatelessWidget {
                                         ],
                                       ),
                                     ),
-                                    const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+                                    const Icon(
+                                      Icons.arrow_forward_ios,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -281,7 +308,7 @@ class ToolsPageCandidate extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        
+
                         // Other CV options
                         Row(
                           children: [
@@ -293,12 +320,13 @@ class ToolsPageCandidate extends StatelessWidget {
                                 subtitle: '3 CV',
                                 color: Colors.blue,
                                 onTap: () {
-                                   Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => const CVManagementScreen(),
-  ),);
-                                  
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CVManagementScreen(),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -310,7 +338,10 @@ class ToolsPageCandidate extends StatelessWidget {
                                 title: 'Hướng dẫn',
                                 subtitle: 'Mẹo viết CV',
                                 color: Colors.amber,
-                                onTap: () => _showComingSoon(context, 'Hướng dẫn tạo CV'),
+                                onTap: () => _showComingSoon(
+                                  context,
+                                  'Hướng dẫn tạo CV',
+                                ),
                               ),
                             ),
                           ],
@@ -335,7 +366,11 @@ class ToolsPageCandidate extends StatelessWidget {
                                 color: Colors.pink.shade50,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Icon(Icons.build, color: Colors.pink.shade700, size: 20),
+                              child: Icon(
+                                Icons.build,
+                                color: Colors.pink.shade700,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             const Text(
@@ -349,7 +384,7 @@ class ToolsPageCandidate extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 15),
-                        
+
                         // Tools grid
                         _buildToolListItem(
                           context,
@@ -357,7 +392,15 @@ class ToolsPageCandidate extends StatelessWidget {
                           title: 'MBTI Test',
                           subtitle: 'Khám phá tính cách của bạn',
                           color: Colors.purple,
-                          onTap: () => _showComingSoon(context, 'MBTI Test'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const MBTIQuestionScreen(),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 12),
                         _buildToolListItem(
@@ -458,7 +501,7 @@ class ToolsPageCandidate extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Gradient overlay
         Positioned(
           left: 0,
@@ -538,10 +581,7 @@ class ToolsPageCandidate extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -612,7 +652,11 @@ class ToolsPageCandidate extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 18),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey.shade400,
+                  size: 18,
+                ),
               ],
             ),
           ),
@@ -697,10 +741,7 @@ class ToolsPageCandidate extends StatelessWidget {
       if (context.mounted) Navigator.pop(context); // Close loading
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
         );
       }
     }
