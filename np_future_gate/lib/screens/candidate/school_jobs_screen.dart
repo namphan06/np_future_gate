@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/services/supabase_service.dart';
-import '../../core/theme/app_main_colors.dart';
 import '../../core/models/job_model.dart';
 import 'partnership_job_detail_screen.dart';
 
@@ -573,80 +572,88 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                         ],
                       ),
                     ),
-                    const Spacer(),
-                    if (_hasApplied(job)) ...[
-                      // Recruitment status badge
-                      Builder(
-                        builder: (context) {
-                          final status = _getRecruitmentStatus(job);
-                          if (status != null) {
-                            return Container(
-                              margin: const EdgeInsets.only(right: 8),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          if (_hasApplied(job)) ...[
+                            // Recruitment status badge
+                            Builder(
+                              builder: (context) {
+                                final status = _getRecruitmentStatus(job);
+                                if (status != null) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: _getRecruitmentStatusColor(status),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          _getRecruitmentStatusIcon(status),
+                                          size: 12,
+                                          color: _getRecruitmentStatusColor(status),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _getRecruitmentStatusText(status),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: _getRecruitmentStatusColor(status),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                            Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Colors.green.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: _getRecruitmentStatusColor(status),
-                                  width: 1.5,
+                                  color: Colors.green.withOpacity(0.3),
                                 ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    _getRecruitmentStatusIcon(status),
-                                    size: 12,
-                                    color: _getRecruitmentStatusColor(status),
-                                  ),
+                                  const Icon(Icons.check_circle, size: 12, color: Colors.green),
                                   const SizedBox(width: 4),
                                   Text(
-                                    _getRecruitmentStatusText(status),
+                                    'Đã ứng tuyển',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: _getRecruitmentStatusColor(status),
+                                      color: Colors.green[700],
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: Colors.green.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.check_circle, size: 12, color: Colors.green),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Đã ứng tuyển',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.green[700],
-                              ),
                             ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Text(
-                      _getTimeAgo(createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                          Text(
+                            _getTimeAgo(createdAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

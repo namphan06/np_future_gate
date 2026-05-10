@@ -38,6 +38,24 @@ class JobCard extends StatelessWidget {
     }
   }
 
+  String _formatSalary(JobSalary salary) {
+    if (salary.isNegotiable) return 'Thỏa thuận';
+
+    final min = salary.min ?? 0;
+    final max = salary.max ?? 0;
+    final currency = salary.currency;
+
+    if (min > 0 && max <= 0) {
+      return 'Từ $min $currency';
+    }
+
+    if (max > 0 && min <= 0) {
+      return 'Đến $max $currency';
+    }
+
+    return '$min - $max $currency';
+  }
+
   @override
   Widget build(BuildContext context) {
     final meta = job.metadata;
@@ -156,9 +174,7 @@ class JobCard extends StatelessWidget {
                       children: [
                         _buildIconText(
                           Icons.monetization_on_outlined,
-                          meta.salary.isNegotiable
-                              ? 'Thỏa thuận'
-                              : '${meta.salary.min ?? 0} - ${meta.salary.max ?? 0} ${meta.salary.currency}',
+                          _formatSalary(meta.salary),
                           Colors.green.shade700,
                         ),
                         _buildIconText(

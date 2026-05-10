@@ -392,33 +392,42 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
                       ),
                       tabs: const [
                         Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.description_outlined, size: 18),
-                              SizedBox(width: 6),
-                              Text('CV Chung'),
-                            ],
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.description_outlined, size: 18),
+                                SizedBox(width: 6),
+                                Text('CV Chung'),
+                              ],
+                            ),
                           ),
                         ),
                         Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.work_outline, size: 18),
-                              SizedBox(width: 4),
-                              Text('Lĩnh vực'),
-                            ],
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.work_outline, size: 18),
+                                SizedBox(width: 4),
+                                Text('Lĩnh vực'),
+                              ],
+                            ),
                           ),
                         ),
                         Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.upload_file_outlined, size: 18),
-                              SizedBox(width: 6),
-                              Text('Upload'),
-                            ],
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.upload_file_outlined, size: 18),
+                                SizedBox(width: 6),
+                                Text('Upload'),
+                              ],
+                            ),
                           ),
                         ),
                       ],

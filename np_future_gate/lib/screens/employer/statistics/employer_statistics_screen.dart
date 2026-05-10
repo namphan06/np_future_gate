@@ -389,7 +389,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
                             crossAxisCount: 2,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
-                            childAspectRatio: 1.3,
+                            childAspectRatio: 1.15,
                             children: [
                               _buildStatCard(
                                 title: 'Tin tuyển dụng',

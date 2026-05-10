@@ -311,7 +311,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 240,
+                        height: 252,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
