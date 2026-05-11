@@ -65,6 +65,35 @@ class EvaluationRepository {
     }
   }
 
+  /// Fetch student work progress record for the current student
+  Future<Map<String, dynamic>?> getStudentWorkProgressForStudent(String userId) async {
+    try {
+      final response = await _supabase
+          .from('student_work_progress')
+          .select('''
+            *,
+            company:company_id (
+              id,
+              full_name,
+              email,
+              avatar_url
+            ),
+            school:school_id (
+              id,
+              full_name,
+              email,
+              avatar_url
+            )
+          ''')
+          .eq('user_id', userId)
+          .maybeSingle();
+      
+      return response;
+    } catch (e) {
+      throw Exception('Failed to fetch student progress: $e');
+    }
+  }
+
   /// Update full student work progress record
   Future<void> updateStudentProgress(String progressId, {
     List<Map<String, dynamic>>? evaluations,

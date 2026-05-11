@@ -15,6 +15,8 @@ import '../../core/services/chat_service.dart';
 import '../chat/chat_list_screen.dart';
 import '../chat/chat_detail_screen.dart';
 import '../courses/courses_screen.dart';
+import 'internship_progress_screen.dart';
+
 
 class ToolsPageCandidate extends StatelessWidget {
   const ToolsPageCandidate({super.key});
@@ -177,6 +179,22 @@ class ToolsPageCandidate extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         const InterviewScheduleCandidateScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildToolCard(
+                              context,
+                              icon: Icons.timeline,
+                              title: 'Lộ trình thực tập',
+                              subtitle: 'Xem tiến độ & Đánh giá',
+                              color: Colors.indigo,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const InternshipProgressScreen(),
                                   ),
                                 );
                               },
