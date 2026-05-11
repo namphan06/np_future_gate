@@ -11,6 +11,8 @@ import '../../core/services/chat_service.dart';
 import '../chat/chat_detail_screen.dart';
 import '../profile/edit_profile_screen.dart';
 import '../settings/notification_settings_screen.dart';
+import '../settings/web_view_screen.dart';
+
 
 class SettingsPageCandidate extends StatefulWidget {
   const SettingsPageCandidate({super.key});
@@ -350,7 +352,15 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                           title: 'Hướng dẫn sử dụng',
                           subtitle: 'Cách sử dụng ứng dụng',
                           color: Colors.indigo,
-                          onTap: () => _showComingSoon(context, 'Hướng dẫn sử dụng'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WebViewScreen(
+                                url: 'https://drive.google.com/file/d/1kz-qUYq8lJsuVau2vGi4J6sVmDZ0j3fW/view?usp=sharing',
+                                title: 'Hướng dẫn sử dụng',
+                              ),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(
