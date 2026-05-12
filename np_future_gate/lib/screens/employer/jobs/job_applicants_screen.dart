@@ -382,6 +382,8 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       // Send rejection email if status is 'rejected'
       if (newStatus.toLowerCase() == 'rejected') {
         await _sendRejectionEmail(userId);
+      } else if (newStatus.toLowerCase() == 'accepted') {
+        await _sendAcceptanceEmail(userId);
       }
     } catch (e) {
       if (mounted) {
@@ -761,6 +763,124 @@ $employerName
     } catch (e) {
       print('❌ Error sending rejection email: $e');
       // Don't show error to user as this is a background operation
+    }
+  }
+
+  Future<void> _sendAcceptanceEmail(String userId) async {
+    try {
+      final profile = _profiles[userId];
+      if (profile == null || profile.email == null) {
+        print('Cannot send acceptance email: profile or email not found for user $userId');
+        return;
+      }
+
+      final candidateName = profile.fullName ?? 'Ứng viên';
+      final candidateEmail = profile.email!;
+      final jobTitle = _jobTitle ?? 'Vị trí ứng tuyển';
+
+      final employerProfile = await _authRepository.getCurrentUserProfile();
+      final employerId = employerProfile?.id;
+      final employerName = employerProfile?.fullName ?? 'Nhà tuyển dụng';
+      final companyName = employerProfile?.metadata['company_name'] ?? employerName;
+
+      if (employerId == null) {
+        print('Cannot send acceptance email: employer not found');
+        return;
+      }
+
+      final templateResponse = await SupabaseService.instance.client
+          .from('email_templates')
+          .select()
+          .eq('employer_id', employerId)
+          .eq('response_type', 'accepted')
+          .maybeSingle();
+
+      final jobField = _jobModel?.metadata.fields.join(', ') ?? '';
+      final jobLocation = _jobModel?.metadata.workLocations.join(', ') ?? '';
+      final salaryRange = _jobModel != null ? _formatSalaryRange(_jobModel!.metadata.salary) : '';
+      final employmentType = _jobModel?.metadata.employmentTypes.join(', ') ?? '';
+      final companyAddress = employerProfile?.metadata['company_address'] ?? '';
+
+      String subject;
+      String messageBody;
+
+      if (templateResponse != null) {
+        subject = templateResponse['subject'] as String? ?? 'Thông báo kết quả ứng tuyển';
+        messageBody = templateResponse['body'] as String? ?? '';
+
+        subject = _replaceTemplateVariables(
+          subject,
+          candidateName: candidateName,
+          candidateEmail: candidateEmail,
+          candidatePhone: profile.phone ?? '',
+          jobTitle: jobTitle,
+          jobField: jobField,
+          jobLocation: jobLocation,
+          salaryRange: salaryRange,
+          employmentType: employmentType,
+          companyName: companyName,
+          employerEmail: employerProfile?.email ?? '',
+          employerPhone: employerProfile?.phone ?? '',
+          companyAddress: companyAddress,
+        );
+
+        messageBody = _replaceTemplateVariables(
+          messageBody,
+          candidateName: candidateName,
+          candidateEmail: candidateEmail,
+          candidatePhone: profile.phone ?? '',
+          jobTitle: jobTitle,
+          jobField: jobField,
+          jobLocation: jobLocation,
+          salaryRange: salaryRange,
+          employmentType: employmentType,
+          companyName: companyName,
+          employerEmail: employerProfile?.email ?? '',
+          employerPhone: employerProfile?.phone ?? '',
+          companyAddress: companyAddress,
+        );
+
+        print('📧 Using custom template for acceptance email');
+      } else {
+        subject = 'Thông báo kết quả ứng tuyển - $jobTitle';
+        messageBody = '''
+Kính gửi $candidateName,
+
+Chúc mừng bạn! Sau khi xem xét hồ sơ, chúng tôi rất vui thông báo rằng bạn đã được lựa chọn cho vị trí "$jobTitle".
+
+Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để trao đổi các bước tiếp theo.
+
+Trân trọng,
+$employerName
+''';
+        print('📧 Using default acceptance email template');
+      }
+
+      List<Map<String, dynamic>> attachments = [];
+      if (templateResponse != null) {
+        final attachmentsData = templateResponse['attachments'];
+        if (attachmentsData != null && attachmentsData is List) {
+          attachments = List<Map<String, dynamic>>.from(
+            attachmentsData.map((e) => Map<String, dynamic>.from(e)),
+          );
+        }
+      }
+
+      final success = await _emailService.sendEmployerResponse(
+        toEmail: candidateEmail,
+        toName: candidateName,
+        subject: subject,
+        messageBody: messageBody,
+        attachments: attachments.isNotEmpty ? attachments : null,
+      );
+
+      if (success) {
+        print('✅ Acceptance email sent successfully to $candidateEmail');
+      } else {
+        print('⚠️ Failed to send acceptance email to $candidateEmail');
+      }
+    } catch (e) {
+      print('❌ Error sending acceptance email: $e');
     }
   }
 

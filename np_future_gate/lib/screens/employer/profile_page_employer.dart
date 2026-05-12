@@ -10,6 +10,7 @@ import '../../widgets/animated_avatar.dart';
 import 'edit_company_profile_screen.dart';
 import 'email_notification_settings_screen.dart';
 import '../settings/notification_settings_screen.dart';
+import '../settings/web_view_screen.dart';
 import 'subscription/upgrade_account_screen.dart';
 import 'subscription/payment_history_screen.dart';
 import '../chat/chat_detail_screen.dart';
@@ -369,7 +370,15 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                           title: 'Hướng dẫn sử dụng',
                           subtitle: 'Cách sử dụng dành cho nhà tuyển dụng',
                           color: Colors.cyan,
-                          onTap: () => _showComingSoon(context, 'Hướng dẫn'),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const WebViewScreen(
+                                url: 'https://drive.google.com/file/d/1xoisSSmbVBbtHXTeC5-VZJ5ET7obugej/view?usp=sharing',
+                                title: 'Hướng dẫn sử dụng',
+                              ),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         _buildSettingCard(

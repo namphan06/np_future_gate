@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../models/profile_model.dart';
 import '../models/auth_models.dart';
+import '../config/supabase_config.dart';
 
 /// Admin User Repository
 /// Quản lý người dùng từ phía Admin
@@ -24,6 +25,66 @@ class AdminUserRepository {
     } catch (e) {
       print('❌ Error getting users by role: $e');
       throw Exception('Failed to get users: $e');
+    }
+  }
+
+  /// Create user account (auth + profile) without switching current session
+  Future<AuthResult> createUserAccount({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phone,
+    required UserRole role,
+    required bool isActive,
+    required Map<String, dynamic> metadata,
+  }) async {
+    try {
+      final tempClient = SupabaseClient(
+        SupabaseConfig.supabaseUrl,
+        SupabaseConfig.supabaseAnonKey,
+        authOptions: FlutterAuthClientOptions(
+          authFlowType: AuthFlowType.pkce,
+          pkceAsyncStorage: SharedPreferencesGotrueAsyncStorage(),
+          detectSessionInUri: false,
+        ),
+      );
+
+      final response = await tempClient.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+          'phone': phone,
+          'role': role.value,
+        },
+      );
+
+      if (response.user == null) {
+        return AuthResult.failure('Tạo tài khoản thất bại. Vui lòng thử lại.');
+      }
+
+      await tempClient.from('profiles').upsert({
+        'id': response.user!.id,
+        'email': email,
+        'full_name': fullName,
+        'phone': phone,
+        'role': role.value,
+        'metadata': metadata,
+        'is_active': isActive,
+      }, onConflict: 'id');
+
+      return AuthResult.success(
+        message: response.user!.emailConfirmedAt == null
+            ? 'Tạo tài khoản thành công. Vui lòng xác thực email.'
+            : 'Tạo tài khoản thành công.',
+        data: response.user,
+      );
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } on PostgrestException catch (e) {
+      return AuthResult.failure('Lỗi database: ${e.message}');
+    } catch (e) {
+      return AuthResult.failure('Đã xảy ra lỗi: $e');
     }
   }
 

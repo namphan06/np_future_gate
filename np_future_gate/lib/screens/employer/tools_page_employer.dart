@@ -1,20 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/repositories/job_repository.dart';
+import '../../core/services/chat_service.dart';
+import '../chat/chat_detail_screen.dart';
+import '../chat/chat_list_screen.dart';
 import 'evaluation/school_student_evaluations_screen.dart';
+import 'interview_schedule_screen.dart';
 import 'jobs/edit_job_screen.dart';
 import 'jobs/employer_jobs_screen.dart';
-import 'saved_candidates_screen.dart';
-import 'interview_schedule_screen.dart';
-import 'partnership_requests_employer_screen.dart';
+import 'jobs/new_applicants_screen.dart';
 import 'partnership/school_partnerships_screen.dart';
-import 'statistics/employer_statistics_screen.dart';
+import 'partnership_requests_employer_screen.dart';
 import 'pending_recruitment_decisions_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_list_screen.dart';
-import '../chat/chat_detail_screen.dart';
+import 'saved_candidates_screen.dart';
+import 'statistics/employer_statistics_screen.dart';
 
-class ToolsPageEmployer extends StatelessWidget {
+class ToolsPageEmployer extends StatefulWidget {
   const ToolsPageEmployer({super.key});
+
+  @override
+  State<ToolsPageEmployer> createState() => _ToolsPageEmployerState();
+}
+
+class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
+  final JobRepository _jobRepository = JobRepository();
+  final SupabaseClient _supabase = Supabase.instance.client;
+  int _newCvCount = 0;
+  bool _isLoadingNewCvCount = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNewCvCount();
+  }
+
+  Future<void> _loadNewCvCount() async {
+    final employerId = _supabase.auth.currentUser?.id;
+    if (employerId == null) {
+      setState(() {
+        _newCvCount = 0;
+        _isLoadingNewCvCount = false;
+      });
+      return;
+    }
+
+    try {
+      final apps = await _jobRepository.getRecentEmployerApplicationsFromActivities(employerId, limit: 0);
+      final cutoff = DateTime.now().subtract(const Duration(hours: 24));
+      final pendingCount = apps.where((app) {
+        final status = (app['application_status'] ?? app['status'] ?? '').toString().toLowerCase();
+        if (status != 'pending') return false;
+        final appliedAt = DateTime.tryParse(app['applied_at']?.toString() ?? '');
+        if (appliedAt == null) return false;
+        return appliedAt.isAfter(cutoff);
+      }).length;
+
+      setState(() {
+        _newCvCount = pendingCount;
+        _isLoadingNewCvCount = false;
+      });
+    } catch (_) {
+      setState(() {
+        _newCvCount = 0;
+        _isLoadingNewCvCount = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -188,8 +239,16 @@ class ToolsPageEmployer extends StatelessWidget {
                             context,
                             icon: Icons.inbox,
                             title: 'CV mới',
-                            subtitle: '24 CV',
+                            subtitle: _isLoadingNewCvCount ? 'Đang tải...' : '$_newCvCount CV',
                             color: Colors.red,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NewApplicantsScreen(),
+                                ),
+                              ).then((_) => _loadNewCvCount());
+                            },
                           ),
                           _buildToolCard(
                             context,

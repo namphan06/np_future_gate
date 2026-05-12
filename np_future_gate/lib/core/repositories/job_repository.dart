@@ -163,6 +163,32 @@ class JobRepository {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getRecentEmployerApplicationsFromActivities(
+    String employerId, {
+    int limit = 3,
+  }) async {
+    try {
+      final response = await _supabase
+          .from('user_job_activities')
+          .select('user_id, job_id, cv_id, applied_at, application_status, jobs(*)')
+          .eq('is_applied', true)
+          .eq('jobs.creator_id', employerId)
+          .order('applied_at', ascending: false)
+          .limit(limit > 0 ? limit : 1000);
+
+      final apps = List<Map<String, dynamic>>.from(response);
+
+      if (limit > 0 && apps.length > limit) {
+        return apps.sublist(0, limit);
+      }
+
+      return apps;
+    } catch (e) {
+      print('Failed to fetch applications from activities: $e');
+      return [];
+    }
+  }
+
   Future<Map<String, int>> getEmployerStats(String employerId) async {
     try {
       // 1. Fetch jobs
@@ -404,13 +430,17 @@ class JobRepository {
 
           if (validJobs.isEmpty) return <JobModel>[];
 
-          final creatorIds = validJobs
+           final hydratedJobs = await Future.wait(
+            validJobs.map(_ensureFullJobData),
+           );
+
+           final creatorIds = hydratedJobs
               .map((job) => job['creator_id'] as String)
               .toSet()
               .toList();
 
           if (creatorIds.isEmpty) {
-             return validJobs.map((e) => JobModel.fromJson(e)).toList();
+             return hydratedJobs.map((e) => JobModel.fromJson(e)).toList();
           }
 
           final profilesResponse = await _supabase
@@ -424,7 +454,7 @@ class JobRepository {
               profile['id'] as String: profile
           };
 
-          return validJobs.map((jobData) {
+          return hydratedJobs.map((jobData) {
             final creatorId = jobData['creator_id'];
             final profile = profilesMap[creatorId];
             
@@ -435,6 +465,30 @@ class JobRepository {
             return JobModel.fromJson(jobWithProfile);
           }).toList();
         });
+  }
+
+  Future<Map<String, dynamic>> _ensureFullJobData(
+    Map<String, dynamic> jobData,
+  ) async {
+    final metadata = jobData['metadata'];
+    final hasMetadata = metadata is Map && metadata.isNotEmpty;
+    final hasTitle = hasMetadata && (metadata['title'] as String?)?.trim().isNotEmpty == true;
+    final salaryMap = hasMetadata ? metadata['salary'] : null;
+    final hasSalary = salaryMap is Map && salaryMap.isNotEmpty;
+    final hasCreatorId = jobData['creator_id'] != null;
+
+    if (hasMetadata && hasTitle && hasSalary && hasCreatorId) return jobData;
+
+    final jobId = jobData['id'];
+    if (jobId == null) return jobData;
+
+    final fullJob = await _supabase
+        .from('jobs')
+        .select()
+        .eq('id', jobId)
+        .maybeSingle();
+
+    return fullJob ?? jobData;
   }
 
   Stream<List<JobModel>> getEmployerJobsStream(String creatorId) {

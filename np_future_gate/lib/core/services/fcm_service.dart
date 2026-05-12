@@ -7,6 +7,7 @@ import '../repositories/device_token_repository.dart';
 import '../models/notification_model.dart';
 import '../../notification/models/notification_config.dart';
 import 'notification/status_notification_service.dart';
+import '../repositories/auth_repository.dart';
 import '../../main.dart'; // For navigatorKey
 
 /// Firebase Cloud Messaging Service
@@ -51,10 +52,15 @@ class FCMService {
         _fcmToken = await _fcm.getToken();
         print('✅ FCM Token: $_fcmToken');
 
+        if (_fcmToken != null) {
+          await _saveTokenForCurrentUser(_fcmToken!);
+        }
+
         // Listen for token refresh
         _fcm.onTokenRefresh.listen((newToken) {
           _fcmToken = newToken;
           print('🔄 FCM Token refreshed: $newToken');
+          _saveTokenForCurrentUser(newToken);
         });
 
         // Setup message handlers
@@ -135,6 +141,23 @@ class FCMService {
         }
       },
     );
+  }
+
+  Future<void> _saveTokenForCurrentUser(String token) async {
+    try {
+      final authRepo = AuthRepository();
+      final profile = await authRepo.getCurrentUserProfile();
+
+      if (profile == null) return;
+
+      await authRepo.saveDeviceToken(
+        deviceToken: token,
+        userId: profile.id,
+        role: profile.role.value,
+      );
+    } catch (e) {
+      print('⚠️ Error saving device token from FCMService: $e');
+    }
   }
 
   /// Handle foreground messages

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'job_approval_page_admin.dart';
+import 'reports_page_admin.dart';
+import 'settings_page_admin.dart';
+import 'create_user_screen_admin.dart';
 import '../../core/repositories/job_repository.dart';
 
 class DashboardPageAdmin extends StatefulWidget {
@@ -236,7 +239,14 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                   title: 'Thêm người dùng',
                   icon: Icons.person_add,
                   color: Colors.blue,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateUserScreenAdmin(),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -266,7 +276,14 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                   title: 'Xem báo cáo',
                   icon: Icons.assessment,
                   color: Colors.green,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ReportsPageAdmin(isStandalone: true),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -275,7 +292,14 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                   title: 'Cài đặt',
                   icon: Icons.settings,
                   color: Colors.purple,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SettingsPageAdmin(),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

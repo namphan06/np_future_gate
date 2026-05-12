@@ -4,7 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_main_colors.dart';
 
 class ReportsPageAdmin extends StatefulWidget {
-  const ReportsPageAdmin({super.key});
+  const ReportsPageAdmin({super.key, this.isStandalone = false});
+
+  final bool isStandalone;
 
   @override
   State<ReportsPageAdmin> createState() => _ReportsPageAdminState();
@@ -205,7 +207,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    return RefreshIndicator(
+    final content = RefreshIndicator(
       onRefresh: _loadStatistics,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -359,6 +361,21 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
           ],
         ),
       ),
+    );
+
+    if (!widget.isStandalone) {
+      return content;
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: const Text('Báo cáo'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+      ),
+      body: SafeArea(child: content),
     );
   }
 
