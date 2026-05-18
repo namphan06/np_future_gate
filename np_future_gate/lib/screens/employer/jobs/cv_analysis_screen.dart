@@ -85,7 +85,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen> {
           ),
           const SizedBox(height: 32),
           const Text(
-            'Pipeline AI đang hoạt động...\n(PaddleOCR -> LLM Matching -> Similarity)',
+            'AI đang phân tích CV...\n(ML Kit OCR → Mistral AI Matching)',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey, fontSize: 16),
           ),
@@ -166,7 +166,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen> {
                   children: [
                     _buildSmallStat('Semantic', '${(_result!.semanticSimilarity * 100).toInt()}%'),
                     _buildSmallStat('Keyword', '${_result!.keywordMatchScore.toInt()}%'),
-                    _buildSmallStat('Pipeline', 'PaddleOCR'),
+                    _buildSmallStat('Pipeline', 'ML Kit'),
                   ],
                 ),
               ],

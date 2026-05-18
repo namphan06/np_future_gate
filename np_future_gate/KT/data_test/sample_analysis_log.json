@@ -1,0 +1,39 @@
+{
+  "timestamp": "2025-05-18T10:00:00.000",
+  "source": "ML Kit OCR (file_url)",
+  "job_data": {
+    "raw_text": "Tiêu đề: Flutter Developer\nMô tả: Phát triển ứng dụng mobile bằng Flutter. Làm việc với team backend.\nYêu cầu: Có kinh nghiệm Flutter từ 1 năm. Biết Dart, Firebase, REST API.\nKỹ năng: Flutter, Dart, Firebase, Git\nKinh nghiệm: 1-2 năm\nLĩnh vực: Công nghệ thông tin",
+    "title": "Flutter Developer"
+  },
+  "cv_data": {
+    "extracted_text": "NGUYỄN VĂN A\nFlutter Developer\n\nTHÔNG TIN LIÊN HỆ\nEmail: nguyenvana@gmail.com\nSĐT: 0901234567\n\nKINH NGHIỆM\n- Flutter Developer tại ABC Corp (2023-2024)\n  + Phát triển app e-commerce\n  + Tích hợp Firebase, REST API\n- Intern tại XYZ (2022-2023)\n  + Học Flutter cơ bản\n\nKỸ NĂNG\nFlutter, Dart, Firebase, Git, REST API, Figma\n\nHỌC VẤN\nCử nhân CNTT - ĐH Bách Khoa (2019-2023)",
+    "text_length": 420,
+    "file_url": "https://hrhoohbvmdmwkbqiymsb.supabase.co/storage/v1/object/public/cv_upload/user123/cv.pdf",
+    "raw_metadata_keys": ["id", "title", "data", "file_url", "type", "mcv"]
+  },
+  "ai_result": {
+    "overall_score": 78.0,
+    "semantic_similarity": 0.75,
+    "keyword_match_score": 82.0,
+    "matching_summary": "Ứng viên có profile khá phù hợp với vị trí Flutter Developer. Có kinh nghiệm thực tế 1.5 năm làm việc với Flutter, đã từng phát triển app e-commerce và tích hợp Firebase. Kỹ năng kỹ thuật đáp ứng tốt yêu cầu.",
+    "matching_points": [
+      "Có 1.5 năm kinh nghiệm Flutter thực tế",
+      "Đã làm việc với Firebase và REST API",
+      "Biết sử dụng Git",
+      "Có bằng cử nhân CNTT"
+    ],
+    "missing_points": [
+      "Chưa có kinh nghiệm làm việc nhóm lớn",
+      "Thiếu kinh nghiệm CI/CD",
+      "Chưa đề cập đến state management (BLoC, Provider)"
+    ],
+    "parsed_data": {
+      "name": "Nguyễn Văn A",
+      "skills": "Flutter, Dart, Firebase, Git, REST API, Figma",
+      "experience": "1.5 năm (Flutter Developer tại ABC Corp + Intern tại XYZ)",
+      "education": "Cử nhân CNTT - ĐH Bách Khoa (2019-2023)",
+      "OCR Engine": "Google ML Kit (On-device)",
+      "Pages": 1
+    }
+  }
+}

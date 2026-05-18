@@ -5,6 +5,7 @@ import '../../../core/repositories/job_repository.dart';
 import '../../../core/theme/app_main_colors.dart';
 import 'edit_job_screen.dart';
 import 'job_applicants_screen.dart';
+import 'cv_scan_analysis_screen.dart';
 
 class EmployerJobsScreen extends StatefulWidget {
   const EmployerJobsScreen({super.key});
@@ -637,6 +638,25 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
                     label: const Text('Xem ứng viên'),
                     style: TextButton.styleFrom(
                       foregroundColor: AppMainColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                Container(width: 1, height: 24, color: Colors.grey.shade200),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CVScanAnalysisScreen(job: job),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.document_scanner_outlined, size: 20),
+                    label: const Text('Scan CV'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.teal,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),

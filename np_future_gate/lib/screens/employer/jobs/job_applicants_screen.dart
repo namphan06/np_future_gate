@@ -16,6 +16,7 @@ import '../../cv/cv_setting/cv_display_manager.dart';
 import '../../../core/theme/app_main_colors.dart';
 import '../../../core/services/ai_matching_service.dart';
 import 'cv_analysis_screen.dart';
+import 'cv_scan_analysis_screen.dart';
 
 class JobApplicantsScreen extends StatefulWidget {
   final String jobId;
@@ -1629,6 +1630,41 @@ $employerName
                                           const Icon(Icons.auto_awesome, size: 16),
                                           const SizedBox(width: 4),
                                           const Text('Phân tích AI', style: TextStyle(fontSize: 12)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    width: 110,
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        if (_jobModel != null) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CVScanAnalysisScreen(
+                                                job: _jobModel!,
+                                                applicantName: profile.fullName ?? 'Ứng viên',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.teal,
+                                        side: const BorderSide(color: Colors.teal),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.document_scanner, size: 16),
+                                          const SizedBox(width: 4),
+                                          const Text('Scan CV', style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
                                     ),
