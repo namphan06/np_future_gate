@@ -73,6 +73,8 @@ dependencies:
   
   dio: ^5.8.0
   path_provider: ^2.1.5
+  google_mlkit_text_recognition: ^0.15.0
+  pdfx: ^2.9.0
   http: ^1.6.0
   syncfusion_flutter_pdfviewer: ^32.1.1
   flutter_widget_from_html: ^0.15.2
