@@ -1,20 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'mistral_service.dart';
 import 'mlkit_ocr_service.dart';
 import '../models/job_model.dart';
 
-/// Model cho kết quả phân tích độ phù hợp của CV
+// ================================================================
+// MODELS
+// ================================================================
+
 class CVMatchingResult {
-  final double overallScore; // 0-100
-  final double semanticSimilarity; // Kết quả từ SentenceTransformer
-  final double keywordMatchScore; // Kết quả từ LLM Matching
+  final double overallScore;
+  final double semanticSimilarity;
+  final double keywordMatchScore;
   final String matchingSummary;
   final List<String> matchingPoints;
   final List<String> missingPoints;
-  final Map<String, dynamic> parsedData; // Dữ liệu sau khi qua OCR & LLM
+  final Map<String, dynamic> parsedData;
 
   CVMatchingResult({
     required this.overallScore,
@@ -26,464 +28,329 @@ class CVMatchingResult {
     required this.parsedData,
   });
 
-  factory CVMatchingResult.fromMock(double baseScore) {
-    return CVMatchingResult(
-      overallScore: baseScore,
-      semanticSimilarity: baseScore * 0.9 / 100,
-      keywordMatchScore: baseScore,
-      matchingSummary: 'Hệ thống đang chạy chế độ giả lập do không kết nối được Server AI...',
-      matchingPoints: ['Vui lòng kiểm tra server Python', 'Đảm bảo port 8000 đã mở'],
-      missingPoints: ['Kết nối API thất bại'],
-      parsedData: {"Status": "Mô phỏng"},
+  factory CVMatchingResult.fromMock(double s) => CVMatchingResult(
+    overallScore: s, semanticSimilarity: s / 100, keywordMatchScore: s,
+    matchingSummary: 'Không thể phân tích.', matchingPoints: [], missingPoints: ['Lỗi AI'],
+    parsedData: {'Status': 'Mock'},
+  );
+
+  Map<String, dynamic> toJson() => {
+    'overall_score': overallScore, 'semantic_similarity': semanticSimilarity,
+    'keyword_match_score': keywordMatchScore, 'matching_summary': matchingSummary,
+    'matching_points': matchingPoints, 'missing_points': missingPoints, 'parsed_data': parsedData,
+  };
+}
+
+class CVComparisonResult {
+  final String jobTitle;
+  final List<CandidateScore> candidates;
+  final String recommendation;
+  final String comparisonNotes;
+
+  CVComparisonResult({required this.jobTitle, required this.candidates, required this.recommendation, this.comparisonNotes = ''});
+
+  factory CVComparisonResult.fromJson(Map<String, dynamic> json, List<String> names) {
+    final list = json['candidates'] as List? ?? [];
+    final candidates = <CandidateScore>[];
+    for (int i = 0; i < list.length; i++) {
+      final c = list[i] as Map<String, dynamic>;
+      candidates.add(CandidateScore(
+        name: _s(c['name']) ?? (i < names.length ? names[i] : 'Ứng viên ${i+1}'),
+        rank: (c['rank'] as num?)?.toInt() ?? (i+1),
+        skillsScore: (c['skills_score'] as num?)?.toDouble() ?? 0,
+        experienceScore: (c['experience_score'] as num?)?.toDouble() ?? 0,
+        educationScore: (c['education_score'] as num?)?.toDouble() ?? 0,
+        overallScore: (c['overall_score'] as num?)?.toDouble() ?? 0,
+        potentialScore: (c['potential_score'] as num?)?.toDouble() ?? 0,
+        strengths: _sl(c['strengths']), weaknesses: _sl(c['weaknesses']),
+        summary: _s(c['summary']) ?? '',
+      ));
+    }
+    candidates.sort((a, b) => a.rank.compareTo(b.rank));
+    return CVComparisonResult(
+      jobTitle: _s(json['job_title']) ?? '', candidates: candidates,
+      recommendation: _s(json['recommendation']) ?? '', comparisonNotes: _s(json['comparison_notes']) ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'overall_score': overallScore,
-      'semantic_similarity': semanticSimilarity,
-      'keyword_match_score': keywordMatchScore,
-      'matching_summary': matchingSummary,
-      'matching_points': matchingPoints,
-      'missing_points': missingPoints,
-      'parsed_data': parsedData,
-    };
-  }
+  static String? _s(dynamic v) { if (v == null) return null; if (v is String) return v; if (v is List) return v.join('. '); return v.toString(); }
+  static List<String> _sl(dynamic v) { if (v is List) return v.map((e) => e.toString()).toList(); if (v is String) return [v]; return []; }
 }
+
+class CandidateScore {
+  final String name; final int rank;
+  final double skillsScore, experienceScore, educationScore, overallScore, potentialScore;
+  final List<String> strengths, weaknesses; final String summary;
+  CandidateScore({required this.name, required this.rank, required this.skillsScore, required this.experienceScore, required this.educationScore, required this.overallScore, required this.potentialScore, required this.strengths, required this.weaknesses, required this.summary});
+}
+
+// ================================================================
+// SERVICE
+// ================================================================
 
 class AIMatchingService {
   final MistralService _mistralService = MistralService();
   final MLKitOcrService _mlkitService = MLKitOcrService();
 
+  /// Phân tích CV - tự phân biệt upload vs structured
   Future<CVMatchingResult> analyzeCVMatching({
     required Map<String, dynamic> cvData,
     required JobModel job,
   }) async {
     final String? fileUrl = cvData['file_url'] ?? cvData['data']?['file_url'];
-    
-    debugPrint('🚀 Đang bắt đầu phân tích AI...');
-    
-    // Ưu tiên xử lý bằng ML Kit OCR (on-device)
-    if (fileUrl != null && fileUrl.isNotEmpty) {
-      try {
-        debugPrint('📂 Đang tải CV từ: $fileUrl');
-        return await _analyzeWithMLKit(fileUrl, job, cvData);
-      } catch (e) {
-        debugPrint('❌ Lỗi ML Kit OCR: $e');
-        debugPrint('⚠️ Fallback sang structured data...');
-      }
-    }
+    final String cvType = (cvData['type'] ?? '').toString();
+    final bool isUpload = cvType == 'upload' || (fileUrl != null && fileUrl.isNotEmpty);
 
-    // Fallback: Sử dụng dữ liệu cấu trúc (nếu có) + LLM phân tích
-    return await _analyzeStructuredCV(cvData, job);
+    debugPrint('🚀 Phân tích AI - Type: ${isUpload ? "UPLOAD" : "STRUCTURED"}');
+
+    if (isUpload && fileUrl != null && fileUrl.isNotEmpty) {
+      // LUỒNG 1: CV Upload → OCR → AI
+      try {
+        return await _analyzeUploadCV(fileUrl, job);
+      } catch (e) {
+        debugPrint('❌ Upload CV analysis failed: $e');
+        return CVMatchingResult.fromMock(5);
+      }
+    } else {
+      // LUỒNG 2: CV App → Structured → AI
+      return await _analyzeStructuredCV(cvData, job);
+    }
   }
 
-  /// Phân tích CV bằng ML Kit OCR (hỗ trợ cả ảnh và PDF)
-  Future<CVMatchingResult> _analyzeWithMLKit(
-    String fileUrl, 
-    JobModel job,
-    Map<String, dynamic> cvData,
-  ) async {
-    debugPrint('🔍 Using ML Kit (on-device) for OCR analysis...');
+  // ================================================================
+  // LUỒNG 1: UPLOAD CV (OCR)
+  // ================================================================
 
-    // ML Kit service tự động phát hiện ảnh/PDF và xử lý phù hợp
+  Future<CVMatchingResult> _analyzeUploadCV(String fileUrl, JobModel job) async {
     final ocrResult = await _mlkitService.extractTextFromUrl(fileUrl);
-
-    if (!ocrResult.success) {
-      throw Exception(ocrResult.error ?? 'ML Kit OCR failed');
+    if (!ocrResult.success || ocrResult.text.isEmpty) {
+      throw Exception(ocrResult.error ?? 'OCR trống');
     }
+    debugPrint('✅ OCR: ${ocrResult.text.length} chars');
 
-    final extractedText = ocrResult.text;
-    if (extractedText.isEmpty) {
-      throw Exception('Không trích xuất được văn bản');
-    }
-
-    debugPrint('✅ ML Kit extracted ${extractedText.length} chars (${ocrResult.pageCount} pages)');
-
-    // Phân tích với Mistral AI
-    final jobDesc = job.metadata.jobDescription.join('\n');
-    final jobReq = job.metadata.candidateRequirements.join('\n');
-
-    final prompt = '''
-HÃY PHÂN TÍCH ĐỘ PHÙ HỢP CỦA CV VỚI CÔNG VIỆC
-
-[VĂN BẢN CV TRÍCH XUẤT TỪ ML KIT OCR]
-$extractedText
-
-[YÊU CẦU CÔNG VIỆC]
-Vị trí: ${job.metadata.title}
-Mô tả: $jobDesc
-Yêu cầu: $jobReq
-Kỹ năng yêu cầu: ${job.metadata.requirementsTags.join(', ')}
-Kinh nghiệm: ${job.metadata.experienceRequired}
-Lĩnh vực: ${job.metadata.fields.join(', ')}
-
-NHIỆM VỤ:
-1. Đánh giá độ phù hợp (0-100).
-2. Tính semantic similarity (0-1).
-3. Tính keyword matching score (0-100).
-4. Tóm tắt nhận xét (Tiếng Việt).
-5. Liệt kê điểm mạnh (matching_points).
-6. Liệt kê điểm còn thiếu (missing_points).
-7. Trích xuất thông tin chính từ CV (parsed_data).
-
-TRẢ VỀ JSON DUY NHẤT:
-{
-  "overall_score": number,
-  "semantic_similarity": number,
-  "keyword_match_score": number,
-  "summary": "string",
-  "matching_points": ["string"],
-  "missing_points": ["string"],
-  "parsed_data": {"name": "", "skills": "", "experience": "", "education": ""}
-}
-''';
-
-    final aiResponse = await _mistralService.sendMessage(prompt);
-    final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(aiResponse);
-
-    if (jsonMatch != null) {
-      final result = jsonDecode(jsonMatch);
-      final cvResult = CVMatchingResult(
+    final prompt = _buildAnalysisPrompt(ocrResult.text, job);
+    final result = await _callAIAndParse(prompt);
+    if (result != null) {
+      final r = CVMatchingResult(
         overallScore: (result['overall_score'] as num).toDouble(),
         semanticSimilarity: (result['semantic_similarity'] as num).toDouble(),
         keywordMatchScore: (result['keyword_match_score'] as num).toDouble(),
-        matchingSummary: result['summary'] ?? '',
+        matchingSummary: result['summary']?.toString() ?? '',
         matchingPoints: List<String>.from(result['matching_points'] ?? []),
         missingPoints: List<String>.from(result['missing_points'] ?? []),
-        parsedData: {
-          ...(result['parsed_data'] ?? {}),
-          'OCR Engine': 'Google ML Kit (On-device)',
-          'Pages': ocrResult.pageCount,
-        },
+        parsedData: {...(result['parsed_data'] is Map ? result['parsed_data'] : {}), 'Source': 'OCR Upload'},
       );
-
-      // Lưu log data test
-      await _saveAnalysisLog(
-        jobData: _convertJobToText(job),
-        extractedCVText: extractedText,
-        cvRawData: cvData,
-        aiResult: cvResult,
-        source: 'ML Kit OCR (file_url)',
-      );
-
-      return cvResult;
-    } else {
-      throw Exception('AI response was not valid JSON');
+      _printLog('upload_ocr', job, ocrResult.text, r);
+      return r;
     }
+    throw Exception('AI không trả về kết quả hợp lệ');
   }
+
+  // ================================================================
+  // LUỒNG 2: STRUCTURED CV (App)
+  // ================================================================
 
   Future<CVMatchingResult> _analyzeStructuredCV(Map<String, dynamic> cvData, JobModel job) async {
-    final data = cvData['data'] ?? cvData;
-    final cvContent = _convertStructuredCVToText(data);
-    final jobContent = _convertJobToText(job);
+    final nested = cvData['data'];
+    final data = nested is Map<String, dynamic> ? nested : cvData;
+    final cvText = _buildStructuredText(data);
 
-    // Nếu không có nội dung thật (do lỗi server hoặc file upload chưa parse)
-    final bool isLowData = cvContent.contains('N/A') && cvContent.length < 100;
+    if (cvText.length < 30) return CVMatchingResult.fromMock(5);
+    debugPrint('📋 Structured: ${cvText.length} chars');
 
-    final prompt = '''
-PHÂN TÍCH ĐỘ PHÙ HỢP CV
-
-[THÔNG TIN CV]
-$cvContent
-${cvData['file_url'] != null ? "(Lưu ý: Đây là file upload, nội dung trích xuất thô từ metadata)" : ""}
-
-[MÔ TẢ CÔNG VIỆC]
-$jobContent
-
-QUY TẮC:
-1. Trả về JSON duy nhất.
-2. Nếu dữ liệu CV quá ít/thiếu (N/A), hãy đặt overall_score < 20 và thông báo người dùng kiểm tra kết nối AI Server.
-
-JSON: { "overall_score": 0-100, "semantic_similarity": 0-1, "llm_matching_score": 0-100, "summary": "...", "matching_points": [], "missing_points": [], "parsed_cv_overview": {} }
-''';
-
-    try {
-      final response = await _mistralService.sendMessage(prompt);
-      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(response);
-      if (jsonMatch != null) {
-        final result = jsonDecode(jsonMatch);
-        final cvResult = CVMatchingResult(
-          overallScore: (result['overall_score'] as num).toDouble(),
-          semanticSimilarity: (result['semantic_similarity'] as num).toDouble(),
-          keywordMatchScore: (result['llm_matching_score'] as num).toDouble(),
-          matchingSummary: isLowData 
-              ? "⚠️ Cảnh báo: Không thể trích xuất dữ liệu thật từ CV. Kết quả bên dưới chỉ dựa trên thông tin sơ bộ." 
-              : (result['summary'] ?? ''),
-          matchingPoints: List<String>.from(result['matching_points'] ?? []),
-          missingPoints: List<String>.from(result['missing_points'] ?? []),
-          parsedData: {
-            ...(result['parsed_cv_overview'] ?? {}),
-            "Status": isLowData ? "Dữ liệu hạn chế (structured data)" : "Thành công",
-            "OCR Engine": "Structured Data (fallback)",
-          },
-        );
-
-        // Lưu log data test
-        await _saveAnalysisLog(
-          jobData: jobContent,
-          extractedCVText: cvContent,
-          cvRawData: cvData,
-          aiResult: cvResult,
-          source: 'Structured Data (fallback)',
-        );
-
-        return cvResult;
-      }
-    } catch (e) {
-      debugPrint('Fallback AI Error: $e');
-    }
-    return CVMatchingResult.fromMock(10.0);
-  }
-
-  /// Phân tích CV từ ảnh scan bằng ML Kit + Mistral AI
-  /// Dùng cho nhà tuyển dụng scan CV ảnh trực tiếp
-  Future<CVMatchingResult> analyzeCVFromImage({
-    required File imageFile,
-    required JobModel job,
-  }) async {
-    try {
-      debugPrint('📸 Scanning CV image with ML Kit...');
-
-      // Step 1: OCR với ML Kit
-      final ocrResult = await _mlkitService.extractTextFromFile(imageFile);
-
-      if (!ocrResult.success) {
-        throw Exception(ocrResult.error ?? 'ML Kit OCR thất bại');
-      }
-
-      final extractedText = ocrResult.text;
-      if (extractedText.isEmpty) {
-        throw Exception('Không trích xuất được văn bản từ ảnh CV');
-      }
-
-      debugPrint('✅ ML Kit extracted ${extractedText.length} chars from scanned image');
-
-      // Step 2: Phân tích với Mistral AI
-      final result = await analyzeCVFromExtractedText(
-        extractedText: extractedText,
-        job: job,
+    final prompt = _buildAnalysisPrompt(cvText, job);
+    final result = await _callAIAndParse(prompt);
+    if (result != null) {
+      final score = result['overall_score'] ?? result['llm_matching_score'] ?? 0;
+      final r = CVMatchingResult(
+        overallScore: (score as num).toDouble(),
+        semanticSimilarity: ((result['semantic_similarity'] ?? 0) as num).toDouble(),
+        keywordMatchScore: ((result['keyword_match_score'] ?? result['llm_matching_score'] ?? 0) as num).toDouble(),
+        matchingSummary: result['summary']?.toString() ?? '',
+        matchingPoints: List<String>.from(result['matching_points'] ?? []),
+        missingPoints: List<String>.from(result['missing_points'] ?? []),
+        parsedData: {...(result['parsed_data'] is Map ? result['parsed_data'] : result['parsed_cv_overview'] is Map ? result['parsed_cv_overview'] : {}), 'Source': 'Structured'},
       );
+      _printLog('structured', job, cvText, r);
+      return r;
+    }
+    return CVMatchingResult.fromMock(10);
+  }
 
-      // Lưu log
-      await _saveAnalysisLog(
-        jobData: _convertJobToText(job),
-        extractedCVText: extractedText,
-        cvRawData: {'source': 'camera_scan', 'image_path': imageFile.path},
-        aiResult: result,
-        source: 'ML Kit OCR (camera scan)',
+  // ================================================================
+  // SCAN CV (camera)
+  // ================================================================
+
+  Future<CVMatchingResult> analyzeCVFromImage({required File imageFile, required JobModel job}) async {
+    final ocr = await _mlkitService.extractTextFromFile(imageFile);
+    if (!ocr.success || ocr.text.isEmpty) throw Exception(ocr.error ?? 'OCR trống');
+    return await analyzeCVFromExtractedText(extractedText: ocr.text, job: job);
+  }
+
+  Future<CVMatchingResult> analyzeCVFromExtractedText({required String extractedText, required JobModel job}) async {
+    if (extractedText.isEmpty) return CVMatchingResult.fromMock(0);
+    final prompt = _buildAnalysisPrompt(extractedText, job);
+    final result = await _callAIAndParse(prompt);
+    if (result != null) {
+      return CVMatchingResult(
+        overallScore: (result['overall_score'] as num).toDouble(),
+        semanticSimilarity: ((result['semantic_similarity'] ?? 0) as num).toDouble(),
+        keywordMatchScore: ((result['keyword_match_score'] ?? 0) as num).toDouble(),
+        matchingSummary: result['summary']?.toString() ?? '',
+        matchingPoints: List<String>.from(result['matching_points'] ?? []),
+        missingPoints: List<String>.from(result['missing_points'] ?? []),
+        parsedData: {...(result['parsed_data'] is Map ? result['parsed_data'] : {}), 'Source': 'Scan'},
       );
-
-      return result;
-    } catch (e) {
-      debugPrint('❌ Error in analyzeCVFromImage: $e');
-      rethrow;
     }
+    return CVMatchingResult.fromMock(10);
   }
 
-  /// Phân tích CV từ text đã trích xuất sẵn (ML Kit đã xử lý trước)
-  Future<CVMatchingResult> analyzeCVFromExtractedText({
-    required String extractedText,
-    required JobModel job,
-  }) async {
-    if (extractedText.isEmpty) {
-      return CVMatchingResult.fromMock(0);
-    }
+  // ================================================================
+  // SO SÁNH ỨNG VIÊN
+  // ================================================================
 
-    final jobDesc = job.metadata.jobDescription.join('\n');
-    final jobReq = job.metadata.candidateRequirements.join('\n');
-
-    final prompt = '''
-HÃY PHÂN TÍCH ĐỘ PHÙ HỢP CỦA CV VỚI CÔNG VIỆC
-
-[NỘI DUNG CV]
-$extractedText
-
-[THÔNG TIN CÔNG VIỆC]
-Vị trí: ${job.metadata.title}
-Mô tả: $jobDesc
-Yêu cầu: $jobReq
-Kỹ năng: ${job.metadata.requirementsTags.join(', ')}
-Kinh nghiệm: ${job.metadata.experienceRequired}
-Lĩnh vực: ${job.metadata.fields.join(', ')}
-
-TRẢ VỀ JSON DUY NHẤT:
-{
-  "overall_score": number (0-100),
-  "semantic_similarity": number (0-1),
-  "keyword_match_score": number (0-100),
-  "summary": "nhận xét tiếng Việt chi tiết",
-  "matching_points": ["điểm phù hợp"],
-  "missing_points": ["điểm thiếu"],
-  "parsed_data": {"name": "", "skills": "", "experience": "", "education": ""}
-}
-''';
-
-    try {
-      final aiResponse = await _mistralService.sendMessage(prompt);
-      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).stringMatch(aiResponse);
-
-      if (jsonMatch != null) {
-        final result = jsonDecode(jsonMatch);
-        return CVMatchingResult(
-          overallScore: (result['overall_score'] as num).toDouble(),
-          semanticSimilarity: (result['semantic_similarity'] as num).toDouble(),
-          keywordMatchScore: (result['keyword_match_score'] as num).toDouble(),
-          matchingSummary: result['summary'] ?? '',
-          matchingPoints: List<String>.from(result['matching_points'] ?? []),
-          missingPoints: List<String>.from(result['missing_points'] ?? []),
-          parsedData: {
-            ...(result['parsed_data'] ?? {}),
-            'OCR Engine': 'Google ML Kit (On-device)',
-          },
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Error analyzeCVFromExtractedText: $e');
-    }
-
-    return CVMatchingResult.fromMock(10.0);
+  Future<String> compareCVs({required List<Map<String, dynamic>> cvsData, required JobModel job}) async {
+    final texts = await _getAllCVTexts(cvsData);
+    final prompt = 'SO SÁNH ỨNG VIÊN cho vị trí ${job.metadata.title}.\n\n[YÊU CẦU]\n${_jobText(job)}\n\n${texts.asMap().entries.map((e) => "[Ứng viên ${e.key+1}]\n${e.value}").join("\n\n")}\n\nĐưa ra bảng so sánh và ranking. Trả lời Markdown tiếng Việt.';
+    return await _mistralService.sendIsolatedMessage(prompt);
   }
 
-  /// So sánh hai hoặc nhiều CV với nhau để chọn người tốt nhất
-  Future<String> compareCVs({
+  Future<CVComparisonResult> compareCVsStructured({
     required List<Map<String, dynamic>> cvsData,
+    required List<String> candidateNames,
     required JobModel job,
   }) async {
-    final jobContent = _convertJobToText(job);
-    final List<String> cvLabels = [];
-    final List<String> cvTexts = [];
+    final texts = await _getAllCVTexts(cvsData);
+    final prompt = '''SO SÁNH ỨNG VIÊN VÀ TRẢ VỀ JSON
 
-    for (int i = 0; i < cvsData.length; i++) {
-      final data = cvsData[i]['data'] ?? cvsData[i];
-      cvLabels.add("Ứng viên ${i + 1} (${cvsData[i]['title'] ?? 'N/A'})");
-      cvTexts.add(_convertStructuredCVToText(data));
-    }
+[YÊU CẦU CÔNG VIỆC]
+${_jobText(job)}
 
-    final prompt = '''
-HÃY SO SÁNH CÁC ỨNG VIÊN DỰA TRÊN DỮ LIỆU THẬT
-Vị trí: ${job.metadata.title}.
+[ỨNG VIÊN]
+${texts.asMap().entries.map((e) => "[${candidateNames[e.key]}]\n${e.value}").join("\n\n")}
 
-[JOB REQUIREMENTS]
-$jobContent
+Đánh giá 5 tiêu chí (0-100): skills_score, experience_score, education_score, overall_score, potential_score.
 
-[CANDIDATES DATA]
-${List.generate(cvsData.length, (i) => "[${cvLabels[i]}]\n${cvTexts[i]}").join("\n\n")}
+TRẢ VỀ JSON:
+{"job_title": "${job.metadata.title}", "candidates": [{"name": "", "rank": 1, "skills_score": 0, "experience_score": 0, "education_score": 0, "overall_score": 0, "potential_score": 0, "strengths": [], "weaknesses": [], "summary": ""}], "recommendation": "", "comparison_notes": ""}''';
 
-Hãy đưa ra bảng so sánh chi tiết và Ranking người phù hợp nhất.
-Định dạng phản hồi: Markdown chuyên nghiệp.
-''';
-
-    return await _mistralService.sendMessage(prompt);
-  }
-
-  // ============================================================
-  // LOGGING - Lưu dữ liệu phân tích vào file để debug/test
-  // ============================================================
-
-  /// Lưu log phân tích vào thư mục documents của app
-  Future<void> _saveAnalysisLog({
-    required String jobData,
-    required String extractedCVText,
-    required Map<String, dynamic> cvRawData,
-    required CVMatchingResult aiResult,
-    required String source,
-  }) async {
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final logDir = Directory('${dir.path}/analysis_logs');
-      if (!await logDir.exists()) {
-        await logDir.create(recursive: true);
-      }
-
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-      final logFile = File('${logDir.path}/analysis_$timestamp.json');
-
-      final logData = {
-        'timestamp': DateTime.now().toIso8601String(),
-        'source': source,
-        'job_data': {
-          'raw_text': jobData,
-          'title': cvRawData['job_title'] ?? '',
-        },
-        'cv_data': {
-          'extracted_text': extractedCVText,
-          'text_length': extractedCVText.length,
-          'file_url': cvRawData['file_url'] ?? cvRawData['data']?['file_url'] ?? '',
-          'raw_metadata_keys': (cvRawData['data'] as Map?)?.keys.toList() ?? cvRawData.keys.toList(),
-        },
-        'ai_result': aiResult.toJson(),
-      };
-
-      await logFile.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(logData),
-      );
-
-      debugPrint('📝 Analysis log saved: ${logFile.path}');
+      final result = await _callAIAndParse(prompt);
+      if (result != null) return CVComparisonResult.fromJson(result, candidateNames);
     } catch (e) {
-      debugPrint('⚠️ Could not save analysis log: $e');
+      debugPrint('❌ compareCVsStructured: $e');
     }
+    return CVComparisonResult(jobTitle: job.metadata.title, candidates: candidateNames.map((n) => CandidateScore(name: n, rank: 0, skillsScore: 0, experienceScore: 0, educationScore: 0, overallScore: 0, potentialScore: 0, strengths: [], weaknesses: [], summary: 'Lỗi')).toList(), recommendation: 'Lỗi phân tích');
   }
 
-  // ============================================================
-  // HELPER METHODS
-  // ============================================================
+  // ================================================================
+  // CORE: Gọi AI và parse JSON (có retry)
+  // ================================================================
 
-  String _convertStructuredCVToText(Map<String, dynamic> data) {
-    final buffer = StringBuffer();
+  Future<Map<String, dynamic>?> _callAIAndParse(String prompt) async {
+    final response = await _mistralService.sendIsolatedMessage(prompt);
 
-    // Find Name
-    String name = data['full_name'] ??
-        data['name'] ??
-        data['personal_info']?['full_name'] ??
-        data['data']?['personal_info']?['full_name'] ??
-        'N/A';
-    buffer.writeln("Họ tên: $name");
+    // Thử parse trực tiếp
+    try {
+      final r = jsonDecode(response);
+      if (r is Map<String, dynamic>) return r;
+    } catch (_) {}
 
-    // Find Headline/Title
-    String title = data['title'] ??
-        data['headline'] ??
-        data['personal_info']?['title'] ??
-        'N/A';
-    buffer.writeln("Tiêu đề: $title");
-
-    // Find Experiences
-    final experiences = data['experiences'] as List? ??
-        data['data']?['experiences'] as List? ??
-        [];
-    buffer.writeln("Kinh nghiệm:");
-    for (var exp in experiences) {
-      if (exp is Map) {
-        buffer.writeln(
-            "- ${exp['position'] ?? exp['title'] ?? ''} tại ${exp['company'] ?? ''} (${exp['duration'] ?? ''})");
+    // Sanitize và tìm JSON
+    final clean = _sanitize(response);
+    final start = clean.indexOf('{');
+    final end = clean.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      try {
+        final r = jsonDecode(clean.substring(start, end + 1));
+        if (r is Map<String, dynamic>) return r;
+      } catch (e) {
+        debugPrint('⚠️ JSON parse fail: $e');
       }
     }
-
-    // Find Skills
-    final skills = data['skills'] as List? ??
-        data['data']?['skills'] as List? ??
-        data['skills_tags'] as List? ??
-        [];
-
-    String skillsText = skills.map((s) {
-      if (s is Map) return s['name'] ?? s['title'] ?? '';
-      return s.toString();
-    }).where((s) => s.isNotEmpty).join(', ');
-
-    buffer.writeln("Kỹ năng: ${skillsText.isEmpty ? 'N/A' : skillsText}");
-
-    return buffer.toString();
+    return null;
   }
 
-  String _convertJobToText(JobModel job) {
-    final meta = job.metadata;
-    return '''
-Tiêu đề: ${meta.title}
-Mô tả: ${meta.jobDescription.join('. ')}
-Yêu cầu: ${meta.candidateRequirements.join('. ')}
-Kỹ năng: ${meta.requirementsTags.join(', ')}
-Kinh nghiệm: ${meta.experienceRequired}
-Lĩnh vực: ${meta.fields.join(', ')}
-''';
+  // ================================================================
+  // HELPERS
+  // ================================================================
+
+  String _buildAnalysisPrompt(String cvText, JobModel job) => '''
+PHÂN TÍCH ĐỘ PHÙ HỢP CV VỚI CÔNG VIỆC.
+
+[CV]
+$cvText
+
+[CÔNG VIỆC]
+${_jobText(job)}
+
+Trả về JSON duy nhất:
+{"overall_score": 0-100, "semantic_similarity": 0.0-1.0, "keyword_match_score": 0-100, "summary": "nhận xét tiếng Việt", "matching_points": ["điểm phù hợp"], "missing_points": ["điểm thiếu"], "parsed_data": {"name": "", "skills": "", "experience": "", "education": ""}}''';
+
+  String _jobText(JobModel job) {
+    final m = job.metadata;
+    return 'Vị trí: ${m.title}\nMô tả: ${m.jobDescription.join('. ')}\nYêu cầu: ${m.candidateRequirements.join('. ')}\nKỹ năng: ${m.requirementsTags.join(', ')}\nKinh nghiệm: ${m.experienceRequired}\nLĩnh vực: ${m.fields.join(', ')}';
+  }
+
+  Future<List<String>> _getAllCVTexts(List<Map<String, dynamic>> cvsData) async {
+    final texts = <String>[];
+    for (final cv in cvsData) {
+      final url = cv['file_url'] ?? cv['data']?['file_url'];
+      final type = (cv['type'] ?? '').toString();
+      if ((type == 'upload' || (url != null && url.toString().isNotEmpty)) && url != null) {
+        try {
+          final ocr = await _mlkitService.extractTextFromUrl(url);
+          if (ocr.success && ocr.text.isNotEmpty) { texts.add(ocr.text); continue; }
+        } catch (_) {}
+      }
+      final nested = cv['data'];
+      texts.add(_buildStructuredText(nested is Map<String, dynamic> ? nested : cv));
+    }
+    return texts;
+  }
+
+  String _buildStructuredText(Map<String, dynamic> d) {
+    final b = StringBuffer();
+    final info = d['personal_info'] as Map? ?? {};
+    b.writeln('Họ tên: ${info['full_name'] ?? d['full_name'] ?? d['name'] ?? 'N/A'}');
+    final t = (info['title'] ?? d['headline'] ?? '').toString();
+    if (t.isNotEmpty && !t.endsWith('.pdf')) b.writeln('Vị trí: $t');
+    if ((info['email'] ?? '').toString().isNotEmpty) b.writeln('Email: ${info['email']}');
+    if ((info['phone'] ?? '').toString().isNotEmpty) b.writeln('SĐT: ${info['phone']}');
+    final sum = (d['summary'] ?? '').toString();
+    if (sum.isNotEmpty) b.writeln('\nGiới thiệu: $sum');
+    final exps = d['experiences'] as List? ?? [];
+    if (exps.isNotEmpty) { b.writeln('\nKinh nghiệm:'); for (final e in exps) { if (e is Map) { b.writeln('- ${e['position'] ?? ''} tại ${e['company'] ?? ''} (${e['duration'] ?? ''})'); if ((e['description'] ?? '').toString().isNotEmpty) b.writeln('  ${e['description']}'); } } }
+    final edus = d['education'] as List? ?? [];
+    if (edus.isNotEmpty) { b.writeln('\nHọc vấn:'); for (final e in edus) { if (e is Map) b.writeln('- ${e['degree'] ?? ''} - ${e['school'] ?? ''} (${e['year'] ?? ''})'); } }
+    final skills = d['skills'] as List? ?? [];
+    if (skills.isNotEmpty) { final s = skills.map((x) => x is Map ? '${x['name'] ?? ''}' : x.toString()).where((x) => x.isNotEmpty).join(', '); if (s.isNotEmpty) b.writeln('\nKỹ năng: $s'); }
+    final certs = d['certifications'] as List? ?? [];
+    if (certs.isNotEmpty) { b.writeln('\nChứng chỉ:'); for (final c in certs) { if (c is Map) b.writeln('- ${c['name'] ?? ''} (${c['issuer'] ?? ''})'); } }
+    final projs = d['projects'] as List? ?? [];
+    if (projs.isNotEmpty) { b.writeln('\nDự án:'); for (final p in projs) { if (p is Map) b.writeln('- ${p['name'] ?? ''} | ${p['role'] ?? p['position'] ?? ''}'); } }
+    return b.toString();
+  }
+
+  String _sanitize(String s) {
+    final b = StringBuffer();
+    bool inStr = false, esc = false;
+    for (int i = 0; i < s.length; i++) {
+      final c = s[i]; final code = c.codeUnitAt(0);
+      if (esc) { b.write(c); esc = false; continue; }
+      if (c == '\\' && inStr) { esc = true; b.write(c); continue; }
+      if (c == '"') { inStr = !inStr; b.write(c); continue; }
+      if (inStr && code < 32) { b.write(code == 10 ? '\\n' : code == 13 ? '\\r' : code == 9 ? '\\t' : ' '); }
+      else { b.write(c); }
+    }
+    return b.toString();
+  }
+
+  void _printLog(String src, JobModel job, String text, CVMatchingResult r) {
+    debugPrint('╔══ 📝 [$src] ${job.metadata.title} ══');
+    debugPrint('║ Score: ${r.overallScore}% | Text: ${text.length} chars');
+    debugPrint('║ ✅ ${r.matchingPoints.join(' | ')}');
+    debugPrint('║ ❌ ${r.missingPoints.join(' | ')}');
+    debugPrint('╚══════════════════════════════════════');
   }
 }

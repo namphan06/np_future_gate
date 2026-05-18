@@ -77,11 +77,12 @@ class MLKitOcrService {
           debugPrint('📄 Processing page $i/$pageCount...');
           final page = await document.getPage(i);
           
-          // Render page to image (300 DPI for good OCR quality)
+          // Render page to image - tăng 3x resolution cho OCR chất lượng cao
           final pageImage = await page.render(
-            width: page.width * 2,
-            height: page.height * 2,
+            width: page.width * 3,
+            height: page.height * 3,
             format: PdfPageImageFormat.png,
+            backgroundColor: '#FFFFFF',
           );
           await page.close();
 
@@ -90,6 +91,8 @@ class MLKitOcrService {
             continue;
           }
 
+          debugPrint('📄 Page $i rendered: ${pageImage.bytes.length} bytes');
+
           // Save rendered image to temp file
           final tempImageFile = File(
               '${tempDir.path}/pdf_page_${i}_${DateTime.now().millisecondsSinceEpoch}.png');
@@ -97,6 +100,8 @@ class MLKitOcrService {
 
           // OCR the rendered page image
           final result = await extractTextFromFile(tempImageFile);
+
+          debugPrint('📄 Page $i OCR: ${result.success ? "${result.text.length} chars" : "FAILED: ${result.error}"}');
 
           // Cleanup temp image
           if (await tempImageFile.exists()) {
