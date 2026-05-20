@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'cv_metadata.dart';
-import '../cv_template/cv_ui/cv6.dart';
-import '../cv_template/cv_ui/cv7.dart';
-import '../cv_template/cv_ui/cv8.dart';
-import '../cv_template/cv_ui/cv9.dart';
 import '../cv_input/cv1_input_screen.dart';
 import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
@@ -15,6 +11,16 @@ import '../cv_input/cv6_input_screen.dart';
 import '../cv_input/cv7_input_screen.dart';
 import '../cv_input/cv8_input_screen.dart';
 import '../cv_input/cv9_input_screen.dart';
+import '../cv_input/cv10_input_screen.dart';
+import '../cv_input/cv11_input_screen.dart';
+import '../cv_input/cv12_input_screen.dart';
+import '../cv_input/cv13_input_screen.dart';
+import '../cv_input/cv14_input_screen.dart';
+import '../cv_input/cv15_input_screen.dart';
+import '../cv_input/cv16_input_screen.dart';
+import '../cv_input/cv17_input_screen.dart';
+import '../cv_input/cv18_input_screen.dart';
+import '../cv_input/cv19_input_screen.dart';
 import '../cv_management_screen.dart';
 
 /// Screen showing general CV templates
@@ -407,6 +413,26 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const CV9InputScreen()),
               );
+            } else if (t.mcv == 'CV010') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV10InputScreen()));
+            } else if (t.mcv == 'CV011') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV11InputScreen()));
+            } else if (t.mcv == 'CV012') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV12InputScreen()));
+            } else if (t.mcv == 'CV013') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV13InputScreen()));
+            } else if (t.mcv == 'CV014') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV14InputScreen()));
+            } else if (t.mcv == 'CV015') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV15InputScreen()));
+            } else if (t.mcv == 'CV016') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV16InputScreen()));
+            } else if (t.mcv == 'CV017') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV17InputScreen()));
+            } else if (t.mcv == 'CV018') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV18InputScreen()));
+            } else if (t.mcv == 'CV019') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV19InputScreen()));
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Đang phát triển mẫu: ${t.title}')),

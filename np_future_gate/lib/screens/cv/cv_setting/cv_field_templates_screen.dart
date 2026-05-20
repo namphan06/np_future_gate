@@ -5,11 +5,20 @@ import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
 import '../cv_input/cv4_input_screen.dart';
 import '../cv_input/cv5_input_screen.dart';
-
 import '../cv_input/cv6_input_screen.dart';
 import '../cv_input/cv7_input_screen.dart';
 import '../cv_input/cv8_input_screen.dart';
 import '../cv_input/cv9_input_screen.dart';
+import '../cv_input/cv10_input_screen.dart';
+import '../cv_input/cv11_input_screen.dart';
+import '../cv_input/cv12_input_screen.dart';
+import '../cv_input/cv13_input_screen.dart';
+import '../cv_input/cv14_input_screen.dart';
+import '../cv_input/cv15_input_screen.dart';
+import '../cv_input/cv16_input_screen.dart';
+import '../cv_input/cv17_input_screen.dart';
+import '../cv_input/cv18_input_screen.dart';
+import '../cv_input/cv19_input_screen.dart';
 
 class CVFieldCategory {
   final String name;
@@ -38,7 +47,12 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
     CVFieldCategory('Marketing', Icons.campaign, Colors.orange, ['Creative', 'Modern', 'Social Media', 'Content']),
     CVFieldCategory('Thiết kế', Icons.palette, Colors.purple, ['Designer', 'Creative', 'UI/UX', 'Art']),
     CVFieldCategory('Tài chính', Icons.attach_money, Colors.teal, ['Professional', 'Analyst', 'Banking']),
-    CVFieldCategory('Y tế', Icons.health_and_safety, Colors.red, ['Professional', 'Doctor', 'Nurse']), 
+    CVFieldCategory('Y tế', Icons.health_and_safety, Colors.red, ['Professional', 'Doctor', 'Nurse']),
+    CVFieldCategory('Giáo dục', Icons.school, Colors.lightGreen, ['Education', 'Teaching', 'Academic']),
+    CVFieldCategory('Luật', Icons.gavel, Colors.brown, ['Legal', 'Professional', 'Formal']),
+    CVFieldCategory('Kỹ thuật', Icons.engineering, Colors.blueGrey, ['Engineering', 'Technical', 'Construction']),
+    CVFieldCategory('Du lịch', Icons.hotel, Colors.cyan, ['Hospitality', 'Service', 'Tourism']),
+    CVFieldCategory('Truyền thông', Icons.newspaper, Colors.deepPurple, ['Media', 'Journalism', 'Creative']),
   ];
 
   @override
@@ -420,6 +434,26 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
                 context,
                 MaterialPageRoute(builder: (_) => const CV9InputScreen()),
               );
+            } else if (t.mcv == 'CV010') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV10InputScreen()));
+            } else if (t.mcv == 'CV011') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV11InputScreen()));
+            } else if (t.mcv == 'CV012') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV12InputScreen()));
+            } else if (t.mcv == 'CV013') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV13InputScreen()));
+            } else if (t.mcv == 'CV014') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV14InputScreen()));
+            } else if (t.mcv == 'CV015') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV15InputScreen()));
+            } else if (t.mcv == 'CV016') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV16InputScreen()));
+            } else if (t.mcv == 'CV017') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV17InputScreen()));
+            } else if (t.mcv == 'CV018') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV18InputScreen()));
+            } else if (t.mcv == 'CV019') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CV19InputScreen()));
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Đang phát triển mẫu: ${t.title}')),

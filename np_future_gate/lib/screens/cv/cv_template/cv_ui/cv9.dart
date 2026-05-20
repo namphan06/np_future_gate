@@ -86,7 +86,7 @@ class Cv9 extends StatelessWidget {
             children: [
               _buildSectionWrapper('personal_details', _buildSidebarSection('CONTACT DETAILS', _buildContact(personalInfo))),
               const SizedBox(height: 40),
-              _buildSectionWrapper('skills', _buildSidebarSection('CORE COMPETENCIES', _buildSimpleList(displayData['skills']))),
+              _buildSectionWrapper('skills', _buildSidebarSection('CORE COMPETENCIES', _buildSkills(displayData['skills']))),
               const SizedBox(height: 40),
               _buildSectionWrapper('education', _buildSidebarSection('MEDICAL EDUCATION', _buildEducation(displayData['education']))),
               const SizedBox(height: 40),
@@ -113,7 +113,7 @@ class Cv9 extends StatelessWidget {
         const SizedBox(height: 40),
         _buildSectionWrapper('experiences', _buildMainSection('PRACTICE HISTORY', _buildExperience(displayData['experiences']))),
         const SizedBox(height: 40),
-        _buildSectionWrapper('skills', _buildSidebarSection('CORE COMPETENCIES', _buildSimpleList(displayData['skills']))),
+        _buildSectionWrapper('skills', _buildSidebarSection('CORE COMPETENCIES', _buildSkills(displayData['skills']))),
         const SizedBox(height: 40),
         _buildSectionWrapper('education', _buildSidebarSection('MEDICAL EDUCATION', _buildEducation(displayData['education']))),
         const SizedBox(height: 40),

@@ -8,6 +8,16 @@ import '../cv_template/cv_ui/cv6.dart';
 import '../cv_template/cv_ui/cv7.dart';
 import '../cv_template/cv_ui/cv8.dart';
 import '../cv_template/cv_ui/cv9.dart';
+import '../cv_template/cv_ui/cv10.dart';
+import '../cv_template/cv_ui/cv11.dart';
+import '../cv_template/cv_ui/cv12.dart';
+import '../cv_template/cv_ui/cv13.dart';
+import '../cv_template/cv_ui/cv14.dart';
+import '../cv_template/cv_ui/cv15.dart';
+import '../cv_template/cv_ui/cv16.dart';
+import '../cv_template/cv_ui/cv17.dart';
+import '../cv_template/cv_ui/cv18.dart';
+import '../cv_template/cv_ui/cv19.dart';
 import '../cv_input/cv1_input_screen.dart';
 import '../cv_input/cv2_input_screen.dart';
 import '../cv_input/cv3_input_screen.dart';
@@ -17,6 +27,16 @@ import '../cv_input/cv6_input_screen.dart';
 import '../cv_input/cv7_input_screen.dart';
 import '../cv_input/cv8_input_screen.dart';
 import '../cv_input/cv9_input_screen.dart';
+import '../cv_input/cv10_input_screen.dart';
+import '../cv_input/cv11_input_screen.dart';
+import '../cv_input/cv12_input_screen.dart';
+import '../cv_input/cv13_input_screen.dart';
+import '../cv_input/cv14_input_screen.dart';
+import '../cv_input/cv15_input_screen.dart';
+import '../cv_input/cv16_input_screen.dart';
+import '../cv_input/cv17_input_screen.dart';
+import '../cv_input/cv18_input_screen.dart';
+import '../cv_input/cv19_input_screen.dart';
 import '../cv_upload_edit_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -110,6 +130,56 @@ class CVDisplayManager {
             onSectionTap: null,
           ),
         );
+      case 'CV010':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv10(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV011':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv11(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV012':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv12(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV013':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv13(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV014':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv14(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV015':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv15(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV016':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv16(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV017':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv17(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV018':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv18(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
+      case 'CV019':
+        return _buildScaffold(
+          title: cvData['title'] ?? 'Xem CV',
+          child: Cv19(data: cvData['data'] ?? cvData, onSectionTap: null),
+        );
       default:
         // Fallback to CV1 if unknown or null (though null usually implies upload or error)
         return _buildScaffold(
@@ -168,6 +238,26 @@ class CVDisplayManager {
         return CV8InputScreen(cvId: cvId);
       case 'CV009':
         return CV9InputScreen(cvId: cvId);
+      case 'CV010':
+        return CV10InputScreen(cvId: cvId);
+      case 'CV011':
+        return CV11InputScreen(cvId: cvId);
+      case 'CV012':
+        return CV12InputScreen(cvId: cvId);
+      case 'CV013':
+        return CV13InputScreen(cvId: cvId);
+      case 'CV014':
+        return CV14InputScreen(cvId: cvId);
+      case 'CV015':
+        return CV15InputScreen(cvId: cvId);
+      case 'CV016':
+        return CV16InputScreen(cvId: cvId);
+      case 'CV017':
+        return CV17InputScreen(cvId: cvId);
+      case 'CV018':
+        return CV18InputScreen(cvId: cvId);
+      case 'CV019':
+        return CV19InputScreen(cvId: cvId);
       default:
         return CV1InputScreen(cvId: cvId);
     }

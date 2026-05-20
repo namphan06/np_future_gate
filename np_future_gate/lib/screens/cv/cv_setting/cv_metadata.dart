@@ -248,5 +248,174 @@ class CVRegistry {
         CVTag(label: 'Healthcare', color: Colors.green, icon: Icons.health_and_safety),
       ],
     ));
+
+    // ===== 5 MẪU CV CHUNG MỚI (CV010 - CV014) =====
+
+    // CV10 - Elegant Minimalist Template
+    register(CVMetadata(
+      mcv: 'CV010',
+      title: 'Elegant Minimalist CV',
+      description: 'Mẫu CV tối giản sang trọng với typography đẹp và khoảng trắng hài hòa',
+      type: 'general',
+      icon: Icons.spa_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv10_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv10.dart',
+      tags: [
+        CVTag(label: 'Simple', color: Colors.grey, icon: Icons.remove_circle_outline),
+        CVTag(label: 'Modern', color: Colors.blueGrey, icon: Icons.auto_awesome),
+        CVTag(label: 'Professional', color: Colors.brown, icon: Icons.workspace_premium),
+      ],
+    ));
+
+    // CV11 - Modern Gradient Template
+    register(CVMetadata(
+      mcv: 'CV011',
+      title: 'Modern Gradient CV',
+      description: 'Mẫu CV hiện đại với gradient màu sắc bắt mắt, nổi bật',
+      type: 'general',
+      icon: Icons.gradient_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv11_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv11.dart',
+      tags: [
+        CVTag(label: 'Modern', color: Colors.deepPurple, icon: Icons.auto_awesome),
+        CVTag(label: 'Creative', color: Colors.purple, icon: Icons.color_lens),
+        CVTag(label: 'Bold', color: Colors.indigo, icon: Icons.flash_on),
+      ],
+    ));
+
+    // CV12 - Classic Timeline Template
+    register(CVMetadata(
+      mcv: 'CV012',
+      title: 'Classic Timeline CV',
+      description: 'Mẫu CV dòng thời gian cổ điển, rõ ràng và chuyên nghiệp',
+      type: 'general',
+      icon: Icons.timeline_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv12_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv12.dart',
+      tags: [
+        CVTag(label: 'Professional', color: Colors.red, icon: Icons.business_center),
+        CVTag(label: 'Modern', color: Colors.deepOrange, icon: Icons.auto_awesome),
+        CVTag(label: 'Clean', color: Colors.blueGrey, icon: Icons.check_circle),
+      ],
+    ));
+
+    // CV13 - Bold Sidebar Template
+    register(CVMetadata(
+      mcv: 'CV013',
+      title: 'Bold Sidebar CV',
+      description: 'Mẫu CV với thanh bên nổi bật, phong cách mạnh mẽ và hiện đại',
+      type: 'general',
+      icon: Icons.view_sidebar_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv13_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv13.dart',
+      tags: [
+        CVTag(label: 'Bold', color: Colors.cyan, icon: Icons.flash_on),
+        CVTag(label: 'Modern', color: Colors.teal, icon: Icons.auto_awesome),
+        CVTag(label: 'Professional', color: Colors.indigo, icon: Icons.business_center),
+      ],
+    ));
+
+    // CV14 - Compact Professional Template
+    register(CVMetadata(
+      mcv: 'CV014',
+      title: 'Compact Professional CV',
+      description: 'Mẫu CV chuyên nghiệp gọn gàng, tối ưu cho 1 trang A4',
+      type: 'general',
+      icon: Icons.compress_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv14_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv14.dart',
+      tags: [
+        CVTag(label: 'Simple', color: Colors.blue, icon: Icons.remove_circle_outline),
+        CVTag(label: 'Professional', color: Colors.blueGrey, icon: Icons.business_center),
+        CVTag(label: 'Clean', color: Colors.green, icon: Icons.check_circle),
+      ],
+    ));
+
+    // ===== 5 MẪU CV THEO LĨNH VỰC MỚI (CV015 - CV019) =====
+
+    // CV15 - Education & Teaching Template
+    register(CVMetadata(
+      mcv: 'CV015',
+      title: 'Education & Teaching CV',
+      description: 'Mẫu CV dành cho giảng viên, giáo viên, nhà giáo dục',
+      type: 'field',
+      typeField: 'Giáo dục',
+      icon: Icons.school_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv15_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv15.dart',
+      tags: [
+        CVTag(label: 'Education', color: Colors.green, icon: Icons.school),
+        CVTag(label: 'Teaching', color: Colors.lightGreen, icon: Icons.cast_for_education),
+        CVTag(label: 'Academic', color: Colors.teal, icon: Icons.auto_stories),
+      ],
+    ));
+
+    // CV16 - Legal & Law Template
+    register(CVMetadata(
+      mcv: 'CV016',
+      title: 'Legal & Law CV',
+      description: 'Mẫu CV dành cho luật sư, cố vấn pháp lý, chuyên viên luật',
+      type: 'field',
+      typeField: 'Luật',
+      icon: Icons.gavel_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv16_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv16.dart',
+      tags: [
+        CVTag(label: 'Legal', color: Colors.brown, icon: Icons.gavel),
+        CVTag(label: 'Professional', color: Colors.amber, icon: Icons.verified),
+        CVTag(label: 'Formal', color: Colors.blueGrey, icon: Icons.account_balance),
+      ],
+    ));
+
+    // CV17 - Engineering Template
+    register(CVMetadata(
+      mcv: 'CV017',
+      title: 'Engineering CV',
+      description: 'Mẫu CV dành cho kỹ sư xây dựng, cơ khí, điện',
+      type: 'field',
+      typeField: 'Kỹ thuật',
+      icon: Icons.engineering_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv17_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv17.dart',
+      tags: [
+        CVTag(label: 'Engineering', color: Colors.blueGrey, icon: Icons.engineering),
+        CVTag(label: 'Technical', color: Colors.orange, icon: Icons.build),
+        CVTag(label: 'Construction', color: Colors.brown, icon: Icons.construction),
+      ],
+    ));
+
+    // CV18 - Hospitality & Tourism Template
+    register(CVMetadata(
+      mcv: 'CV018',
+      title: 'Hospitality & Tourism CV',
+      description: 'Mẫu CV dành cho ngành du lịch, nhà hàng, khách sạn',
+      type: 'field',
+      typeField: 'Du lịch',
+      icon: Icons.hotel_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv18_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv18.dart',
+      tags: [
+        CVTag(label: 'Hospitality', color: Colors.teal, icon: Icons.hotel),
+        CVTag(label: 'Service', color: Colors.cyan, icon: Icons.room_service),
+        CVTag(label: 'Tourism', color: Colors.lightBlue, icon: Icons.flight),
+      ],
+    ));
+
+    // CV19 - Media & Journalism Template
+    register(CVMetadata(
+      mcv: 'CV019',
+      title: 'Media & Journalism CV',
+      description: 'Mẫu CV dành cho nhà báo, biên tập viên, truyền thông',
+      type: 'field',
+      typeField: 'Truyền thông',
+      icon: Icons.newspaper_outlined,
+      thumbnailPath: 'assets/cv_thumbnails/cv19_thumb.png',
+      templatePath: 'lib/screens/cv/cv_template/cv_ui/cv19.dart',
+      tags: [
+        CVTag(label: 'Media', color: Colors.purple, icon: Icons.videocam),
+        CVTag(label: 'Journalism', color: Colors.deepPurple, icon: Icons.article),
+        CVTag(label: 'Creative', color: Colors.pink, icon: Icons.create),
+      ],
+    ));
   }
 }
