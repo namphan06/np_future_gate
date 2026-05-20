@@ -143,24 +143,22 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
       await _jobRepository.applyForJob(widget.job.id!, _currentUserId!, cvId);
       
       // 2. Gửi notification đến nhà tuyển dụng
-      if (widget.job.creatorId != null) {
-        // Lấy thông tin candidate
-        final candidateProfile = await _authRepository.getCurrentUserProfile();
-        final candidateName = candidateProfile?.fullName ?? 'Ứng viên';
-        
-        // Gửi notification (chạy background, không ảnh hưởng UI)
-        _appNotificationService.notifyNewApplication(
-          employerId: widget.job.creatorId!,
-          jobId: widget.job.id!,
-          jobTitle: widget.job.metadata.title,
-          candidateId: _currentUserId!,
-          candidateName: candidateName,
-          isPartnershipJob: false, // TODO: Detect if partnership job
-        ).catchError((e) {
-          print('⚠️ Failed to send notification: $e');
-          // Không hiển thị lỗi cho user vì notification là tính năng phụ
-        });
-      }
+      // Lấy thông tin candidate
+      final candidateProfile = await _authRepository.getCurrentUserProfile();
+      final candidateName = candidateProfile?.fullName ?? 'Ứng viên';
+      
+      // Gửi notification (chạy background, không ảnh hưởng UI)
+      _appNotificationService.notifyNewApplication(
+        employerId: widget.job.creatorId,
+        jobId: widget.job.id!,
+        jobTitle: widget.job.metadata.title,
+        candidateId: _currentUserId!,
+        candidateName: candidateName,
+        isPartnershipJob: false,
+      ).catchError((e) {
+        debugPrint('⚠️ Failed to send notification: $e');
+        // Không hiển thị lỗi cho user vì notification là tính năng phụ
+      });
       
       if (mounted) {
         setState(() {
@@ -181,6 +179,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     }
   }
 
+  // ignore: unused_element
   void _openChatList() {
     Navigator.push(
       context,
@@ -189,15 +188,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   }
 
   Future<void> _openChatWithEmployer() async {
-    if (widget.job.creatorId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể chat với nhà tuyển dụng')),
-      );
-      return;
-    }
-
     final conversation = await _chatService.getOrCreateConversation(
-      otherUserId: widget.job.creatorId!,
+      otherUserId: widget.job.creatorId,
       otherUserType: 'employer',
       jobId: widget.job.id,
     );
@@ -220,8 +212,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     }
   }
 
+  // ignore: unused_element
   void _handleChatbotPressed() {
-    // TODO: Implement chatbot functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Chatbot AI sẽ được triển khai sau')),
     );

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:np_future_gate/screens/employer/jobs/employer_jobs_screen.dart';
-import 'package:np_future_gate/screens/employer/jobs/job_applicants_screen.dart';
 import 'models/notification_config.dart';
 import '../core/services/notification/status_notification_service.dart';
 import 'actions/actions.dart';
@@ -98,18 +96,9 @@ Future<void> _handleNavigate(
       case NotificationActionCode.interviewReminder:
       case NotificationActionCode.interviewEvaluated:
         final interviewId = params['interviewId'] as String?;
-        final jobId = params['jobId'] as String?;
+        // final jobId = params['jobId'] as String?;
         if (interviewId != null) {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => InterviewDetailScreen(
-          //       interviewId: interviewId,
-          //       jobId: jobId,
-          //     ),
-          //   ),
-          // );
-          print('Navigate to InterviewDetailScreen with interviewId: $interviewId');
+          debugPrint('Navigate to InterviewDetailScreen with interviewId: $interviewId');
         }
         break;
 
@@ -120,15 +109,7 @@ Future<void> _handleNavigate(
       case NotificationActionCode.partnershipJobPosted:
         final partnershipId = params['partnershipId'] as String?;
         if (partnershipId != null) {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => PartnershipDetailScreen(
-          //       partnershipId: partnershipId,
-          //     ),
-          //   ),
-          // );
-          print('Navigate to PartnershipDetailScreen with partnershipId: $partnershipId');
+          debugPrint('Navigate to PartnershipDetailScreen with partnershipId: $partnershipId');
         }
         break;
 
@@ -137,13 +118,7 @@ Future<void> _handleNavigate(
       case NotificationActionCode.profileFollowed:
         final userId = params['userId'] as String?;
         if (userId != null) {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => ProfileScreen(userId: userId),
-          //   ),
-          // );
-          print('Navigate to ProfileScreen with userId: $userId');
+          debugPrint('Navigate to ProfileScreen with userId: $userId');
         }
         break;
 
@@ -151,18 +126,9 @@ Future<void> _handleNavigate(
       case NotificationActionCode.newMessage:
       case NotificationActionCode.messageReply:
         final chatId = params['chatId'] as String?;
-        final senderId = params['userId'] as String?;
+        // final senderId = params['userId'] as String?;
         if (chatId != null) {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => ChatScreen(
-          //       chatId: chatId,
-          //       userId: senderId,
-          //     ),
-          //   ),
-          // );
-          print('Navigate to ChatScreen with chatId: $chatId');
+          debugPrint('Navigate to ChatScreen with chatId: $chatId');
         }
         break;
 
@@ -170,54 +136,24 @@ Future<void> _handleNavigate(
       case NotificationActionCode.adminReview:
       case NotificationActionCode.adminApproved:
       case NotificationActionCode.adminRejected:
-        // Navigate to admin panel or specific review screen
-        print('Navigate to Admin screen');
+        debugPrint('Navigate to Admin screen');
         break;
 
       // === SUBSCRIPTION RELATED ===
       case NotificationActionCode.subscriptionExpiring:
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => SubscriptionScreen(),
-        //   ),
-        // );
-        print('Navigate to SubscriptionScreen');
+        debugPrint('Navigate to SubscriptionScreen');
         break;
 
       // === DEFAULT ===
       default:
-        print('No navigation handler for: ${actionCode.code}');
+        debugPrint('No navigation handler for: ${actionCode.code}');
     }
   } catch (e) {
-    print('Error in notification navigation: $e');
+    debugPrint('Error in notification navigation: $e');
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi: ${e.toString()}')),
       );
     }
   }
-}
-
-/// Helper: Navigate và replace current screen
-Future<void> _navigateAndReplace(
-  BuildContext context,
-  Widget screen,
-) async {
-  await Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => screen),
-  );
-}
-
-/// Helper: Navigate và clear stack
-Future<void> _navigateAndClearStack(
-  BuildContext context,
-  Widget screen,
-) async {
-  await Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => screen),
-    (route) => false,
-  );
 }

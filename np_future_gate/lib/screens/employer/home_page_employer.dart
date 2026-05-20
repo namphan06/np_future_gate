@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/controllers/home_employer_controller.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/subscription_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:np_future_gate/notification/screens/notifications_screen.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/services/cv_supabase_service.dart';
-import '../../core/services/subscription_service.dart';
-import '../../core/models/job_model.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/repositories/candidate_repository.dart';
-import 'jobs/employer_jobs_screen.dart';
-import 'jobs/edit_job_screen.dart';
-import 'jobs/recent_applicants_screen.dart';
-import 'search_page_employer.dart';
-import 'subscription/upgrade_account_screen.dart';
-import '../cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/screens/employer/jobs/edit_job_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/employer_jobs_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/recent_applicants_screen.dart';
+import 'package:np_future_gate/screens/employer/subscription/upgrade_account_screen.dart';
 
 class HomePageEmployer extends StatefulWidget {
   const HomePageEmployer({super.key});
@@ -23,772 +18,267 @@ class HomePageEmployer extends StatefulWidget {
 }
 
 class _HomePageEmployerState extends State<HomePageEmployer> {
-  final supabaseService = SupabaseService.instance;
-  final _jobRepository = JobRepository();
-  final _candidateRepository = CandidateRepository(); // Keeping if needed for other things
-  final _cvService = CVSupabaseService();
-  final _subscriptionService = SubscriptionService();
-
-  List<JobModel> _jobs = [];
-  List<Map<String, dynamic>> _applications = [];
-  Map<String, int> _stats = {
-    'jobsCount': 0,
-    'newApplicantsCount': 0,
-    'totalApplicantsCount': 0,
-  };
-  bool _isLoading = true;
-  SubscriptionInfo? _subscriptionInfo;
+  late final HomeEmployerController _controller;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-    _checkSubscription();
+    _controller = HomeEmployerController();
+    _controller.addListener(_onControllerChanged);
+    _controller.init().then((_) => _checkSubscriptionNotifications());
   }
 
-  Future<void> _checkSubscription() async {
-    try {
-      final subscription = await _subscriptionService.getCurrentSubscription();
-      if (mounted) {
-        setState(() => _subscriptionInfo = subscription);
-        
-        // Show notification if subscription expired or about to expire
-        if (subscription.wasExpired) {
-          _showSubscriptionExpiredNotification();
-        } else if (subscription.isAboutToExpire) {
-          _showSubscriptionExpiringNotification(subscription.daysRemaining);
-        }
-      }
-    } catch (e) {
-      print('Error checking subscription: $e');
-    }
+  void _onControllerChanged() {
+    if (mounted) setState(() {});
   }
 
-  void _showSubscriptionExpiredNotification() {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: const [
-              Icon(Icons.warning_amber_rounded, color: Colors.white),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text('Gói đăng ký đã hết hạn! Bạn đang dùng gói miễn phí.'),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.orange,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: 'Gia hạn',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
-              );
-            },
-          ),
-        ),
-      );
-    });
-  }
+  void _checkSubscriptionNotifications() {
+    final sub = _controller.subscriptionInfo;
+    if (sub == null) return;
 
-  void _showSubscriptionExpiringNotification(int daysRemaining) {
-    if (!mounted) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.access_time, color: Colors.white),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text('Gói đăng ký sẽ hết hạn trong $daysRemaining ngày.'),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.blue,
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: 'Gia hạn',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
-              );
-            },
-          ),
-        ),
-      );
-    });
-  }
-
-  Future<void> _loadData() async {
-    try {
-      final userId = supabaseService.currentUserId;
-      if (userId == null) return;
-
-      final jobs = await _jobRepository.getRecentEmployerJobs(userId);
-      // Fetch applications (instead of random candidates)
-      final apps = await _jobRepository.getRecentApplications(userId);
-      // Fetch stats
-      final stats = await _jobRepository.getEmployerStats(userId);
-
-      if (mounted) {
-        setState(() {
-          _jobs = jobs;
-          _applications = apps;
-          _stats = stats;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading home data: $e');
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _viewCV(String cvId, String jobId, String userId, String currentStatus) async {
-    try {
-      if (currentStatus == 'pending') {
-        await _jobRepository.updateApplicationStatus(jobId, userId, 'viewed');
-        // Update local state if needed
-      }
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
-
-      final cvData = await _cvService.getCVFullDataForEmployer(cvId);
-      
-      if (mounted) Navigator.pop(context);
-
-      if (cvData != null && mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CVDisplayManager.buildViewWidget(context, cvData),
-          ),
-        );
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('CV không tồn tại hoặc đã bị xóa')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải CV: $e')));
-      }
-    }
-  }
-
-  String _getJobStatus(JobModel job) {
-    if (job.deadline != null && job.deadline!.isBefore(DateTime.now())) {
-      return 'Hết hạn';
-    }
-    return 'Đang tuyển';
-  }
-
-  String _getSalaryString(JobSalary salary) {
-    if (salary.min != null) {
-      return '${salary.min} - ${salary.max} triệu';
-    }
-    return 'Thỏa thuận';
-  }
-
-  String _getTimeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} ngày trước';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} giờ trước';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} phút trước';
-    } else {
-      return 'Vừa xong';
-    }
-  }
-
-  String _getDeadlineText(DateTime deadline) {
-    final now = DateTime.now();
-    final difference = deadline.difference(now);
-
-    if (difference.isNegative) {
-      return 'Đã hết hạn';
-    } else if (difference.inDays > 0) {
-      return 'Còn ${difference.inDays} ngày';
-    } else if (difference.inHours > 0) {
-      return 'Còn ${difference.inHours} giờ';
-    } else {
-      return 'Sắp hết hạn';
-    }
-  }
-
-  Color _getDeadlineColor(DateTime deadline) {
-    final now = DateTime.now();
-    final difference = deadline.difference(now);
-
-    if (difference.isNegative) {
-      return Colors.red;
-    } else if (difference.inDays <= 3) {
-      return Colors.orange.shade700;
-    } else {
-      return Colors.green.shade600;
+    if (sub.wasExpired) {
+      _showSubscriptionExpiredNotification();
+    } else if (sub.isAboutToExpire) {
+      _showSubscriptionExpiringNotification(sub.daysRemaining);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
-    final currentUser = supabaseService.currentUser;
+  void dispose() {
+    _controller.removeListener(_onControllerChanged);
+    _controller.dispose();
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       children: [
         SafeArea(
           child: CustomScrollView(
             slivers: [
-              // Company Header
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // Company Logo
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          gradient: currentUser?.userMetadata?['avatar_url'] == null
-                              ? LinearGradient(
-                                  colors: [
-                                    AppMainColors.primary.withOpacity(0.8),
-                                    AppMainColors.primaryDark,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                )
-                              : null,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppMainColors.primary.withOpacity(0.2),
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: currentUser?.userMetadata?['avatar_url'] != null
-                              ? Image.network(
-                                  currentUser!.userMetadata!['avatar_url'],
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            AppMainColors.primary.withOpacity(0.8),
-                                            AppMainColors.primaryDark,
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.business_rounded,
-                                        size: 30,
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
-                                )
-                              : const Icon(
-                                  Icons.business_rounded,
-                                  size: 30,
-                                  color: Colors.white,
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 15),
+              _buildCompanyHeader(),
+              _buildQuickStats(),
+              if (_controller.subscriptionInfo != null)
+                SliverToBoxAdapter(child: _buildSubscriptionInfoCard()),
+              _buildJobPostingsSection(),
+              _buildJobList(),
+              _buildRecentApplicantsSection(),
+              _buildApplicantsList(),
+            ],
+          ),
+        ),
+        _buildBottomGradient(),
+      ],
+    );
+  }
 
-                      // Company Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              currentUser?.userMetadata?['company_name'] ?? 'Công ty',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.email_outlined,
-                                  size: 14,
-                                  color: Colors.grey.shade600,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    currentUser?.email ?? 'No email',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+  // ============================================================
+  // UI COMPONENTS (View only)
+  // ============================================================
 
-                      // Notification
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppMainColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => NotificationsScreen()),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Stack(
-                                children: [
-                                  Icon(
-                                    Icons.notifications_outlined,
-                                    color: AppMainColors.primary,
-                                    size: 24,
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    top: 0,
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+  Widget _buildCompanyHeader() {
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            _buildCompanyLogo(),
+            const SizedBox(width: 15),
+            _buildCompanyInfo(),
+            _buildNotificationButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompanyLogo() {
+    final avatarUrl = _controller.avatarUrl;
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: avatarUrl == null
+            ? LinearGradient(
+                colors: [
+                  AppMainColors.primary.withValues(alpha: 0.8),
+                  AppMainColors.primaryDark,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        boxShadow: [
+          BoxShadow(
+            color: AppMainColors.primary.withValues(alpha: 0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: avatarUrl != null
+            ? Image.network(
+                avatarUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppMainColors.primary.withValues(alpha: 0.8),
+                          AppMainColors.primaryDark,
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                    child: const Icon(
+                      Icons.business_rounded,
+                      size: 30,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              )
+            : const Icon(
+                Icons.business_rounded,
+                size: 30,
+                color: Colors.white,
               ),
+      ),
+    );
+  }
 
-              // Quick Stats
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(20, 15, 20, 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          title: 'Tin đăng',
-                          value: '${_stats['jobsCount']}',
-                          icon: Icons.work_outline,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          title: 'Ứng viên mới',
-                          value: '${_stats['newApplicantsCount']}', // In 30 days
-                          icon: Icons.person_add_outlined,
-                          color: Colors.green,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          title: 'Tổng UV',
-                          value: '${_stats['totalApplicantsCount']}',
-                          icon: Icons.people_outline,
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Subscription Info Card
-              if (_subscriptionInfo != null)
-                SliverToBoxAdapter(
-                  child: _buildSubscriptionInfoCard(),
-                ),
-
-              // Job Postings Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 15, 20, 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tin tuyển dụng',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                           Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const EmployerJobsScreen()),
-                          );
-                        },
-                        icon: const Icon(Icons.remove_red_eye, size: 18),
-                        label: const Text('Xem tất cả'), // Changed from "Đăng tin" per request (link to posted jobs)
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppMainColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Job List
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (_jobs.isEmpty) {
-                         // Should not happen due to itemcount check, but safe
-                         return const SizedBox.shrink(); 
-                      }
-                      final job = _jobs[index];
-                      return GestureDetector(
-                        onTap: () {
-                           Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => EditJobScreen(job: job)),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      job.metadata.title,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      _getJobStatus(job), // Helper
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Icon(Icons.people_outline,
-                                      size: 16, color: Colors.grey.shade600),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${job.applicants.length} ứng viên',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Icon(Icons.attach_money,
-                                      size: 16, color: Colors.grey.shade600),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _getSalaryString(job.metadata.salary),
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    _getTimeAgo(job.createdAt!),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                  if (job.deadline != null)
-                                    Text(
-                                      _getDeadlineText(job.deadline!),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: _getDeadlineColor(job.deadline!),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: _jobs.length,
-                  ),
-                ),
-              ),
-
-              // Recent Applicants Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Ứng viên mới nhất',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const RecentApplicantsScreen()),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppMainColors.primary,
-                        ),
-                        child: const Text('Xem tất cả'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Applicants List
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (_applications.isEmpty) return const SizedBox.shrink();
-                      final app = _applications[index];
-                      // Extract data
-                      final profile = app['profiles'] != null ? Profile.fromJson(app['profiles']) : null;
-                      final job = app['jobs'] != null ? JobModel.fromJson(app['jobs']) : null;
-                      final cvId = app['cv_id'];
-
-                      if (profile == null) return const SizedBox.shrink();
-
-                      return GestureDetector(
-                        onTap: () {
-                           if (cvId != null && job != null) {
-                             _viewCV(cvId, job.id!, profile.id, app['application_status'] ?? 'pending');
-                           }
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: profile.avatarUrl != null 
-                                      ? Image.network(profile.avatarUrl!, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.person_outline, color: Colors.blue))
-                                      : const Icon(Icons.person_outline, color: Colors.blue, size: 24),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      profile.fullName ?? 'No Name',
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      job?.metadata.title ?? 'Việc làm không rõ',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey.shade600,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      maxLines: 1, 
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      profile.email ?? '',
-                                      style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Icon(Icons.arrow_forward_ios,
-                                      size: 16, color: Colors.grey.shade400),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _getTimeAgo(DateTime.parse(app['applied_at'])), // Ensure parsing
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: _applications.length,
-                  ),
+  Widget _buildCompanyInfo() {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _controller.companyName ?? 'Công ty',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.email_outlined, size: 14, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  _controller.email ?? 'No email',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-        ),
+        ],
+      ),
+    );
+  }
 
-        // Gradient overlay
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: Container(
-              height: 150,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.85),
-                    Colors.white,
-                  ],
-                  stops: const [0.0, 0.2, 0.4, 1.0],
+  Widget _buildNotificationButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppMainColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Stack(
+              children: [
+                Icon(
+                  Icons.notifications_outlined,
+                  color: AppMainColors.primary,
+                  size: 24,
                 ),
-              ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStats() {
+    final stats = _controller.stats;
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 15, 20, 10),
+        child: Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                title: 'Tin đăng',
+                value: '${stats['jobsCount']}',
+                icon: Icons.work_outline,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                title: 'Ứng viên mới',
+                value: '${stats['newApplicantsCount']}',
+                icon: Icons.person_add_outlined,
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                title: 'Tổng UV',
+                value: '${stats['totalApplicantsCount']}',
+                icon: Icons.people_outline,
+                color: Colors.orange,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -805,7 +295,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -816,7 +306,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -833,10 +323,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
           const SizedBox(height: 2),
           Text(
             title,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
           ),
         ],
       ),
@@ -844,9 +331,9 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
   }
 
   Widget _buildSubscriptionInfoCard() {
-    final sub = _subscriptionInfo!;
+    final sub = _controller.subscriptionInfo!;
     final isExpiredOrFree = sub.wasExpired || sub.plan == SubscriptionPlan.free;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 5, 20, 10),
       padding: const EdgeInsets.all(16),
@@ -854,45 +341,42 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
         gradient: LinearGradient(
           colors: isExpiredOrFree
               ? [Colors.grey[600]!, Colors.grey[500]!]
-              : [AppMainColors.primary, AppMainColors.primary.withOpacity(0.8)],
+              : [
+                  AppMainColors.primary,
+                  AppMainColors.primary.withValues(alpha: 0.8),
+                ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: (isExpiredOrFree ? Colors.grey : AppMainColors.primary).withOpacity(0.3),
+            color: (isExpiredOrFree ? Colors.grey : AppMainColors.primary)
+                .withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
-          );
-        },
+        onTap: () => _navigateToUpgrade(),
         child: Row(
           children: [
-            // Icon
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                sub.wasExpired 
+                sub.wasExpired
                     ? Icons.warning_amber_rounded
-                    : sub.plan == SubscriptionPlan.free 
-                        ? Icons.card_giftcard 
+                    : sub.plan == SubscriptionPlan.free
+                        ? Icons.card_giftcard
                         : Icons.workspace_premium,
                 color: Colors.white,
                 size: 24,
               ),
             ),
             const SizedBox(width: 12),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -900,8 +384,8 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                   Row(
                     children: [
                       Text(
-                        sub.wasExpired 
-                            ? 'Gói đã hết hạn' 
+                        sub.wasExpired
+                            ? 'Gói đã hết hạn'
                             : 'Gói ${sub.plan.displayName}',
                         style: const TextStyle(
                           color: Colors.white,
@@ -911,9 +395,10 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
@@ -930,23 +415,465 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
                   const SizedBox(height: 4),
                   Text(
                     'Còn ${sub.remainingJobs}/${sub.maxJobsPerMonth} tin${sub.daysRemaining > 0 ? ' • ${sub.daysRemaining} ngày' : ''}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
             ),
-            // Arrow
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               size: 16,
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildJobPostingsSection() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 15, 20, 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Tin tuyển dụng',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => _navigateToEmployerJobs(),
+              icon: const Icon(Icons.remove_red_eye, size: 18),
+              label: const Text('Xem tất cả'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppMainColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobList() {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 15),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (_controller.jobs.isEmpty) return const SizedBox.shrink();
+            final job = _controller.jobs[index];
+            return _buildJobCard(job);
+          },
+          childCount: _controller.jobs.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobCard(JobModel job) {
+    return GestureDetector(
+      onTap: () => _navigateToEditJob(job),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    job.metadata.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _controller.getJobStatus(job),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.people_outline,
+                    size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(
+                  '${job.applicants.length} ứng viên',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
+                const SizedBox(width: 16),
+                Icon(Icons.attach_money,
+                    size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(
+                  _controller.getSalaryString(job.metadata.salary),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _controller.getTimeAgo(job.createdAt!),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                ),
+                if (job.deadline != null)
+                  Text(
+                    _controller.getDeadlineText(job.deadline!),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _controller.getDeadlineColor(job.deadline!),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentApplicantsSection() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Ứng viên mới nhất',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            TextButton(
+              onPressed: () => _navigateToRecentApplicants(),
+              style: TextButton.styleFrom(
+                foregroundColor: AppMainColors.primary,
+              ),
+              child: const Text('Xem tất cả'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildApplicantsList() {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            if (_controller.applications.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            final app = _controller.applications[index];
+            return _buildApplicantCard(app);
+          },
+          childCount: _controller.applications.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildApplicantCard(Map<String, dynamic> app) {
+    final profile = _controller.getProfileFromApplication(app);
+    final job = _controller.getJobFromApplication(app);
+    final cvId = app['cv_id'] as String?;
+
+    if (profile == null) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () {
+        if (cvId != null && job != null) {
+          _viewCV(cvId, job.id!, profile.id,
+              app['application_status'] as String? ?? 'pending');
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: profile.avatarUrl != null
+                    ? Image.network(
+                        profile.avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                            Icons.person_outline,
+                            color: Colors.blue),
+                      )
+                    : const Icon(Icons.person_outline,
+                        color: Colors.blue, size: 24),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    profile.fullName ?? 'No Name',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    job?.metadata.title ?? 'Việc làm không rõ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    profile.email ?? '',
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Icon(Icons.arrow_forward_ios,
+                    size: 16, color: Colors.grey.shade400),
+                const SizedBox(height: 8),
+                Text(
+                  _controller
+                      .getTimeAgo(DateTime.parse(app['applied_at'] as String)),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomGradient() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: Container(
+          height: 150,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white.withValues(alpha: 0),
+                Colors.white.withValues(alpha: 0.6),
+                Colors.white.withValues(alpha: 0.85),
+                Colors.white,
+              ],
+              stops: const [0.0, 0.2, 0.4, 1.0],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // NAVIGATION & USER ACTIONS
+  // ============================================================
+
+  void _navigateToUpgrade() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const UpgradeAccountScreen()),
+    );
+  }
+
+  void _navigateToEmployerJobs() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const EmployerJobsScreen()),
+    );
+  }
+
+  void _navigateToEditJob(JobModel job) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EditJobScreen(job: job)),
+    );
+  }
+
+  void _navigateToRecentApplicants() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RecentApplicantsScreen()),
+    );
+  }
+
+  Future<void> _viewCV(
+    String cvId,
+    String jobId,
+    String userId,
+    String currentStatus,
+  ) async {
+    try {
+      await _controller.markApplicationViewed(jobId, userId, currentStatus);
+
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final cvData = await _controller.getCVData(cvId);
+
+      if (mounted) Navigator.pop(context);
+
+      if (cvData != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                CVDisplayManager.buildViewWidget(context, cvData),
+          ),
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('CV không tồn tại hoặc đã bị xóa')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lỗi tải CV: $e')));
+      }
+    }
+  }
+
+  void _showSubscriptionExpiredNotification() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.white),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                    'Gói đăng ký đã hết hạn! Bạn đang dùng gói miễn phí.'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Gia hạn',
+            textColor: Colors.white,
+            onPressed: () => _navigateToUpgrade(),
+          ),
+        ),
+      );
+    });
+  }
+
+  void _showSubscriptionExpiringNotification(int daysRemaining) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.access_time, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                    'Gói đăng ký sẽ hết hạn trong $daysRemaining ngày.'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Gia hạn',
+            textColor: Colors.white,
+            onPressed: () => _navigateToUpgrade(),
+          ),
+        ),
+      );
+    });
   }
 }

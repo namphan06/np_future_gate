@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/job_model.dart';
 import '../../core/repositories/job_repository.dart';
 import '../../screens/candidate/job_detail_screen.dart';

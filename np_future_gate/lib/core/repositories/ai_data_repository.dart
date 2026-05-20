@@ -16,6 +16,7 @@ class AIDataRepository {
     final config = intent.queryConfig;
     if (config == null) return [];
 
+    // ignore: unused_local_variable
     final table = config['table'] as String;
 
     try {

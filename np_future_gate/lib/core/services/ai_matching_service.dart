@@ -1,92 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'mistral_service.dart';
-import 'mlkit_ocr_service.dart';
-import '../models/job_model.dart';
+import 'package:np_future_gate/core/models/cv_comparison_result_model.dart';
+import 'package:np_future_gate/core/models/cv_matching_result_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
+import 'package:np_future_gate/core/services/mlkit_ocr_service.dart';
 
-// ================================================================
-// MODELS
-// ================================================================
-
-class CVMatchingResult {
-  final double overallScore;
-  final double semanticSimilarity;
-  final double keywordMatchScore;
-  final String matchingSummary;
-  final List<String> matchingPoints;
-  final List<String> missingPoints;
-  final Map<String, dynamic> parsedData;
-
-  CVMatchingResult({
-    required this.overallScore,
-    required this.semanticSimilarity,
-    required this.keywordMatchScore,
-    required this.matchingSummary,
-    required this.matchingPoints,
-    required this.missingPoints,
-    required this.parsedData,
-  });
-
-  factory CVMatchingResult.fromMock(double s) => CVMatchingResult(
-    overallScore: s, semanticSimilarity: s / 100, keywordMatchScore: s,
-    matchingSummary: 'Không thể phân tích.', matchingPoints: [], missingPoints: ['Lỗi AI'],
-    parsedData: {'Status': 'Mock'},
-  );
-
-  Map<String, dynamic> toJson() => {
-    'overall_score': overallScore, 'semantic_similarity': semanticSimilarity,
-    'keyword_match_score': keywordMatchScore, 'matching_summary': matchingSummary,
-    'matching_points': matchingPoints, 'missing_points': missingPoints, 'parsed_data': parsedData,
-  };
-}
-
-class CVComparisonResult {
-  final String jobTitle;
-  final List<CandidateScore> candidates;
-  final String recommendation;
-  final String comparisonNotes;
-
-  CVComparisonResult({required this.jobTitle, required this.candidates, required this.recommendation, this.comparisonNotes = ''});
-
-  factory CVComparisonResult.fromJson(Map<String, dynamic> json, List<String> names) {
-    final list = json['candidates'] as List? ?? [];
-    final candidates = <CandidateScore>[];
-    for (int i = 0; i < list.length; i++) {
-      final c = list[i] as Map<String, dynamic>;
-      candidates.add(CandidateScore(
-        name: _s(c['name']) ?? (i < names.length ? names[i] : 'Ứng viên ${i+1}'),
-        rank: (c['rank'] as num?)?.toInt() ?? (i+1),
-        skillsScore: (c['skills_score'] as num?)?.toDouble() ?? 0,
-        experienceScore: (c['experience_score'] as num?)?.toDouble() ?? 0,
-        educationScore: (c['education_score'] as num?)?.toDouble() ?? 0,
-        overallScore: (c['overall_score'] as num?)?.toDouble() ?? 0,
-        potentialScore: (c['potential_score'] as num?)?.toDouble() ?? 0,
-        strengths: _sl(c['strengths']), weaknesses: _sl(c['weaknesses']),
-        summary: _s(c['summary']) ?? '',
-      ));
-    }
-    candidates.sort((a, b) => a.rank.compareTo(b.rank));
-    return CVComparisonResult(
-      jobTitle: _s(json['job_title']) ?? '', candidates: candidates,
-      recommendation: _s(json['recommendation']) ?? '', comparisonNotes: _s(json['comparison_notes']) ?? '',
-    );
-  }
-
-  static String? _s(dynamic v) { if (v == null) return null; if (v is String) return v; if (v is List) return v.join('. '); return v.toString(); }
-  static List<String> _sl(dynamic v) { if (v is List) return v.map((e) => e.toString()).toList(); if (v is String) return [v]; return []; }
-}
-
-class CandidateScore {
-  final String name; final int rank;
-  final double skillsScore, experienceScore, educationScore, overallScore, potentialScore;
-  final List<String> strengths, weaknesses; final String summary;
-  CandidateScore({required this.name, required this.rank, required this.skillsScore, required this.experienceScore, required this.educationScore, required this.overallScore, required this.potentialScore, required this.strengths, required this.weaknesses, required this.summary});
-}
-
-// ================================================================
-// SERVICE
-// ================================================================
+// Re-export models so existing imports continue to work
+export 'package:np_future_gate/core/models/cv_matching_result_model.dart';
+export 'package:np_future_gate/core/models/cv_comparison_result_model.dart';
 
 class AIMatchingService {
   final MistralService _mistralService = MistralService();

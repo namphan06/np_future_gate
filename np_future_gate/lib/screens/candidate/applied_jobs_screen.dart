@@ -104,7 +104,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
       );
 
       final evaluationData = await _interviewRepository.getEvaluationForCandidate(
-        candidateId: _userId!,
+        candidateId: _userId,
         jobId: jobId,
       );
 
@@ -569,7 +569,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                                           InkWell(
                                             onTap: () {
                                               final jobId = job!.id ?? '';
-                                              final jobTitle = job.metadata.title ?? 'Công việc';
+                                              final jobTitle = job.metadata.title;
                                               if (jobId.isNotEmpty) {
                                                 _viewEvaluation(jobId, jobTitle);
                                               }

@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/job_model.dart';
-import '../services/subscription_service.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/subscription_service.dart';
 
 class JobRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -48,7 +49,7 @@ class JobRepository {
         rethrow;
       }
       // Otherwise, log and allow (fail-safe)
-      print('⚠️ Could not check post limit: $e');
+      debugPrint('⚠️ Could not check post limit: $e');
     }
   }
 
@@ -96,7 +97,7 @@ class JobRepository {
       return (response as List).map((e) => JobModel.fromJson(e)).toList();
     } catch (e) {
       // Return empty list instead of throwing to avoid crashing UI
-      print('Failed to fetch recent employer jobs: $e');
+      debugPrint('Failed to fetch recent employer jobs: $e');
       return [];
     }
   }
@@ -158,7 +159,7 @@ class JobRepository {
 
       return allApps;
     } catch (e) {
-      print('Failed to fetch recent applications: $e');
+      debugPrint('Failed to fetch recent applications: $e');
       return [];
     }
   }
@@ -184,7 +185,7 @@ class JobRepository {
 
       return apps;
     } catch (e) {
-      print('Failed to fetch applications from activities: $e');
+      debugPrint('Failed to fetch applications from activities: $e');
       return [];
     }
   }
@@ -228,7 +229,7 @@ class JobRepository {
         'totalApplicantsCount': totalApplicantsCount,
       };
     } catch (e) {
-      print('Failed to fetch stats: $e');
+      debugPrint('Failed to fetch stats: $e');
       return {
         'jobsCount': 0,
         'newApplicantsCount': 0,
@@ -694,7 +695,7 @@ class JobRepository {
                return result;
             }).toList();
           } catch (e) {
-            print('Error in getSavedJobsStream: $e');
+            debugPrint('Error in getSavedJobsStream: $e');
             return <Map<String, dynamic>>[];
           }
         });
@@ -783,7 +784,7 @@ class JobRepository {
                return result;
             }).toList();
           } catch (e) {
-            print('Error in getAppliedJobsStream: $e');
+            debugPrint('Error in getAppliedJobsStream: $e');
             return <Map<String, dynamic>>[];
           }
         });

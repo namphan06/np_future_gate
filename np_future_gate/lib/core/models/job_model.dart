@@ -41,7 +41,7 @@ class JobModel {
         profile = profileData.first as Map<String, dynamic>;
       }
     } else if (profileData is Map) {
-      profile = Map<String, dynamic>.from(profileData as Map);
+      profile = Map<String, dynamic>.from(profileData);
     }
 
     return JobModel(

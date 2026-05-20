@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/navigation/custom_bottom_nav_bar.dart';
-import 'home_page_employer.dart';
-import 'search_page_employer.dart';
-import 'tools_page_employer.dart';
-import 'profile_page_employer.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/employer/home_page_employer.dart';
+import 'package:np_future_gate/screens/employer/profile_page_employer.dart';
+import 'package:np_future_gate/screens/employer/search_page_employer.dart';
+import 'package:np_future_gate/screens/employer/tools_page_employer.dart';
+import 'package:np_future_gate/widgets/navigation/custom_bottom_nav_bar.dart';
 
 class EmployerHomeScreen extends StatefulWidget {
   const EmployerHomeScreen({super.key});
@@ -15,7 +15,7 @@ class EmployerHomeScreen extends StatefulWidget {
 
 class _EmployerHomeScreenState extends State<EmployerHomeScreen> {
   int _currentIndex = 0;
-  
+
   final List<Widget> _pages = const [
     HomePageEmployer(),
     SearchPageEmployer(),

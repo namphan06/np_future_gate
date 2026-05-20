@@ -125,6 +125,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
     }
   }
 
+  // ignore: unused_element
   void _openChatList() {
     Navigator.push(
       context,
@@ -132,6 +133,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
     );
   }
 
+  // ignore: unused_element
   Future<void> _openChatWithCompany(Profile company) async {
     final conversation = await _chatService.getOrCreateConversation(
       otherUserId: company.id,
@@ -157,8 +159,8 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
     }
   }
 
+  // ignore: unused_element
   void _handleChatbotPressed() {
-    // TODO: Implement chatbot functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Chatbot AI sẽ được triển khai sau')),
     );

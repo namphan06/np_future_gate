@@ -45,7 +45,7 @@ class AIIntentService {
       matchedIntent: isDataQuery ? bestMatch : null,
       confidence: bestScore,
       isDataQuery: isDataQuery,
-      extractedParams: isDataQuery ? _extractParameters(normalizedQuery, bestMatch!) : null,
+      extractedParams: isDataQuery ? _extractParameters(normalizedQuery, bestMatch) : null,
     );
   }
 

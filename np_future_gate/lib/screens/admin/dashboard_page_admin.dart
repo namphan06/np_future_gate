@@ -27,9 +27,12 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
   int _totalCompaniesCount = 0;
   
   // Percentage changes (placeholder for now)
-  double _usersChangePercent = 12.5;
-  double _applicationsChangePercent = 15.3;
-  double _companiesChangePercent = -2.4;
+  // ignore: unused_field
+  final double _usersChangePercent = 12.5;
+  // ignore: unused_field
+  final double _applicationsChangePercent = 15.3;
+  // ignore: unused_field
+  final double _companiesChangePercent = -2.4;
 
   @override
   void initState() {
@@ -49,15 +52,15 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
       
       if (mounted) {
         setState(() {
-          _totalUsersCount = results[0] as int;
-          _pendingJobsCount = results[1] as int;
-          _totalApplicationsCount = results[2] as int;
-          _totalCompaniesCount = results[3] as int;
+          _totalUsersCount = results[0];
+          _pendingJobsCount = results[1];
+          _totalApplicationsCount = results[2];
+          _totalCompaniesCount = results[3];
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error loading stats: $e');
+      debugPrint('Error loading stats: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -74,9 +77,9 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
           .select('id')
           .count(CountOption.exact);
       
-      return response.count ?? 0;
+      return response.count;
     } catch (e) {
-      print('Error fetching total users: $e');
+      debugPrint('Error fetching total users: $e');
       return 0;
     }
   }
@@ -94,7 +97,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
       
       return regularJobs.length + partnershipJobs.length;
     } catch (e) {
-      print('Error fetching pending jobs: $e');
+      debugPrint('Error fetching pending jobs: $e');
       return 0;
     }
   }
@@ -129,7 +132,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
       
       return totalApplications;
     } catch (e) {
-      print('Error fetching total applications: $e');
+      debugPrint('Error fetching total applications: $e');
       return 0;
     }
   }
@@ -143,9 +146,9 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
           .eq('role', 'employer')
           .count(CountOption.exact);
       
-      return response.count ?? 0;
+      return response.count;
     } catch (e) {
-      print('Error fetching total companies: $e');
+      debugPrint('Error fetching total companies: $e');
       return 0;
     }
   }

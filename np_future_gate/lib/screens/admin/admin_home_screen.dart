@@ -2,7 +2,6 @@
 import '../../core/theme/app_main_colors.dart';
 import '../auth/login_screen.dart';
 import '../../core/services/supabase_service.dart';
-import '../../core/services/demo_mode_service.dart';
 import '../../core/repositories/auth_repository.dart';
 import 'dashboard_page_admin.dart';
 import 'users_management_page_admin.dart';
@@ -11,7 +10,6 @@ import 'reports_page_admin.dart';
 import 'test_page_admin.dart';
 import 'settings_page_admin.dart';
 import '../chat/chat_list_screen.dart';
-import '../candidate/candidate_home_screen.dart';
 import '../demo/demo_candidate_home.dart';
 import '../demo/demo_employer_home.dart';
 import '../demo/demo_school_home.dart';

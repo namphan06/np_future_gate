@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/repositories/evaluation_repository.dart';
 import '../../core/services/supabase_service.dart';
-import 'package:intl/intl.dart';
 
 class InternshipProgressScreen extends StatefulWidget {
   const InternshipProgressScreen({super.key});
