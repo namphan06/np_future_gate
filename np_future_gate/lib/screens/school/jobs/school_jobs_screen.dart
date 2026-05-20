@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/repositories/job_repository.dart';
 import '../../../core/theme/app_main_colors.dart';
+import '../../../widgets/speech_text_field.dart';
 import '../../employer/jobs/job_applicants_screen.dart';
 import 'create_school_job_screen.dart';
 import 'assign_students_screen.dart';
@@ -614,13 +615,10 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                 color: Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'Tìm kiếm theo tiêu đề hoặc tags...',
-                  prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                ),
+              child: SpeechTextField(
+                controller: TextEditingController(),
+                hint: 'Tìm kiếm theo tiêu đề hoặc tags...',
+                prefixIcon: Icons.search,
                 onChanged: (value) => setState(() => _searchQuery = value),
               ),
             ),

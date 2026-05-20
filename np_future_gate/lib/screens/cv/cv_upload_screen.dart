@@ -402,16 +402,10 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                           Row(
                             children: [
                               Expanded(
-                                child: TextField(
+                                child: SpeechTextField(
                                   controller: _currentTagController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Nhập tag và nhấn nút +',
-                                    prefixIcon: const Icon(Icons.tag),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  onSubmitted: (_) => _addTag(),
+                                  hint: 'Nhập tag và nhấn nút +',
+                                  prefixIcon: Icons.tag,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -594,41 +588,14 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     TextInputType? inputType,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            keyboardType: inputType,
-            validator: validator,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey[400]),
-              prefixIcon: Icon(icon, color: Colors.grey[400]),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
-            ),
-          ),
-        ),
-      ],
+    return SpeechTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
+      prefixIcon: icon,
+      maxLines: maxLines,
+      keyboardType: inputType,
+      validator: validator,
     );
   }
 

@@ -3,6 +3,7 @@ import '../../core/models/cv_model.dart';
 import '../../core/models/job_model.dart';
 import '../../core/services/ai_matching_service.dart';
 import '../../core/enums/job_fields.dart';
+import '../../widgets/speech_text_field.dart';
 
 /// Enhanced CV Selection Screen with search and filters
 class CVSelectionScreen extends StatefulWidget {
@@ -243,19 +244,11 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                               ),
                             ],
                           ),
-                          child: TextField(
+                          child: SpeechTextField(
                             controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Tìm kiếm CV theo tên, mô tả...',
-                              hintStyle: TextStyle(color: Colors.grey[400]),
-                              prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 24),
-                              filled: false,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            ),
+                            hint: 'Tìm kiếm CV theo tên, mô tả...',
+                            prefixIcon: Icons.search,
+                            onChanged: (value) => setState(() {}),
                           ),
                         ),
                         

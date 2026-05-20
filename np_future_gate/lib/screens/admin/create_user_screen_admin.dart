@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../core/models/auth_models.dart';
 import '../../core/repositories/admin_user_repository.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../widgets/speech_text_field.dart';
 
 class CreateUserScreenAdmin extends StatefulWidget {
   const CreateUserScreenAdmin({super.key});
@@ -413,20 +414,13 @@ class _CreateUserScreenAdminState extends State<CreateUserScreenAdmin> {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return SpeechTextField(
       controller: controller,
+      label: label,
       obscureText: obscureText,
       maxLines: maxLines,
       keyboardType: keyboardType,
       validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import '../../core/theme/app_main_colors.dart';
 import '../../core/models/profile_model.dart';
 import '../../core/models/auth_models.dart';
 import '../../core/repositories/admin_user_repository.dart';
+import '../../widgets/speech_text_field.dart';
 import 'user_detail_screen.dart';
 
 class UsersManagementPageAdmin extends StatefulWidget {
@@ -193,27 +194,10 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
               // Search bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: TextField(
+                child: SpeechTextField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Tìm kiếm theo email hoặc tên...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                              _loadAllUsers();
-                            },
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                  ),
+                  hint: 'Tìm kiếm theo email hoặc tên...',
+                  prefixIcon: Icons.search,
                   onChanged: (value) {
                     setState(() => _searchQuery = value);
                     // Debounce search

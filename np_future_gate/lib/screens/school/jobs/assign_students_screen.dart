@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/theme/app_main_colors.dart';
 import '../../../core/services/cv_supabase_service.dart';
+import '../../../widgets/speech_text_field.dart';
 import '../../cv/cv_setting/cv_display_manager.dart';
 
 class AssignStudentsScreen extends StatefulWidget {
@@ -899,21 +900,10 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
           // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Tìm kiếm sinh viên...',
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-              ),
+            child: SpeechTextField(
+              controller: TextEditingController(),
+              hint: 'Tìm kiếm sinh viên...',
+              prefixIcon: Icons.search,
               onChanged: _filterStudents,
             ),
           ),

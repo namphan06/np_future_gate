@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/models/conversation_model.dart';
 import '../../core/models/message_model.dart';
 import '../../core/models/job_model.dart';
@@ -36,10 +38,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _isUploadingImage = false;
   Map<String, dynamic>? _jobInfo;
   String? _currentJobId; // Track current job_id to detect changes
+  
+  // Speech-to-text
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechAvailable = false;
 
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _initSpeech();
     print('🔵 ChatDetailScreen init - jobId: ${widget.conversation.jobId}');
     _currentJobId = widget.conversation.jobId;
     
@@ -98,8 +107,64 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
+  Future<void> _initSpeech() async {
+    try {
+      _speechAvailable = await _speech.initialize(
+        onError: (error) {
+          debugPrint('Speech error: $error');
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('Speech init error: $e');
+    }
+  }
+
+  Future<void> _toggleListening() async {
+    if (!_speechAvailable) {
+      final status = await Permission.microphone.request();
+      if (!status.isGranted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cần cấp quyền microphone để sử dụng')),
+          );
+        }
+        return;
+      }
+      await _initSpeech();
+      if (!_speechAvailable) return;
+    }
+
+    if (_isListening) {
+      await _speech.stop();
+      setState(() => _isListening = false);
+    } else {
+      setState(() => _isListening = true);
+      await _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _messageController.text = result.recognizedWords;
+            _messageController.selection = TextSelection.collapsed(
+              offset: _messageController.text.length,
+            );
+          });
+        },
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        localeId: 'vi_VN',
+        listenMode: stt.ListenMode.dictation,
+      );
+    }
+  }
+
   @override
   void dispose() {
+    _speech.stop();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -627,6 +692,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       icon: Icon(Icons.image, color: AppMainColors.primary),
                       onPressed: _isUploadingImage ? null : _showImageSourcePicker,
                       tooltip: 'Gửi ảnh',
+                    ),
+                    // Mic button for speech-to-text
+                    IconButton(
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: _isListening ? Colors.red : AppMainColors.primary,
+                      ),
+                      onPressed: _toggleListening,
+                      tooltip: 'Nhập bằng giọng nói',
                     ),
                     Expanded(
                       child: Container(

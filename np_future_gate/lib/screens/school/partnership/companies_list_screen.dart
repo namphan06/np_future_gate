@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../widgets/speech_text_field.dart';
 
 class CompaniesListScreen extends StatefulWidget {
   const CompaniesListScreen({super.key});
@@ -163,13 +164,10 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
 
             const Text('Lý do / Mong muốn', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            TextField(
+            SpeechTextField(
               controller: reasonController,
               maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Nhập nội dung yêu cầu...',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
+              hint: 'Nhập nội dung yêu cầu...',
             ),
             
             const Spacer(),

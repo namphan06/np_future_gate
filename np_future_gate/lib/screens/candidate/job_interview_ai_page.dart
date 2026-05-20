@@ -5,6 +5,7 @@ import '../../core/services/mistral_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_gradients.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../widgets/speech_text_field.dart';
 
 class JobInterviewAIPage extends StatefulWidget {
   final JobModel job;
@@ -237,22 +238,10 @@ Chỉ trả về JSON, không kèm văn bản thừa.
                   ),
                 ),
                 const SizedBox(height: 12),
-                TextField(
+                SpeechTextField(
                   controller: _answerControllers[index],
                   maxLines: 8,
-                  decoration: InputDecoration(
-                    hintText: 'Nhập nội dung câu trả lời...',
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
-                    ),
-                  ),
+                  hint: 'Nhập nội dung câu trả lời...',
                 ),
               ],
             ),

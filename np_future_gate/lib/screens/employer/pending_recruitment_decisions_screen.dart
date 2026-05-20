@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/cv_supabase_service.dart';
+import '../../widgets/speech_text_field.dart';
 import '../cv/cv_setting/cv_display_manager.dart';
 
 class PendingRecruitmentDecisionsScreen extends StatefulWidget {
@@ -794,21 +795,11 @@ class _PendingRecruitmentDecisionsScreenState
                           ),
                         ],
                       ),
-                      child: TextField(
+                      child: SpeechTextField(
                         controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Tìm kiếm job hoặc ứng viên...',
-                          hintStyle: TextStyle(color: Colors.grey.shade400),
-                          prefixIcon: Icon(Icons.search, color: AppColors.primaryBlue),
-                          suffixIcon: _searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, color: Colors.grey),
-                                  onPressed: () => _searchController.clear(),
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        ),
+                        hint: 'Tìm kiếm job hoặc ứng viên...',
+                        prefixIcon: Icons.search,
+                        onChanged: (value) => setState(() {}),
                       ),
                     ),
                     const SizedBox(height: 16),

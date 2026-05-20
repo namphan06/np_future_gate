@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/cv_supabase_service.dart';
 import '../../core/enums/job_fields.dart';
+import '../../widgets/speech_text_field.dart';
 
 class CVUploadEditScreen extends StatefulWidget {
   final String cvId;
@@ -195,23 +196,14 @@ class _CVUploadEditScreenState extends State<CVUploadEditScreen> {
     TextInputType? inputType,
     String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: inputType,
-          validator: validator,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        ),
-      ],
+    return SpeechTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
+      prefixIcon: icon,
+      maxLines: maxLines,
+      keyboardType: inputType,
+      validator: validator,
     );
   }
 

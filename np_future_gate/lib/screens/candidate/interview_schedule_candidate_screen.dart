@@ -7,6 +7,7 @@ import '../../core/repositories/auth_repository.dart';
 import '../../core/repositories/interview_repository.dart';
 import '../../core/repositories/job_repository.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../widgets/speech_text_field.dart';
 import 'interview_detail_candidate_screen.dart';
 
 class InterviewScheduleCandidateScreen extends StatefulWidget {
@@ -208,19 +209,11 @@ class _InterviewScheduleCandidateScreenState extends State<InterviewScheduleCand
               color: Colors.white,
               child: Column(
                 children: [
-                  TextField(
+                  SpeechTextField(
+                    controller: TextEditingController(),
+                    hint: 'Tìm theo tên công ty, công việc...',
+                    prefixIcon: Icons.search,
                     onChanged: (value) => setState(() => _searchQuery = value),
-                    decoration: InputDecoration(
-                      hintText: 'Tìm theo tên công ty, công việc...',
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFF5F7FA),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(

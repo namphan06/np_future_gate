@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../core/models/job_model.dart';
 import '../../../core/models/profile_model.dart';
 import '../../../core/theme/app_main_colors.dart';
+import '../../../widgets/speech_text_field.dart';
 
 class JobSelectionDialog extends StatefulWidget {
   final Profile candidate;
@@ -233,18 +234,11 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            TextField(
+            SpeechTextField(
               controller: _searchController,
+              hint: 'Tìm theo tên, lĩnh vực...',
+              prefixIcon: Icons.search,
               onChanged: (value) => setState(() => _searchQuery = value),
-              decoration: InputDecoration(
-                hintText: 'Tìm theo tên, lĩnh vực...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
             ),
             const SizedBox(height: 16),
             Expanded(

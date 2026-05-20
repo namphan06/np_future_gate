@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/services/mistral_service.dart';
 import '../../core/services/enhanced_ai_service.dart';
 import '../../core/models/ai_intent_model.dart';
@@ -21,10 +23,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
   String _userRole = 'student'; // Default role
+  
+  // Speech-to-text
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechAvailable = false;
 
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _initSpeechEngine();
     _initializeAI();
     _addMessage(
       'Xin chào! Tôi là trợ lý AI của NP FutureGate. Tôi có thể giúp bạn:\n\n'
@@ -73,9 +82,65 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   void dispose() {
+    _speech.stop();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _initSpeechEngine() async {
+    try {
+      _speechAvailable = await _speech.initialize(
+        onError: (error) {
+          debugPrint('Speech error: $error');
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('Speech init error: $e');
+    }
+  }
+
+  Future<void> _toggleListening() async {
+    if (!_speechAvailable) {
+      final status = await Permission.microphone.request();
+      if (!status.isGranted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cần cấp quyền microphone để sử dụng')),
+          );
+        }
+        return;
+      }
+      await _initSpeechEngine();
+      if (!_speechAvailable) return;
+    }
+
+    if (_isListening) {
+      await _speech.stop();
+      setState(() => _isListening = false);
+    } else {
+      setState(() => _isListening = true);
+      await _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _messageController.text = result.recognizedWords;
+            _messageController.selection = TextSelection.collapsed(
+              offset: _messageController.text.length,
+            );
+          });
+        },
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        localeId: 'vi_VN',
+        listenMode: stt.ListenMode.dictation,
+      );
+    }
   }
 
   void _addMessage(String text, {required bool isUser}) {
@@ -762,11 +827,30 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       child: SafeArea(
         child: Row(
           children: [
+            // Mic button for speech-to-text
+            GestureDetector(
+              onTap: _isLoading ? null : _toggleListening,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _isListening ? Colors.red.shade50 : const Color(0xFFF5F7FA),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(
+                  _isListening ? Icons.mic : Icons.mic_none,
+                  color: _isListening ? Colors.red : AppColors.primaryBlue,
+                  size: 22,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F7FA),
                   borderRadius: BorderRadius.circular(24),
+                  border: _isListening ? Border.all(color: Colors.red.shade200, width: 1.5) : null,
                 ),
                 child: TextField(
                   controller: _messageController,
@@ -774,11 +858,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   maxLines: null,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),
-                  decoration: const InputDecoration(
-                    hintText: 'Nhập tin nhắn...',
-                    hintStyle: TextStyle(color: Colors.black38),
+                  decoration: InputDecoration(
+                    hintText: _isListening ? 'Đang lắng nghe...' : 'Nhập tin nhắn...',
+                    hintStyle: TextStyle(
+                      color: _isListening ? Colors.red.shade300 : Colors.black38,
+                    ),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 12,
                     ),

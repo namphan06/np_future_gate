@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_main_colors.dart';
+import '../../../widgets/speech_text_field.dart';
 
 class SelectCompanyScreen extends StatefulWidget {
   const SelectCompanyScreen({super.key});
@@ -82,18 +83,10 @@ class _SelectCompanyScreenState extends State<SelectCompanyScreen> {
           Container(
             color: Colors.white,
             padding: const EdgeInsets.all(16),
-            child: TextField(
+            child: SpeechTextField(
               controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Tìm kiếm công ty...',
-                prefixIcon: const Icon(Icons.search, color: Colors.purple),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              hint: 'Tìm kiếm công ty...',
+              prefixIcon: Icons.search,
               onChanged: _filterCompanies,
             ),
           ),

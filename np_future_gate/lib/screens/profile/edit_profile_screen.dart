@@ -828,13 +828,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: companyCtrl, decoration: const InputDecoration(labelText: 'Công ty', border: OutlineInputBorder())),
+              SpeechTextField(controller: companyCtrl, label: 'Công ty', hint: 'Nhập tên công ty'),
               const SizedBox(height: 12),
-              TextField(controller: positionCtrl, decoration: const InputDecoration(labelText: 'Vị trí', border: OutlineInputBorder())),
+              SpeechTextField(controller: positionCtrl, label: 'Vị trí', hint: 'Nhập vị trí công việc'),
               const SizedBox(height: 12),
-              TextField(controller: dateCtrl, decoration: const InputDecoration(labelText: 'Thời gian', hintText: 'VD: 01/2022 - Hiện tại', border: OutlineInputBorder())),
+              SpeechTextField(controller: dateCtrl, label: 'Thời gian', hint: 'VD: 01/2022 - Hiện tại'),
               const SizedBox(height: 12),
-              TextField(controller: descCtrl, decoration: const InputDecoration(labelText: 'Mô tả', hintText: 'Gạch đầu dòng công việc...', border: OutlineInputBorder()), maxLines: 3),
+              SpeechTextField(controller: descCtrl, label: 'Mô tả', hint: 'Gạch đầu dòng công việc...', maxLines: 3),
             ],
           ),
         ),

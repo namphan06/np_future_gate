@@ -5,6 +5,7 @@ import '../../core/models/profile_model.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/repositories/company_repository.dart';
 import '../../core/repositories/partnership_repository.dart';
+import '../../widgets/speech_text_field.dart';
 import '../candidate/company_detail_screen.dart';
 import 'jobs/create_school_job_screen.dart';
 
@@ -302,28 +303,10 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
               const SizedBox(height: 24),
               
               // Search Bar
-              TextField(
+              SpeechTextField(
                 controller: _searchController,
-                style: const TextStyle(color: Colors.black87),
-                decoration: InputDecoration(
-                  hintText: 'Tìm kiếm công ty, nhà tuyển dụng...',
-                  prefixIcon: const Icon(Icons.search, color: AppMainColors.primary),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () {
-                            _searchController.clear();
-                            _filterEmployers('');
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                hint: 'Tìm kiếm công ty, nhà tuyển dụng...',
+                prefixIcon: Icons.search,
                 onChanged: _filterEmployers,
               ),
               const SizedBox(height: 24),

@@ -6,6 +6,7 @@ import '../../core/models/job_model.dart';
 import '../../core/repositories/interview_repository.dart';
 import '../../core/services/cv_supabase_service.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../widgets/speech_text_field.dart';
 import '../cv/cv_setting/cv_display_manager.dart';
 
 class InterviewDetailScreen extends StatefulWidget {
@@ -627,26 +628,10 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                         // Note
                         const Text('Ghi chú / Nhận xét', style: TextStyle(fontWeight: FontWeight.w500)),
                         const SizedBox(height: 8),
-                        TextField(
+                        SpeechTextField(
                           controller: _noteController,
                           maxLines: 5,
-                          decoration: InputDecoration(
-                            hintText: 'Nhập nhận xét chi tiết về ứng viên...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppMainColors.primary),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                          ),
+                          hint: 'Nhập nhận xét chi tiết về ứng viên...',
                         ),
                         const SizedBox(height: 16),
 
@@ -838,10 +823,9 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Thêm Tag'),
-        content: TextField(
+        content: SpeechTextField(
           controller: _tagController,
-          decoration: const InputDecoration(hintText: 'Ví dụ: Có kinh nghiệm, Tiếng Anh tốt...'),
-          autofocus: true,
+          hint: 'Ví dụ: Có kinh nghiệm, Tiếng Anh tốt...',
         ),
         actions: [
           TextButton(

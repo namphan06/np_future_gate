@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 import 'cv_metadata.dart';
 import '../cv_template/cv_ui/cv6.dart';
 import '../cv_template/cv_ui/cv7.dart';
@@ -27,12 +29,73 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
   String _searchQuery = '';
   final Set<String> _selectedTags = {};
   List<CVMetadata> _templates = [];
+  final TextEditingController _searchController = TextEditingController();
+  
+  // Speech-to-text
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechAvailable = false;
 
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _initSpeech();
     CVRegistry.initialize(); // Ensure registry is initialized
     _templates = CVRegistry.getAll();
+  }
+
+  Future<void> _initSpeech() async {
+    try {
+      _speechAvailable = await _speech.initialize(
+        onError: (error) {
+          debugPrint('Speech error: $error');
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('Speech init error: $e');
+    }
+  }
+
+  Future<void> _toggleListening() async {
+    if (!_speechAvailable) {
+      final status = await Permission.microphone.request();
+      if (!status.isGranted) return;
+      await _initSpeech();
+      if (!_speechAvailable) return;
+    }
+
+    if (_isListening) {
+      await _speech.stop();
+      setState(() => _isListening = false);
+    } else {
+      setState(() => _isListening = true);
+      await _speech.listen(
+        onResult: (result) {
+          setState(() {
+            _searchController.text = result.recognizedWords;
+            _searchQuery = result.recognizedWords;
+          });
+        },
+        listenFor: const Duration(seconds: 15),
+        pauseFor: const Duration(seconds: 3),
+        localeId: 'vi_VN',
+        listenMode: stt.ListenMode.dictation,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _speech.stop();
+    _searchController.dispose();
+    super.dispose();
   }
 
   List<CVMetadata> get _filteredTemplates {
@@ -165,11 +228,20 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
                     ],
                   ),
                   child: TextField(
+                    controller: _searchController,
                     onChanged: (v) => setState(() => _searchQuery = v),
                     decoration: InputDecoration(
                       hintText: 'Tìm kiếm mẫu CV...',
                       hintStyle: TextStyle(color: Colors.grey[400]),
                       prefixIcon: Icon(Icons.search, color: Colors.blue[400]),
+                      suffixIcon: IconButton(
+                        onPressed: _toggleListening,
+                        icon: Icon(
+                          _isListening ? Icons.mic : Icons.mic_none,
+                          color: _isListening ? Colors.red : Colors.blue[400],
+                        ),
+                        tooltip: 'Tìm bằng giọng nói',
+                      ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     ),

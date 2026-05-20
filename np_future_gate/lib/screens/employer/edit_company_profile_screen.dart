@@ -7,6 +7,7 @@ import '../../core/models/profile_model.dart';
 import '../../core/repositories/auth_repository.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/enums/job_fields.dart';
+import '../../widgets/speech_text_field.dart';
 
 class EditCompanyProfileScreen extends StatefulWidget {
   const EditCompanyProfileScreen({super.key});
@@ -430,27 +431,11 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return SpeechTextField(
       controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppMainColors.primary),
-        ),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-      ),
+      label: label,
+      hint: hint,
+      prefixIcon: icon,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,

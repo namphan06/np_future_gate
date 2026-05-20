@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 import '../../core/repositories/employer_response_repository.dart';
 import '../../core/services/supabase_service.dart';
 
@@ -52,6 +54,12 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
   bool _isVariablesPanelExpanded = false;
   bool _isSaving = false;
   
+  // Speech-to-text
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechAvailable = false;
+  TextEditingController? _activeListeningController;
+  
   @override
   void initState() {
     super.initState();
@@ -60,6 +68,10 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
     
     _subjectFocusNode = FocusNode();
     _bodyFocusNode = FocusNode();
+    
+    // Speech-to-text init
+    _speech = stt.SpeechToText();
+    _initSpeech();
     
     // Listen to focus changes to track which field was last focused
     _subjectFocusNode.addListener(() {
@@ -153,8 +165,84 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
     }
   }
 
+  Future<void> _initSpeech() async {
+    try {
+      _speechAvailable = await _speech.initialize(
+        onError: (error) {
+          debugPrint('Speech error: $error');
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('Speech init error: $e');
+    }
+  }
+
+  Future<void> _toggleListeningFor(TextEditingController controller) async {
+    if (!_speechAvailable) {
+      final status = await Permission.microphone.request();
+      if (!status.isGranted) return;
+      await _initSpeech();
+      if (!_speechAvailable) return;
+    }
+
+    if (_isListening) {
+      await _speech.stop();
+      setState(() {
+        _isListening = false;
+        _activeListeningController = null;
+      });
+    } else {
+      _activeListeningController = controller;
+      setState(() => _isListening = true);
+      
+      final startPosition = controller.selection.baseOffset >= 0
+          ? controller.selection.baseOffset
+          : controller.text.length;
+      
+      await _speech.listen(
+        onResult: (result) {
+          if (!_isListening) return;
+          setState(() {
+            final before = controller.text.substring(0, startPosition);
+            final after = controller.text.substring(startPosition);
+            final newText = before + result.recognizedWords + after;
+            controller.value = TextEditingValue(
+              text: newText,
+              selection: TextSelection.collapsed(
+                offset: startPosition + result.recognizedWords.length,
+              ),
+            );
+          });
+        },
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+        localeId: 'vi_VN',
+        listenMode: stt.ListenMode.dictation,
+      );
+    }
+  }
+
+  Widget _buildMicButton(TextEditingController controller) {
+    final isActive = _isListening && _activeListeningController == controller;
+    return IconButton(
+      onPressed: () => _toggleListeningFor(controller),
+      icon: Icon(
+        isActive ? Icons.mic : Icons.mic_none,
+        color: isActive ? Colors.red : widget.color,
+      ),
+      tooltip: 'Nhập bằng giọng nói',
+    );
+  }
+
   @override
   void dispose() {
+    _speech.stop();
     _subjectFocusNode.dispose();
     _bodyFocusNode.dispose();
     _subjectController.dispose();
@@ -206,13 +294,20 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           // Subject Field
-          Text(
-            'Tiêu đề Email',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Tiêu đề Email',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ),
+              _buildMicButton(_subjectController),
+            ],
           ),
           const SizedBox(height: 8),
           TextField(
@@ -239,13 +334,20 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
           const SizedBox(height: 20),
 
           // Body Field
-          Text(
-            'Nội dung Email',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Nội dung Email',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ),
+              _buildMicButton(_bodyController),
+            ],
           ),
           const SizedBox(height: 8),
           TextField(

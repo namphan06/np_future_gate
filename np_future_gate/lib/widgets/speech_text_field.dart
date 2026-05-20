@@ -20,6 +20,13 @@ class SpeechTextField extends StatefulWidget {
   final bool enabled;
   final TextCapitalization textCapitalization;
   final FocusNode? focusNode;
+  final ValueChanged<String>? onChanged;
+  final InputDecoration? decoration;
+  final bool obscureText;
+  final TextInputAction? textInputAction;
+  final VoidCallback? onEditingComplete;
+  final ValueChanged<String>? onSubmitted;
+  final Widget? suffixIcon;
 
   const SpeechTextField({
     super.key,
@@ -33,6 +40,13 @@ class SpeechTextField extends StatefulWidget {
     this.enabled = true,
     this.textCapitalization = TextCapitalization.sentences,
     this.focusNode,
+    this.onChanged,
+    this.decoration,
+    this.obscureText = false,
+    this.textInputAction,
+    this.onEditingComplete,
+    this.onSubmitted,
+    this.suffixIcon,
   });
 
   @override
@@ -186,6 +200,9 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
               selection: TextSelection.collapsed(offset: newCursorPosition),
             );
             
+            // Trigger onChanged callback
+            widget.onChanged?.call(newText);
+            
             // Update last recognized for next iteration
             _lastRecognizedWords = recognizedWords;
           });
@@ -245,12 +262,17 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
               validator: widget.validator,
               enabled: widget.enabled,
               textCapitalization: widget.textCapitalization,
-              decoration: InputDecoration(
+              onChanged: widget.onChanged,
+              obscureText: widget.obscureText,
+              textInputAction: widget.textInputAction,
+              onEditingComplete: widget.onEditingComplete,
+              onFieldSubmitted: widget.onSubmitted,
+              decoration: widget.decoration ?? InputDecoration(
                 hintText: widget.hint,
                 prefixIcon: widget.prefixIcon != null 
                     ? Icon(widget.prefixIcon) 
                     : null,
-                suffixIcon: const SizedBox(width: 56), // Space for mic button
+                suffixIcon: widget.suffixIcon ?? const SizedBox(width: 56), // Space for mic button
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

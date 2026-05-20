@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_main_colors.dart';
+import '../../widgets/speech_text_field.dart';
 
 class PartnershipRequestsEmployerScreen extends StatefulWidget {
   const PartnershipRequestsEmployerScreen({super.key});
@@ -121,12 +122,9 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
           children: [
             const Text('Vui lòng cho biết lý do từ chối:'),
             const SizedBox(height: 16),
-            TextField(
+            SpeechTextField(
               controller: reasonController,
-              decoration: const InputDecoration(
-                hintText: 'Nhập lý do...',
-                border: OutlineInputBorder(),
-              ),
+              hint: 'Nhập lý do...',
               maxLines: 3,
             ),
           ],

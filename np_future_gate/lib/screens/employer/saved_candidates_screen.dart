@@ -6,6 +6,7 @@ import '../../core/enums/job_fields.dart';
 import '../../core/theme/app_main_colors.dart';
 import '../../core/services/cv_supabase_service.dart';
 import '../../screens/cv/cv_setting/cv_display_manager.dart';
+import '../../widgets/speech_text_field.dart';
 import 'widgets/job_selection_dialog.dart';
 import '../../core/repositories/candidate_repository.dart';
 import '../../core/services/supabase_service.dart';
@@ -193,31 +194,15 @@ class _SavedCandidatesScreenState extends State<SavedCandidatesScreen> {
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: TextField(
+                  child: SpeechTextField(
                     controller: _searchController,
+                    hint: 'Tìm theo tên, lĩnh vực...',
+                    prefixIcon: Icons.search,
                     onChanged: (value) {
                       setState(() {
                         _searchQuery = value;
                       });
                     },
-                    decoration: InputDecoration(
-                      hintText: 'Tìm theo tên, lĩnh vực...',
-                      hintStyle: TextStyle(color: Colors.grey.shade500),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _showFilters ? Icons.filter_alt : Icons.filter_alt_outlined,
-                          color: _showFilters ? AppMainColors.primary : Colors.grey.shade500,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _showFilters = !_showFilters;
-                          });
-                        },
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
                   ),
                 ),
               ],

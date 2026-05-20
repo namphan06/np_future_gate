@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../../core/repositories/evaluation_repository.dart';
+import '../../../widgets/speech_text_field.dart';
 
 class SchoolStudentEvaluationsScreen extends StatefulWidget {
   const SchoolStudentEvaluationsScreen({super.key});
@@ -97,19 +98,10 @@ class _SchoolStudentEvaluationsScreenState extends State<SchoolStudentEvaluation
               preferredSize: const Size.fromHeight(60),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: TextField(
+                child: SpeechTextField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Tìm kiếm theo tên, email, trường...',
-                    prefixIcon: const Icon(Icons.search),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
+                  hint: 'Tìm kiếm theo tên, email, trường...',
+                  prefixIcon: Icons.search,
                   onChanged: (value) {
                     setState(() {
                       _searchQuery = value;
