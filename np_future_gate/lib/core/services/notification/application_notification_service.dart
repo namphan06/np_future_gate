@@ -4,14 +4,11 @@ import 'package:np_future_gate/core/repositories/notification_repository.dart';
 import 'package:np_future_gate/core/services/push_notification_service.dart';
 import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:np_future_gate/notification/models/notification_config.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service xử lý gửi notification khi có ứng viên ứng tuyển
 class ApplicationNotificationService {
   final NotificationRepository _notificationRepo = NotificationRepository();
   final DeviceTokenRepository _deviceTokenRepo = DeviceTokenRepository();
-  // ignore: unused_field
-  final SupabaseClient _supabase = Supabase.instance.client;
   final SupabaseService _supabaseService = SupabaseService.instance;
 
   /// Gửi thông báo đến nhà tuyển dụng khi có ứng viên ứng tuyển
@@ -126,43 +123,6 @@ class ApplicationNotificationService {
 
   /// Kiểm tra xem có nên gửi notification không dựa trên settings
   /// 
-  /// [settings] - JSONB notification_settings từ device_tokens
-  /// [category] - Loại notification: 'job', 'application', 'interview', etc.
-  // ignore: unused_element
-  bool _shouldSendNotification(
-    Map<String, dynamic>? settings,
-    String category,
-  ) {
-    if (settings == null) {
-      // Nếu không có settings, mặc định cho phép gửi
-      return true;
-    }
-
-    // Kiểm tra enabled tổng thể
-    final enabled = settings['enabled'] as bool? ?? true;
-    if (!enabled) {
-      return false;
-    }
-
-    // Kiểm tra category cụ thể (application_notifications)
-    final categoryKey = '${category}_notifications';
-    final categoryEnabled = settings[categoryKey] as bool? ?? true;
-    if (!categoryEnabled) {
-      return false;
-    }
-
-    // Kiểm tra notification type (info)
-    final notificationTypes = settings['notification_types'] as Map<String, dynamic>?;
-    if (notificationTypes != null) {
-      final infoEnabled = notificationTypes['info'] as bool? ?? true;
-      if (!infoEnabled) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   /// Gửi thông báo khi đơn ứng tuyển được duyệt
   Future<void> notifyApplicationApproved({
     required String candidateId,

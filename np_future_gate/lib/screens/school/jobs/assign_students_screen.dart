@@ -25,8 +25,6 @@ class AssignStudentsScreen extends StatefulWidget {
 }
 
 class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
-  // ignore: unused_field
-  final CVSupabaseService _cvService = CVSupabaseService();
   List<dynamic> _students = [];
   List<dynamic> _filteredStudents = [];
   Map<String, List<Map<String, dynamic>>> _studentAssignedJobsMap = {};

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:np_future_gate/core/models/profile_model.dart';
 import 'package:np_future_gate/core/repositories/company_repository.dart';
-import 'package:np_future_gate/core/services/chat_service.dart';
 import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:np_future_gate/screens/candidate/company_detail_screen.dart';
-import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
-import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
 import 'package:np_future_gate/widgets/animated_avatar.dart';
 import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,7 +18,6 @@ class CompaniesListScreen extends StatefulWidget {
 class _CompaniesListScreenState extends State<CompaniesListScreen> {
   final _companyRepository = CompanyRepository();
   final _supabaseService = SupabaseService.instance;
-  final _chatService = ChatService();
   final _searchController = TextEditingController();
   
   // bool _isLoading = true; // Removed
@@ -79,7 +75,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         });
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi cập nhật theo dõi: $e')),
       );
@@ -124,48 +120,6 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         );
       }
     }
-  }
-
-  // ignore: unused_element
-  void _openChatList() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ChatListScreen()),
-    );
-  }
-
-  // ignore: unused_element
-  Future<void> _openChatWithCompany(Profile company) async {
-    final conversation = await _chatService.getOrCreateConversation(
-      otherUserId: company.id,
-      otherUserType: 'employer',
-    );
-
-    if (conversation != null && mounted) {
-      final companyName = company.metadata['company_name'] ?? company.fullName ?? 'Công ty';
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChatDetailScreen(
-            conversation: conversation,
-            otherUserName: companyName,
-            otherUserAvatar: company.avatarUrl ?? '',
-          ),
-        ),
-      );
-    } else {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể tạo cuộc trò chuyện')),
-      );
-    }
-  }
-
-  // ignore: unused_element
-  void _handleChatbotPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chatbot AI sẽ được triển khai sau')),
-    );
   }
 
   void _navigateToDetail(Profile company) {

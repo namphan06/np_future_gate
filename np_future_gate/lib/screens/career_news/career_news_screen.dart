@@ -529,28 +529,3 @@ class _CareerNewsScreenState extends State<CareerNewsScreen> with SingleTickerPr
 }
 
 // Custom delegate for sticky tab bar (now unused, can be removed)
-// ignore: unused_element
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  const _StickyTabBarDelegate(this.tabBar);
-
-  final TabBar tabBar;
-
-  @override
-  double get minExtent => tabBar.preferredSize.height;
-
-  @override
-  double get maxExtent => tabBar.preferredSize.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: tabBar,
-    );
-  }
-
-  @override
-  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) {
-    return tabBar != oldDelegate.tabBar;
-  }
-}

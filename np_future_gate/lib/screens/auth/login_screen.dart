@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 break;
             }
             
-            // ignore: use_build_context_synchronously
+            if (!mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => homeScreen),
             );
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
               break;
           }
           
-          // ignore: use_build_context_synchronously
+          if (!mounted) return;
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => homeScreen),
           );

@@ -96,7 +96,7 @@ class _CV9InputScreenState extends State<CV9InputScreen> {
                   await _cvService.createCV(_cvData);
                   if (!mounted) return;
                 }
-                // ignore: use_build_context_synchronously
+                if (!mounted) return;
                 Navigator.pop(context);
               } finally {
                 setState(() => _isLoading = false);

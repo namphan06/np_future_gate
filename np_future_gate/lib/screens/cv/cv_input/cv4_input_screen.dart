@@ -16,8 +16,6 @@ class CV4InputScreen extends StatefulWidget {
 class _CV4InputScreenState extends State<CV4InputScreen> {
   final CVSupabaseService _cvService = CVSupabaseService();
   Map<String, dynamic> _cvData = {};
-  // ignore: unused_field
-  String? _selectedSection;
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
 
@@ -112,7 +110,7 @@ class _CV4InputScreenState extends State<CV4InputScreen> {
       } else {
         final newId = await _cvService.createCV(_cvData);
         _showSuccess('Đã tạo CV mới: $newId');
-        // ignore: use_build_context_synchronously
+        if (!mounted) return;
         Navigator.pop(context, newId);
       }
     } catch (e) {

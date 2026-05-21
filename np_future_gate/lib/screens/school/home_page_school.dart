@@ -23,11 +23,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
   int _newApplicants = 0;
 
   // Recent data
-  // ignore: unused_field
-  List<JobModel> _recentJobs = [];
   List<Map<String, dynamic>> _recentPartnershipJobs = [];
-  // ignore: unused_field
-  final List<Map<String, dynamic>> _recentApplicants = [];
 
   @override
   void initState() {
@@ -120,7 +116,6 @@ class _HomePageSchoolState extends State<HomePageSchool> {
         _pendingPartnershipJobs = pendingPartnership;
         _totalApplicants = totalApplicants;
         _newApplicants = newApplicants;
-        _recentJobs = regularJobs.take(5).toList();
         _recentPartnershipJobs = List<Map<String, dynamic>>.from(partnershipJobsData.take(5));
         _isLoading = false;
       });

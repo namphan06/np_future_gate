@@ -209,13 +209,12 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
         },
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
-        // ignore: deprecated_member_use
-        partialResults: true, // Real-time results
+        listenOptions: stt.SpeechListenOptions(
+          partialResults: true,
+          cancelOnError: false,
+          listenMode: stt.ListenMode.dictation,
+        ),
         localeId: 'vi_VN', // Vietnamese
-        // ignore: deprecated_member_use
-        cancelOnError: false,
-        // ignore: deprecated_member_use
-        listenMode: stt.ListenMode.dictation,
       );
     }
   }

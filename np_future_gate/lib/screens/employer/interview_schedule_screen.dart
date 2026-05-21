@@ -169,8 +169,6 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
     
     // Sort dates: upcoming first, then past
     final now = DateTime.now();
-    // ignore: unused_local_variable
-    final todayStr = DateFormat('yyyy-MM-dd').format(now);
     final sortedDates = groupedInterviews.keys.toList();
     
     sortedDates.sort((a, b) {
@@ -613,50 +611,6 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
       default:
         return status;
     }
-  }
-
-  // ignore: unused_element
-  Widget _buildStatusBadge(String status) {
-    Color color;
-    String text;
-
-    switch (status.toLowerCase()) {
-      case 'scheduled':
-        color = Colors.orange;
-        text = 'Sắp tới';
-        break;
-      case 'completed':
-        color = Colors.green;
-        text = 'Hoàn thành';
-        break;
-      case 'postponed':
-        color = Colors.amber;
-        text = 'Tạm hoãn';
-        break;
-      case 'cancelled':
-        color = Colors.red;
-        text = 'Đã hủy';
-        break;
-      default:
-        color = Colors.grey;
-        text = status;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
   }
 
   Color _getStatusColor(String status) {

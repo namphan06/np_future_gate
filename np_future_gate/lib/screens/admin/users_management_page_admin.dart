@@ -60,11 +60,10 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
       final users = await _adminRepo.getUsersByRole(UserRole.candidate);
       setState(() => _candidates = users);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải candidates: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi tải candidates: $e')),
+      );
     } finally {
       setState(() => _isLoadingCandidates = false);
     }
@@ -76,11 +75,10 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
       final users = await _adminRepo.getUsersByRole(UserRole.employer);
       setState(() => _employers = users);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải employers: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi tải employers: $e')),
+      );
     } finally {
       setState(() => _isLoadingEmployers = false);
     }
@@ -92,11 +90,10 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
       final users = await _adminRepo.getUsersByRole(UserRole.school);
       setState(() => _schools = users);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải schools: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi tải schools: $e')),
+      );
     } finally {
       setState(() => _isLoadingSchools = false);
     }
@@ -144,11 +141,10 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
         }
       });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tìm kiếm: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi tìm kiếm: $e')),
+      );
       setState(() {
         _isLoadingCandidates = false;
         _isLoadingEmployers = false;
@@ -628,22 +624,20 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
     try {
       await _adminRepo.toggleUserActiveStatus(user.id, newStatus);
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newStatus ? 'Đã kích hoạt tài khoản' : 'Đã ngừng hoạt động tài khoản',
-            ),
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newStatus ? 'Đã kích hoạt tài khoản' : 'Đã ngừng hoạt động tài khoản',
           ),
-        );
-        onRefresh();
-      }
+        ),
+      );
+      onRefresh();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: $e')),
+      );
     }
   }
 
@@ -696,24 +690,20 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 updatedMetadata.remove('limit_post');
                 await _adminRepo.updateUserMetadata(user.id, updatedMetadata);
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa giới hạn')),
-                  );
-                  onRefresh();
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã xóa giới hạn')),
+                );
+                onRefresh();
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Xóa giới hạn', style: TextStyle(color: Colors.orange)),
@@ -739,24 +729,20 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
               try {
                 await _adminRepo.setPostLimit(user.id, limit);
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đã cập nhật: $limit tin')),
-                  );
-                  onRefresh();
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Đã cập nhật: $limit tin')),
+                );
+                onRefresh();
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Lưu'),
@@ -831,24 +817,20 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 updatedMetadata.remove('limit_partnership');
                 await _adminRepo.updateUserMetadata(user.id, updatedMetadata);
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa tất cả giới hạn')),
-                  );
-                  onRefresh();
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã xóa tất cả giới hạn')),
+                );
+                onRefresh();
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Xóa tất cả', style: TextStyle(color: Colors.orange)),
@@ -897,9 +879,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 if (partnershipLimit != null) messages.add('Liên kết: $partnershipLimit');
                 
                 if (mounted) {
-                  // ignore: use_build_context_synchronously
+                  if (!mounted) return;
                   Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -912,14 +894,12 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                   onRefresh();
                 }
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Lưu'),
@@ -963,24 +943,20 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
               try {
                 await _adminRepo.deleteUserAccount(user.id);
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context); // Close loading
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa tài khoản')),
-                  );
-                  onRefresh();
-                }
+                if (!mounted) return;
+                Navigator.pop(context); // Close loading
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã xóa tài khoản')),
+                );
+                onRefresh();
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context); // Close loading
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi xóa tài khoản: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context); // Close loading
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi xóa tài khoản: $e')),
+                );
               }
             },
             style: ElevatedButton.styleFrom(

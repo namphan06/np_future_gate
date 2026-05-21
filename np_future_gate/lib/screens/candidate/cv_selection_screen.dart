@@ -30,7 +30,6 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
   
   final AIMatchingService _matchingService = AIMatchingService();
   final Map<String, CVMatchingResult> _scores = {};
-  bool _isCalculatingScores = false;
 
   @override
   void initState() {
@@ -66,34 +65,6 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
         return matchesSearch && matchesField && matchesType;
       }).toList();
     });
-  }
-
-  // ignore: unused_element
-  Future<void> _calculateScores() async {
-    if (widget.targetJob == null || _isCalculatingScores) return;
-
-    setState(() => _isCalculatingScores = true);
-
-    try {
-      // Calculate scores for all filtered CVs that don't have a score yet
-      for (var cv in _filteredCVs) {
-        if (!_scores.containsKey(cv.id)) {
-          final result = await _matchingService.analyzeCVMatching(
-            cvData: cv.data,
-            job: widget.targetJob!,
-          );
-          if (mounted) {
-            setState(() {
-              _scores[cv.id] = result;
-            });
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Error calculating scores: $e');
-    } finally {
-      if (mounted) setState(() => _isCalculatingScores = false);
-    }
   }
 
   Future<void> _calculateSingleScore(CVModel cv) async {

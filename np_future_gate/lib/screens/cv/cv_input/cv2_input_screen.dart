@@ -127,7 +127,7 @@ class _CV2InputScreenState extends State<CV2InputScreen> {
       } else {
         final newId = await _cvService.createCV(_cvData);
         _showSuccess('Đã tạo CV mới: $newId');
-        // ignore: use_build_context_synchronously
+        if (!mounted) return;
         Navigator.pop(context, newId);
       }
     } catch (e) {

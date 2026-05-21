@@ -647,8 +647,8 @@ class CVDisplayManager {
                             ),
                             onTap: () {
                               Future.delayed(Duration.zero, () {
+                                if (!context.mounted) return;
                                 showDialog(
-                                  // ignore: use_build_context_synchronously
                                   context: context,
                                   builder: (ctx) => AlertDialog(
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

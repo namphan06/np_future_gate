@@ -78,11 +78,10 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         _userActivities = activities;
       });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải dữ liệu: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi tải dữ liệu: $e')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -761,23 +760,21 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         _user = _user.copyWith(isActive: newStatus);
       });
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              newStatus 
-                  ? 'Đã kích hoạt tài khoản' 
-                  : 'Đã ngừng hoạt động tài khoản',
-            ),
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newStatus 
+                ? 'Đã kích hoạt tài khoản' 
+                : 'Đã ngừng hoạt động tài khoản',
           ),
-        );
-      }
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: $e')),
+      );
     }
   }
 
@@ -831,27 +828,20 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 newMetadata.remove('limit_post');
                 await _adminRepo.updateUserMetadata(_user.id, newMetadata);
                 
+                if (!mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã xóa giới hạn tin đăng')),
+                );
                 setState(() {
                   _user = _user.copyWith(metadata: newMetadata);
                 });
-                
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa giới hạn tin đăng')),
-                  );
-                }
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Xóa giới hạn', style: TextStyle(color: Colors.orange)),
@@ -883,23 +873,19 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                   _user = _user.copyWith(metadata: newMetadata);
                 });
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Đã cập nhật giới hạn: $limit tin')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Đã cập nhật giới hạn: $limit tin')),
+                );
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Lưu'),
@@ -978,23 +964,19 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                   _user = _user.copyWith(metadata: newMetadata);
                 });
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa tất cả giới hạn')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã xóa tất cả giới hạn')),
+                );
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Xóa tất cả', style: TextStyle(color: Colors.orange)),
@@ -1047,9 +1029,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 if (partnershipLimit != null) messages.add('Việc liên kết: $partnershipLimit');
                 
                 if (mounted) {
-                  // ignore: use_build_context_synchronously
+                  if (!mounted) return;
                   Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
+                  if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -1061,14 +1043,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                   );
                 }
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context);
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi: $e')),
+                );
               }
             },
             child: const Text('Lưu'),
@@ -1112,25 +1092,21 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               try {
                 await _adminRepo.deleteUserAccount(_user.id);
                 
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context); // Close loading
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context, true); // Return to list with refresh flag
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã xóa tài khoản')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context); // Close loading
+                if (!mounted) return;
+                Navigator.pop(context, true); // Return to list with refresh flag
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã xóa tài khoản')),
+                );
               } catch (e) {
-                if (mounted) {
-                  // ignore: use_build_context_synchronously
-                  Navigator.pop(context); // Close loading
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Lỗi xóa tài khoản: $e')),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.pop(context); // Close loading
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lỗi xóa tài khoản: $e')),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -1163,12 +1139,11 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         otherUserType: otherUserType,
       );
 
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       if (mounted) Navigator.pop(context); // Close loading
 
       if (conversation != null && mounted) {
         Navigator.push(
-          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(
             builder: (_) => ChatDetailScreen(
@@ -1179,7 +1154,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           ),
         );
       } else if (mounted) {
-        // ignore: use_build_context_synchronously
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
@@ -1188,17 +1163,15 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         );
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       if (mounted) Navigator.pop(context); // Close loading
-      if (mounted) {
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

@@ -27,8 +27,6 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
   int _newUsersThisPeriod = 0;
   int _newJobsThisPeriod = 0;
   int _newApplicationsThisPeriod = 0;
-  // ignore: unused_field
-  int _newInterviewsThisPeriod = 0;
   
   double _applicationSuccessRate = 0.0;
   
@@ -172,12 +170,6 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
     
     final interviews = interviewsResponse as List;
     _totalInterviews = interviews.length;
-    
-    // Count new interviews in period
-    _newInterviewsThisPeriod = interviews.where((i) {
-      final createdAt = DateTime.tryParse(i['created_at']?.toString() ?? '');
-      return createdAt != null && createdAt.isAfter(periodStart);
-    }).length;
   }
   
   List<Map<String, dynamic>> _groupByDay(List<dynamic> items, String dateField, DateTime periodStart) {

@@ -544,8 +544,8 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
       }
     }
     
+    if (!mounted) return;
     final result = await Navigator.push(
-      // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
         builder: (context) => CreateSchoolJobScreen(

@@ -9,7 +9,6 @@ import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:np_future_gate/screens/candidate/cv_selection_screen.dart';
 import 'package:np_future_gate/screens/candidate/job_interview_ai_page.dart';
 import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
-import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobDetailScreen extends StatefulWidget {
@@ -179,14 +178,6 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
     }
   }
 
-  // ignore: unused_element
-  void _openChatList() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ChatListScreen()),
-    );
-  }
-
   Future<void> _openChatWithEmployer() async {
     final conversation = await _chatService.getOrCreateConversation(
       otherUserId: widget.job.creatorId,
@@ -206,18 +197,11 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         ),
       );
     } else {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể tạo cuộc trò chuyện')),
       );
     }
-  }
-
-  // ignore: unused_element
-  void _handleChatbotPressed() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chatbot AI sẽ được triển khai sau')),
-    );
   }
 
   void _openAIInterview() {

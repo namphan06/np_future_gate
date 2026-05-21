@@ -205,8 +205,8 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
 
       if (pickedDate == null) return;
 
+      if (!mounted) return;
       final TimeOfDay? pickedTime = await showTimePicker(
-        // ignore: use_build_context_synchronously
         context: context,
         initialTime: const TimeOfDay(hour: 9, minute: 0),
         helpText: 'Chọn giờ phỏng vấn',
@@ -490,7 +490,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
     }
   }
@@ -535,7 +535,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
     }
   }
@@ -1766,28 +1766,6 @@ $employerName
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
-  }
-
-  // ignore: unused_element
-  Widget _buildStatusBadge(String status) {
-    final color = _getStatusColor(status);
-    final text = _getStatusText(status);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text.toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
   }
 
   // View evaluation from interview_schedules

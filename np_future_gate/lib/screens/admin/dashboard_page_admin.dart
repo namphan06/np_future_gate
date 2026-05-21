@@ -25,14 +25,6 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
   int _pendingJobsCount = 0;
   int _totalApplicationsCount = 0;
   int _totalCompaniesCount = 0;
-  
-  // Percentage changes (placeholder for now)
-  // ignore: unused_field
-  final double _usersChangePercent = 12.5;
-  // ignore: unused_field
-  final double _applicationsChangePercent = 15.3;
-  // ignore: unused_field
-  final double _companiesChangePercent = -2.4;
 
   @override
   void initState() {

@@ -20,21 +20,17 @@ class DemoModeService {
 
   // Admin's original credentials (to return later)
   String? _adminEmail;
-  // ignore: unused_field
-  String? _adminPassword; // WARNING: Storing password is not secure! This is just for demo convenience
 
   String? get adminEmail => _adminEmail;
 
   /// Store admin credentials before switching to test account
   void storeAdminCredentials(String email, {String? password}) {
     _adminEmail = email;
-    _adminPassword = password; // Optional - if not provided, admin needs to re-enter password
   }
 
   /// Clear stored credentials
   void clearAdminCredentials() {
     _adminEmail = null;
-    _adminPassword = null;
   }
 
   /// Get test account email for a role

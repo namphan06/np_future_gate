@@ -79,8 +79,8 @@ class _RecentApplicantsScreenState extends State<RecentApplicantsScreen> {
         }
       }
 
+      if (!mounted) return;
       showDialog(
-        // ignore: use_build_context_synchronously
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),

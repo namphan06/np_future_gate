@@ -67,8 +67,7 @@ class CVTag {
 
   Map<String, dynamic> toJson() => {
     'label': label,
-    // ignore: deprecated_member_use
-    'color': color.value,
+    'color': color.toARGB32(),
     if (icon != null) 'icon': icon!.codePoint,
   };
 }

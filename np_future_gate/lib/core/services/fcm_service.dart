@@ -367,28 +367,6 @@ class FCMService {
   }
   
   /// Parse payload string to Map
-  // ignore: unused_element
-  Map<String, dynamic> _parsePayload(String payload) {
-    try {
-      // Payload format: "{key1: value1, key2: value2}"
-      // Simple parsing (not JSON)
-      final map = <String, dynamic>{};
-      final cleaned = payload.replaceAll('{', '').replaceAll('}', '');
-      final pairs = cleaned.split(', ');
-      
-      for (var pair in pairs) {
-        final keyValue = pair.split(': ');
-        if (keyValue.length == 2) {
-          map[keyValue[0]] = keyValue[1];
-        }
-      }
-      
-      return map;
-    } catch (e) {
-      debugPrint('❌ Error parsing payload: $e');
-      return {};
-    }
-  }
 }
 
 /// Background message handler

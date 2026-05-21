@@ -130,11 +130,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (!_speechAvailable) {
       final status = await Permission.microphone.request();
       if (!status.isGranted) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cần cấp quyền microphone để sử dụng')),
-          );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cần cấp quyền microphone để sử dụng')),
+        );
         return;
       }
       await _initSpeech();
@@ -158,8 +157,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
-        // ignore: deprecated_member_use
-        listenMode: stt.ListenMode.dictation,
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.dictation,
+        ),
       );
     }
   }
@@ -322,14 +322,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     } catch (e) {
       setState(() => _isUploadingImage = false);
       debugPrint('❌ Error sending image: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi gửi ảnh: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi gửi ảnh: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -600,25 +599,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       
                       final job = JobModel.fromJson(jobData);
                       
-                      if (mounted) {
-                        Navigator.push(
-                          // ignore: use_build_context_synchronously
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => JobDetailScreen(job: job),
-                          ),
-                        );
-                      }
+                      if (!mounted) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => JobDetailScreen(job: job),
+                        ),
+                      );
                     } catch (e) {
                       debugPrint('❌ Error loading job: $e');
-                      if (mounted) {
-                        // ignore: use_build_context_synchronously
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Không thể tải thông tin công việc'),
-                          ),
-                        );
-                      }
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Không thể tải thông tin công việc'),
+                        ),
+                      );
                     }
                   }
                 },
@@ -1068,7 +1063,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                 if (confirmed == true) {
                   await _chatService.deleteConversation(widget.conversation.id);
-                  // ignore: use_build_context_synchronously
+                  if (!mounted) return;
                   if (mounted) Navigator.pop(context);
                 }
               },

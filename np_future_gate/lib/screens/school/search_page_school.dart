@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:np_future_gate/core/models/profile_model.dart';
-import 'package:np_future_gate/core/repositories/auth_repository.dart';
 import 'package:np_future_gate/core/repositories/company_repository.dart';
 import 'package:np_future_gate/core/repositories/partnership_repository.dart';
 import 'package:np_future_gate/core/theme/app_main_colors.dart';
@@ -17,8 +16,6 @@ class SearchPageSchool extends StatefulWidget {
 
 class _SearchPageSchoolState extends State<SearchPageSchool> {
   final TextEditingController _searchController = TextEditingController();
-  // ignore: unused_field
-  final AuthRepository _authRepository = AuthRepository();
   final CompanyRepository _companyRepository = CompanyRepository();
   final PartnershipRepository _partnershipRepository = PartnershipRepository();
   

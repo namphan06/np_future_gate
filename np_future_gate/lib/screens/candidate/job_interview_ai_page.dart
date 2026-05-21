@@ -25,8 +25,6 @@ class _JobInterviewAIPageState extends State<JobInterviewAIPage> {
   bool _isAnalyzing = false;
   List<String> _questions = [];
   int _currentStep = 0; // 0: Questions, 1: Analysis Results
-  // ignore: unused_field
-  String? _analysisResult;
   Map<String, dynamic>? _structuredFeedback;
 
   @override

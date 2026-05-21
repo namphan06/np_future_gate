@@ -769,25 +769,3 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
 }
 
 // Sticky tab bar delegate
-// ignore: unused_element
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  const _StickyTabBarDelegate(this.child);
-
-  final Widget child;
-
-  @override
-  double get minExtent => 48;
-
-  @override
-  double get maxExtent => 48;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) {
-    return child != oldDelegate.child;
-  }
-}

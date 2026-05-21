@@ -89,7 +89,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
         });
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi chọn ảnh: $e')),
       );
@@ -183,8 +183,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
     if (desc.isNotEmpty) content += '$desc\n';
     if (website.isNotEmpty) content += 'Website: $website\n';
     
-    // ignore: deprecated_member_use
-    Share.share(content, subject: 'Thông tin công ty $name');
+    SharePlus.instance.share(ShareParams(text: content, subject: 'Thông tin công ty $name'));
   }
 
   @override

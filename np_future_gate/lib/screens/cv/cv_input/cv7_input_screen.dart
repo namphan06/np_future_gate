@@ -97,7 +97,7 @@ class _CV7InputScreenState extends State<CV7InputScreen> {
                   await _cvService.createCV(_cvData);
                   if (!mounted) return;
                 }
-                // ignore: use_build_context_synchronously
+                if (!mounted) return;
                 Navigator.pop(context);
               } finally {
                 setState(() => _isLoading = false);

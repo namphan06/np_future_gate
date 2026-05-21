@@ -74,7 +74,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
         });
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi cập nhật theo dõi: $e')),
       );

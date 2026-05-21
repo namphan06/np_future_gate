@@ -38,10 +38,6 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
   final MistralService _mistralService = MistralService();
   
   // Tag management
-  // ignore: unused_field
-  final List<String> _availableTags = [
-    'IT', 'Marketing', 'Business', 'Design', 'Engineer', 'Manager', 'Fresher', 'Junior', 'Senior'
-  ];
   
 
 
@@ -102,7 +98,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
         });
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi chọn file: $e')),
       );

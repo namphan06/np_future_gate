@@ -46,7 +46,7 @@ class StatusNotificationService {
     if (config == null) {
       // Không có config, show dialog mặc định
       debugPrint('⚠️ No config found, showing dialog');
-      // ignore: use_build_context_synchronously
+      if (!context.mounted) return false;
       _showNotificationDialog(context, notification);
       return false;
     }
@@ -54,8 +54,8 @@ class StatusNotificationService {
     // Nếu config yêu cầu show dialog
     if (config.showDialog) {
       debugPrint('💬 Config requires dialog');
+      if (!context.mounted) return false;
       _showNotificationDialog(
-        // ignore: use_build_context_synchronously
         context,
         notification,
         dialogTitle: config.dialogTitle,
@@ -74,7 +74,7 @@ class StatusNotificationService {
       if (onNavigate != null) {
         debugPrint('✅ onNavigate callback is available');
         try {
-          // ignore: use_build_context_synchronously
+          if (!context.mounted) return false;
           await onNavigate!(context, actionCode, routeParams);
           debugPrint('✅ Navigation completed successfully');
           return true;
@@ -89,7 +89,7 @@ class StatusNotificationService {
       } else {
         debugPrint('⚠️ onNavigate callback is NULL! Navigation not configured.');
         // Fallback: show dialog nếu chưa có callback
-        // ignore: use_build_context_synchronously
+        if (!context.mounted) return false;
         _showNotificationDialog(context, notification);
       }
       return false;
@@ -97,7 +97,7 @@ class StatusNotificationService {
 
     // Default: show dialog
     debugPrint('💬 Default: showing dialog');
-    // ignore: use_build_context_synchronously
+    if (!context.mounted) return false;
     _showNotificationDialog(context, notification);
     return false;
   }

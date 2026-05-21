@@ -26,8 +26,6 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
   
   // Chart data
   List<MapEntry<String, int>> _jobsByMonth = [];
-  // ignore: unused_field
-  List<MapEntry<String, int>> _applicationsByStatus = [];
   List<MapEntry<String, int>> _topDepartments = [];
 
   @override
@@ -170,11 +168,6 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         ..sort((a, b) => a.key.compareTo(b.key));
 
       // Applications by status - sử dụng dữ liệu đã load
-      _applicationsByStatus = [
-        MapEntry('Chờ duyệt', _pendingApplications),
-        MapEntry('Chấp nhận', _acceptedApplications),
-        MapEntry('Từ chối', _rejectedApplications),
-      ];
 
       // Top fields/positions with most jobs
       final jobsData = await _supabase

@@ -60,8 +60,6 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
       debugPrint('✅ Jobs response: ${jobsResponse.length} jobs');
       
       final jobs = jobsResponse as List;
-      // ignore: unused_local_variable
-      final jobIds = jobs.map((j) => j['id'] as String).toList();
       
       _totalJobs = jobs.length;
       _activeJobs = jobs.where((j) {
@@ -1087,26 +1085,6 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
   }
 
   Widget _buildApplicationItem(Map<String, dynamic> app) {
-    final status = app['status'] as String?;
-    // ignore: unused_local_variable
-    Color statusColor;
-    // ignore: unused_local_variable
-    String statusText;
-    
-    switch (status) {
-      case 'accepted':
-        statusColor = Colors.green;
-        statusText = 'Chấp nhận';
-        break;
-      case 'rejected':
-        statusColor = Colors.red;
-        statusText = 'Từ chối';
-        break;
-      default:
-        statusColor = Colors.orange;
-        statusText = 'Chờ xử lý';
-    }
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(

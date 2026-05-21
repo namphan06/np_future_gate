@@ -125,16 +125,15 @@ enum NotificationActionCode {
   // === DEFAULT ===
   none('none', 'Không hành động', requiresNavigation: false);
 
-  final String code;
-  final String displayName;
-  final bool requiresNavigation;
-
-  // ignore: sort_constructors_first
   const NotificationActionCode(
     this.code,
     this.displayName, {
     required this.requiresNavigation,
   });
+
+  final String code;
+  final String displayName;
+  final bool requiresNavigation;
 
   /// Tìm action code từ string
   static NotificationActionCode fromString(String? code) {

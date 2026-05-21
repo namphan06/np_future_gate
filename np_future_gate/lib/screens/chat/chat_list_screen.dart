@@ -4,7 +4,6 @@ import 'package:np_future_gate/core/models/conversation_model.dart';
 import 'package:np_future_gate/core/services/chat_service.dart';
 import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -656,18 +655,6 @@ class _ChatListScreenState extends State<ChatListScreen>
   }
 
   Future<void> _loadConversationUserInfo(ConversationModel conversation) async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return;
-
-    // ignore: unused_local_variable
-    final otherUserId = conversation.participant1Id == userId
-        ? conversation.participant2Id
-        : conversation.participant1Id;
-    // ignore: unused_local_variable
-    final otherUserType = conversation.participant1Id == userId
-        ? conversation.participant2Type
-        : conversation.participant1Type;
-
     // This will be handled by ChatService
     // We just need to trigger a refresh if needed
   }

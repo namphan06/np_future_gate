@@ -18,8 +18,7 @@ class MLKitOcrService {
   /// Trích xuất text từ file ảnh (File object)
   Future<MLKitOcrResult> extractTextFromFile(File imageFile) async {
     try {
-      // ignore: avoid_slow_async_io
-      if (!await imageFile.exists()) {
+      if (!imageFile.existsSync()) {
         return MLKitOcrResult.failure('File không tồn tại');
       }
 
@@ -61,8 +60,7 @@ class MLKitOcrService {
   /// Trích xuất text từ file PDF (render từng trang thành ảnh → ML Kit OCR)
   Future<MLKitOcrResult> extractTextFromPdf(File pdfFile) async {
     try {
-      // ignore: avoid_slow_async_io
-      if (!await pdfFile.exists()) {
+      if (!pdfFile.existsSync()) {
         return MLKitOcrResult.failure('File PDF không tồn tại');
       }
 
@@ -107,8 +105,7 @@ class MLKitOcrService {
           debugPrint('📄 Page $i OCR: ${result.success ? "${result.text.length} chars" : "FAILED: ${result.error}"}');
 
           // Cleanup temp image
-          // ignore: avoid_slow_async_io
-          if (await tempImageFile.exists()) {
+          if (tempImageFile.existsSync()) {
             await tempImageFile.delete();
           }
 
@@ -179,8 +176,7 @@ class MLKitOcrService {
         }
       } finally {
         // Cleanup temp file
-        // ignore: avoid_slow_async_io
-        if (await tempFile.exists()) {
+        if (tempFile.existsSync()) {
           await tempFile.delete();
         }
       }

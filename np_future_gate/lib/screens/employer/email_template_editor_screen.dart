@@ -223,8 +223,9 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
-        // ignore: deprecated_member_use
-        listenMode: stt.ListenMode.dictation,
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.dictation,
+        ),
       );
     }
   }

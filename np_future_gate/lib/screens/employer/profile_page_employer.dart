@@ -573,17 +573,15 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
           .maybeSingle();
 
       if (adminResponse == null) {
-        // ignore: use_build_context_synchronously
+        if (!mounted) return;
         if (mounted) Navigator.pop(context); // Close loading
-        if (mounted) {
-          // ignore: use_build_context_synchronously
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Không tìm thấy Admin. Vui lòng thử lại sau.'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không tìm thấy Admin. Vui lòng thử lại sau.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
         return;
       }
 
@@ -598,12 +596,11 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
         otherUserType: 'admin',
       );
 
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       if (mounted) Navigator.pop(context); // Close loading
 
       if (conversation != null && mounted) {
         Navigator.push(
-          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(
             builder: (_) => ChatDetailScreen(
@@ -614,7 +611,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
           ),
         );
       } else if (mounted) {
-        // ignore: use_build_context_synchronously
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
@@ -623,17 +620,15 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
         );
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       if (mounted) Navigator.pop(context); // Close loading
-      if (mounted) {
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
