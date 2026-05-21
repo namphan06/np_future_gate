@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV17 - Engineering Template
 /// Mẫu CV dành cho ngành Kỹ thuật, Xây dựng, Cơ khí
 class Cv17 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv17({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +257,7 @@ class Cv17 extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6D00).withOpacity(0.1),
+                  color: const Color(0xFFFF6D00).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(duration, style: const TextStyle(fontSize: 10, color: Color(0xFFFF6D00))),

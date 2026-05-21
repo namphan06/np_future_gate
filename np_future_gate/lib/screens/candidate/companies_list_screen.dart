@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/company_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/company_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
+import 'package:np_future_gate/widgets/animated_avatar.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/repositories/company_repository.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/services/chat_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/animated_avatar.dart';
-import '../chat/chat_list_screen.dart';
-import '../chat/chat_detail_screen.dart';
-import 'company_detail_screen.dart';
-import '../../widgets/speech_text_field.dart';
 
 class CompaniesListScreen extends StatefulWidget {
   const CompaniesListScreen({super.key});
@@ -79,6 +79,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         });
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi cập nhật theo dõi: $e')),
       );
@@ -129,7 +130,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
   void _openChatList() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChatListScreen()),
+      MaterialPageRoute(builder: (context) => const ChatListScreen()),
     );
   }
 
@@ -153,6 +154,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         ),
       );
     } else {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể tạo cuộc trò chuyện')),
       );
@@ -336,7 +338,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

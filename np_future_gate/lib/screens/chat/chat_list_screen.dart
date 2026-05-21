@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:np_future_gate/core/models/conversation_model.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/models/conversation_model.dart';
-import '../../core/services/chat_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'chat_detail_screen.dart';
 
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({Key? key}) : super(key: key);
+  const ChatListScreen({super.key});
 
   @override
   State<ChatListScreen> createState() => _ChatListScreenState();
@@ -79,12 +79,12 @@ class _ChatListScreenState extends State<ChatListScreen>
                   end: Alignment.bottomRight,
                   colors: [
                     Colors.white,
-                    Colors.blue.shade50.withOpacity(0.3),
+                    Colors.blue.shade50.withValues(alpha: 0.3),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -132,13 +132,13 @@ class _ChatListScreenState extends State<ChatListScreen>
                             gradient: LinearGradient(
                               colors: [
                                 AppMainColors.primary,
-                                AppMainColors.primary.withOpacity(0.8),
+                                AppMainColors.primary.withValues(alpha: 0.8),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: AppMainColors.primary.withOpacity(0.3),
+                                color: AppMainColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -167,7 +167,7 @@ class _ChatListScreenState extends State<ChatListScreen>
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: _searchQuery.isNotEmpty
-                              ? AppMainColors.primary.withOpacity(0.3)
+                              ? AppMainColors.primary.withValues(alpha: 0.3)
                               : Colors.transparent,
                           width: 1.5,
                         ),
@@ -233,7 +233,7 @@ class _ChatListScreenState extends State<ChatListScreen>
                           borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -454,15 +454,15 @@ class _ChatListScreenState extends State<ChatListScreen>
           boxShadow: [
             BoxShadow(
               color: hasUnread 
-                  ? AppMainColors.primary.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.04),
+                  ? AppMainColors.primary.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.04),
               blurRadius: hasUnread ? 12 : 8,
               offset: const Offset(0, 2),
             ),
           ],
           border: hasUnread 
               ? Border.all(
-                  color: AppMainColors.primary.withOpacity(0.2),
+                  color: AppMainColors.primary.withValues(alpha: 0.2),
                   width: 1.5,
                 )
               : null,
@@ -506,7 +506,7 @@ class _ChatListScreenState extends State<ChatListScreen>
                             gradient: LinearGradient(
                               colors: [
                                 AppMainColors.primary,
-                                AppMainColors.primary.withOpacity(0.6),
+                                AppMainColors.primary.withValues(alpha: 0.6),
                               ],
                             ),
                           ),
@@ -516,7 +516,7 @@ class _ChatListScreenState extends State<ChatListScreen>
                         margin: hasUnread ? const EdgeInsets.all(2) : EdgeInsets.zero,
                         child: CircleAvatar(
                           radius: hasUnread ? 30 : 32,
-                          backgroundColor: AppMainColors.primary.withOpacity(0.12),
+                          backgroundColor: AppMainColors.primary.withValues(alpha: 0.12),
                           backgroundImage: conversation.otherUserAvatar != null &&
                                   conversation.otherUserAvatar!.isNotEmpty
                               ? NetworkImage(conversation.otherUserAvatar!)
@@ -599,7 +599,7 @@ class _ChatListScreenState extends State<ChatListScreen>
                                   fontSize: 14,
                                   height: 1.3,
                                   color: hasUnread 
-                                      ? Colors.black.withOpacity(0.8)
+                                      ? Colors.black.withValues(alpha: 0.8)
                                       : Colors.grey.shade600,
                                   fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
                                 ),
@@ -618,13 +618,13 @@ class _ChatListScreenState extends State<ChatListScreen>
                                   gradient: LinearGradient(
                                     colors: [
                                       AppMainColors.primary,
-                                      AppMainColors.primary.withOpacity(0.8),
+                                      AppMainColors.primary.withValues(alpha: 0.8),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(14),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppMainColors.primary.withOpacity(0.3),
+                                      color: AppMainColors.primary.withValues(alpha: 0.3),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     ),
@@ -659,9 +659,11 @@ class _ChatListScreenState extends State<ChatListScreen>
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
 
+    // ignore: unused_local_variable
     final otherUserId = conversation.participant1Id == userId
         ? conversation.participant2Id
         : conversation.participant1Id;
+    // ignore: unused_local_variable
     final otherUserType = conversation.participant1Id == userId
         ? conversation.participant2Type
         : conversation.participant1Type;

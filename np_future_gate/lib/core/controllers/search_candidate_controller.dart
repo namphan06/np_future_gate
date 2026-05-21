@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:np_future_gate/core/models/job_model.dart';
 import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Controller for SearchPageCandidate.
 /// Handles search, filtering, pagination, and saved job management.

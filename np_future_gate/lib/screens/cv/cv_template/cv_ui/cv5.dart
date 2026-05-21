@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cv5 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv5({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   // Business Administration Theme: Corporate, Confident, Results-Driven
   static const Color primaryColor = Color(0xFF0D47A1); // Deep Corporate Blue
@@ -56,8 +56,8 @@ class Cv5 extends StatelessWidget {
   }
 
   Widget _buildHeader(Map<String, dynamic> info, bool isNarrow) {
-    String? avatarUrl = info['avatar_url'];
-    bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
+    final String? avatarUrl = info['avatar_url'];
+    final bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
 
     return _buildSectionWrapper(
       'cv_name',
@@ -101,7 +101,7 @@ class Cv5 extends StatelessWidget {
                 crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                 children: [
                   Text(
-                    (info['full_name'] ?? "NGUYỄN VĂN A").toUpperCase(),
+                    (info['full_name'] ?? 'NGUYỄN VĂN A').toUpperCase(),
                     style: GoogleFonts.inter(
                       fontSize: isNarrow ? 24 : 30,
                       fontWeight: FontWeight.w800,
@@ -114,7 +114,7 @@ class Cv5 extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white30),
                     ),
@@ -151,7 +151,7 @@ class Cv5 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSectionWrapper('summary', _buildSection('MỤC TIÊU NGHỀ NGHIỆP', Icons.flag_outlined,
-                Text(displayData['summary'] ?? "Mục tiêu nghề nghiệp...", style: _bodyStyle()),
+                Text(displayData['summary'] ?? 'Mục tiêu nghề nghiệp...', style: _bodyStyle()),
               )),
               const SizedBox(height: 32),
               _buildSectionWrapper('experiences', _buildSection('KINH NGHIỆM LÀM VIỆC', Icons.work_outline, _buildExperience(displayData['experiences']))),
@@ -195,7 +195,7 @@ class Cv5 extends StatelessWidget {
         _buildSectionWrapper('personal_info', _buildSidebar('THÔNG TIN LIÊN HỆ', _buildContact(personalInfo))),
         const SizedBox(height: 28),
         _buildSectionWrapper('summary', _buildSection('MỤC TIÊU NGHỀ NGHIỆP', Icons.flag_outlined,
-          Text(displayData['summary'] ?? "Mục tiêu nghề nghiệp...", style: _bodyStyle()),
+          Text(displayData['summary'] ?? 'Mục tiêu nghề nghiệp...', style: _bodyStyle()),
         )),
         const SizedBox(height: 28),
         _buildSectionWrapper('experiences', _buildSection('KINH NGHIỆM LÀM VIỆC', Icons.work_outline, _buildExperience(displayData['experiences']))),
@@ -356,7 +356,7 @@ class Cv5 extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: secondaryColor.withOpacity(0.3)),
+          border: Border.all(color: secondaryColor.withValues(alpha: 0.3)),
         ),
         child: Text(s['name'] ?? s.toString(), style: GoogleFonts.inter(fontSize: 10, color: primaryColor, fontWeight: FontWeight.w600)),
       )).toList(),

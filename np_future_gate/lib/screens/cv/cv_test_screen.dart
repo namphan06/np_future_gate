@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'cv_creation_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_creation_screen.dart';
 
 /// Example screen showing how to navigate to CV Creation
 class CVTestScreen extends StatelessWidget {

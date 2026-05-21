@@ -1,7 +1,8 @@
-import '../models/course_category_model.dart';
-import '../models/course_model.dart';
-import '../models/course_lesson_model.dart';
-import '../services/supabase_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/course_category_model.dart';
+import 'package:np_future_gate/core/models/course_lesson_model.dart';
+import 'package:np_future_gate/core/models/course_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 
 class CourseRepository {
   final _supabase = SupabaseService.instance.client;
@@ -19,7 +20,7 @@ class CourseRepository {
           .map((json) => CourseCategoryModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting categories: $e');
+      debugPrint('Error getting categories: $e');
       return [];
     }
   }
@@ -57,7 +58,7 @@ class CourseRepository {
           .map((json) => CourseModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting published courses: $e');
+      debugPrint('Error getting published courses: $e');
       return [];
     }
   }
@@ -77,7 +78,7 @@ class CourseRepository {
           .map((json) => CourseModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting featured courses: $e');
+      debugPrint('Error getting featured courses: $e');
       return [];
     }
   }
@@ -99,7 +100,7 @@ class CourseRepository {
 
       return CourseModel.fromJson(response);
     } catch (e) {
-      print('Error getting course detail: $e');
+      debugPrint('Error getting course detail: $e');
       return null;
     }
   }
@@ -121,7 +122,7 @@ class CourseRepository {
 
       return CourseModel.fromJson(response);
     } catch (e) {
-      print('Error getting course by slug: $e');
+      debugPrint('Error getting course by slug: $e');
       return null;
     }
   }
@@ -139,7 +140,7 @@ class CourseRepository {
           .map((json) => CourseLessonModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting course lessons: $e');
+      debugPrint('Error getting course lessons: $e');
       return [];
     }
   }
@@ -157,7 +158,7 @@ class CourseRepository {
 
       return CourseLessonModel.fromJson(response);
     } catch (e) {
-      print('Error getting lesson detail: $e');
+      debugPrint('Error getting lesson detail: $e');
       return null;
     }
   }
@@ -177,7 +178,7 @@ class CourseRepository {
           .map((json) => CourseModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error searching courses: $e');
+      debugPrint('Error searching courses: $e');
       return [];
     }
   }
@@ -207,7 +208,7 @@ class CourseRepository {
           .map((json) => CourseModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting related courses: $e');
+      debugPrint('Error getting related courses: $e');
       return [];
     }
   }
@@ -220,7 +221,7 @@ class CourseRepository {
         params: {'course_id': courseId},
       );
     } catch (e) {
-      print('Error incrementing view count: $e');
+      debugPrint('Error incrementing view count: $e');
     }
   }
 }

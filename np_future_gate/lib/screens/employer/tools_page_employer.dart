@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
+import 'package:np_future_gate/screens/employer/evaluation/school_student_evaluations_screen.dart';
+import 'package:np_future_gate/screens/employer/interview_schedule_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/edit_job_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/employer_jobs_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/new_applicants_screen.dart';
+import 'package:np_future_gate/screens/employer/partnership/school_partnerships_screen.dart';
+import 'package:np_future_gate/screens/employer/partnership_requests_employer_screen.dart';
+import 'package:np_future_gate/screens/employer/pending_recruitment_decisions_screen.dart';
+import 'package:np_future_gate/screens/employer/saved_candidates_screen.dart';
+import 'package:np_future_gate/screens/employer/statistics/employer_statistics_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_detail_screen.dart';
-import '../chat/chat_list_screen.dart';
-import 'evaluation/school_student_evaluations_screen.dart';
-import 'interview_schedule_screen.dart';
-import 'jobs/edit_job_screen.dart';
-import 'jobs/employer_jobs_screen.dart';
-import 'jobs/new_applicants_screen.dart';
-import 'partnership/school_partnerships_screen.dart';
-import 'partnership_requests_employer_screen.dart';
-import 'pending_recruitment_decisions_screen.dart';
-import 'saved_candidates_screen.dart';
-import 'statistics/employer_statistics_screen.dart';
 
 class ToolsPageEmployer extends StatefulWidget {
   const ToolsPageEmployer({super.key});
@@ -114,7 +114,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.1),
+                              color: Colors.blue.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.work, color: Colors.blue, size: 20),
@@ -210,7 +210,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
+                              color: Colors.orange.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.people, color: Colors.orange, size: 20),
@@ -314,7 +314,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.purple.withOpacity(0.1),
+                              color: Colors.purple.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.dashboard, color: Colors.purple, size: 20),
@@ -436,9 +436,9 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.85),
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.6),
+                    Colors.white.withValues(alpha: 0.85),
                     Colors.white,
                   ],
                   stops: const [0.0, 0.2, 0.4, 1.0],
@@ -465,7 +465,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -489,7 +489,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 28),
@@ -535,7 +535,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -557,7 +557,7 @@ class _ToolsPageEmployerState extends State<ToolsPageEmployer> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 24),

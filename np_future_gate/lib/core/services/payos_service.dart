@@ -1,13 +1,15 @@
 import 'dart:convert';
+
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 class PayOSService {
-  static final PayOSService _instance = PayOSService._internal();
   factory PayOSService() => _instance;
   PayOSService._internal();
+  static final PayOSService _instance = PayOSService._internal();
 
   String get _clientId => dotenv.env['PAYOS_CLIENT_ID'] ?? '';
   String get _apiKey => dotenv.env['PAYOS_API_KEY'] ?? '';
@@ -25,9 +27,9 @@ class PayOSService {
   }) async {
     try {
       // Debug: Check if credentials are loaded
-      print('💳 PayOS: ClientID loaded: ${_clientId.isNotEmpty}');
-      print('💳 PayOS: APIKey loaded: ${_apiKey.isNotEmpty}');
-      print('💳 PayOS: ChecksumKey loaded: ${_checksumKey.isNotEmpty}');
+      debugPrint('💳 PayOS: ClientID loaded: ${_clientId.isNotEmpty}');
+      debugPrint('💳 PayOS: APIKey loaded: ${_apiKey.isNotEmpty}');
+      debugPrint('💳 PayOS: ChecksumKey loaded: ${_checksumKey.isNotEmpty}');
       
       if (_clientId.isEmpty || _apiKey.isEmpty) {
         return PaymentResult(
@@ -47,11 +49,11 @@ class PayOSService {
       // Must be in alphabetical order
       final signatureData = 'amount=$amount&cancelUrl=$actualCancelUrl&description=$description&orderCode=$orderCode&returnUrl=$actualReturnUrl';
       
-      print('💳 PayOS: Signature data: $signatureData');
+      debugPrint('💳 PayOS: Signature data: $signatureData');
       
       // Generate checksum using HMAC-SHA256
       final checksum = _generateChecksum(signatureData);
-      print('💳 PayOS: Generated signature: $checksum');
+      debugPrint('💳 PayOS: Generated signature: $checksum');
 
       final body = {
         'orderCode': orderCode,
@@ -74,8 +76,8 @@ class PayOSService {
         'signature': checksum,
       };
 
-      print('💳 PayOS: Sending request to $_baseUrl/v2/payment-requests');
-      print('💳 PayOS: Order code: $orderCode, Amount: $amount');
+      debugPrint('💳 PayOS: Sending request to $_baseUrl/v2/payment-requests');
+      debugPrint('💳 PayOS: Order code: $orderCode, Amount: $amount');
 
       final response = await http.post(
         Uri.parse('$_baseUrl/v2/payment-requests'),
@@ -87,8 +89,8 @@ class PayOSService {
         body: jsonEncode(body),
       );
 
-      print('💳 PayOS: Response status: ${response.statusCode}');
-      print('💳 PayOS: Response body: ${response.body}');
+      debugPrint('💳 PayOS: Response status: ${response.statusCode}');
+      debugPrint('💳 PayOS: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -191,15 +193,6 @@ class PayOSService {
 }
 
 class PaymentResult {
-  final bool success;
-  final String? paymentUrl;
-  final String? qrCodeData; // QR code string data (not URL)
-  final String? orderCode;
-  final String? accountNumber;
-  final String? accountName;
-  final int? amount;
-  final String? description;
-  final String? error;
 
   PaymentResult({
     required this.success,
@@ -212,14 +205,18 @@ class PaymentResult {
     this.description,
     this.error,
   });
+  final bool success;
+  final String? paymentUrl;
+  final String? qrCodeData; // QR code string data (not URL)
+  final String? orderCode;
+  final String? accountNumber;
+  final String? accountName;
+  final int? amount;
+  final String? description;
+  final String? error;
 }
 
 class PaymentStatus {
-  final String orderCode;
-  final String status;
-  final bool isPaid;
-  final String? transactionId;
-  final String? error;
 
   PaymentStatus({
     required this.orderCode,
@@ -228,4 +225,9 @@ class PaymentStatus {
     this.transactionId,
     this.error,
   });
+  final String orderCode;
+  final String status;
+  final bool isPaid;
+  final String? transactionId;
+  final String? error;
 }

@@ -1,13 +1,14 @@
-import '../services/mistral_service.dart';
-import '../services/ai_intent_service.dart';
-import '../repositories/ai_data_repository.dart';
-import '../models/ai_intent_model.dart';
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/ai_intent_model.dart';
+import 'package:np_future_gate/core/repositories/ai_data_repository.dart';
+import 'package:np_future_gate/core/services/ai_intent_service.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
 
 /// Service kết hợp AI với data từ Supabase
 class EnhancedAIService {
-  static final EnhancedAIService _instance = EnhancedAIService._internal();
   factory EnhancedAIService() => _instance;
   EnhancedAIService._internal();
+  static final EnhancedAIService _instance = EnhancedAIService._internal();
 
   final MistralService _mistralService = MistralService();
   final AIIntentService _intentService = AIIntentService();
@@ -86,7 +87,7 @@ class EnhancedAIService {
         },
       );
     } catch (e) {
-      print('Error handling data query: $e');
+      debugPrint('Error handling data query: $e');
       return AIResponseWithData(
         message: 'Xin lỗi, đã có lỗi xảy ra khi lấy dữ liệu. Vui lòng thử lại.',
         chartType: null,

@@ -1,14 +1,5 @@
 /// Model cho AI Intent Detection
 class AIIntent {
-  final String id;
-  final String name;
-  final String category;
-  final List<String> keywords;
-  final List<String> patterns;
-  final String description;
-  final List<String> requiredRoles; // ['employer', 'student', 'school']
-  final String actionType; // 'data_query', 'general_chat', 'action'
-  final Map<String, dynamic>? queryConfig;
 
   AIIntent({
     required this.id,
@@ -35,6 +26,15 @@ class AIIntent {
       queryConfig: json['query_config'],
     );
   }
+  final String id;
+  final String name;
+  final String category;
+  final List<String> keywords;
+  final List<String> patterns;
+  final String description;
+  final List<String> requiredRoles; // ['employer', 'student', 'school']
+  final String actionType; // 'data_query', 'general_chat', 'action'
+  final Map<String, dynamic>? queryConfig;
 
   Map<String, dynamic> toJson() {
     return {
@@ -53,10 +53,6 @@ class AIIntent {
 
 /// Model cho kết quả phân tích intent
 class IntentAnalysisResult {
-  final AIIntent? matchedIntent;
-  final double confidence;
-  final bool isDataQuery;
-  final Map<String, dynamic>? extractedParams;
 
   IntentAnalysisResult({
     this.matchedIntent,
@@ -64,14 +60,14 @@ class IntentAnalysisResult {
     required this.isDataQuery,
     this.extractedParams,
   });
+  final AIIntent? matchedIntent;
+  final double confidence;
+  final bool isDataQuery;
+  final Map<String, dynamic>? extractedParams;
 }
 
 /// Model cho kết quả trả về từ AI với dữ liệu
 class AIResponseWithData {
-  final String message;
-  final String? chartType; // 'list', 'card', 'table', 'stats'
-  final List<Map<String, dynamic>>? data;
-  final Map<String, dynamic>? metadata;
 
   AIResponseWithData({
     required this.message,
@@ -79,4 +75,8 @@ class AIResponseWithData {
     this.data,
     this.metadata,
   });
+  final String message;
+  final String? chartType; // 'list', 'card', 'table', 'stats'
+  final List<Map<String, dynamic>>? data;
+  final Map<String, dynamic>? metadata;
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class Cv4 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv4({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   // Local color constants to match the original template's theme
   static const Color orangeTheme = Color(0xFFEC8F00);
@@ -67,7 +67,7 @@ class Cv4 extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            personalInfo['full_name'] ?? "Nguyễn Văn A",
+                            personalInfo['full_name'] ?? 'Nguyễn Văn A',
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: orangeTheme,
@@ -75,7 +75,7 @@ class Cv4 extends StatelessWidget {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            (personalInfo['title'] ?? "Kỹ sư phần mềm").toUpperCase(),
+                            (personalInfo['title'] ?? 'Kỹ sư phần mềm').toUpperCase(),
                             style: const TextStyle(
                                 color: orangeTheme,
                                 fontWeight: FontWeight.bold,
@@ -94,15 +94,15 @@ class Cv4 extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildContactRow(Icons.phone, personalInfo['phone'] ?? "0123 456 789"),
+                          _buildContactRow(Icons.phone, personalInfo['phone'] ?? '0123 456 789'),
                           const SizedBox(height: 12),
-                          _buildContactRow(Icons.mail, personalInfo['email'] ?? "email@example.com"),
+                          _buildContactRow(Icons.mail, personalInfo['email'] ?? 'email@example.com'),
                           const SizedBox(height: 12),
                           if (personalInfo['website'] != null) ...[
                             _buildContactRow(Icons.info, personalInfo['website']),
                             const SizedBox(height: 12),
                           ],
-                          _buildContactRow(Icons.location_on, personalInfo['address'] ?? "Hà Nội"),
+                          _buildContactRow(Icons.location_on, personalInfo['address'] ?? 'Hà Nội'),
                         ],
                       ),
                     ),
@@ -171,7 +171,7 @@ class Cv4 extends StatelessWidget {
                           _buildMainSectionTitle('MỤC TIÊU NGHỀ NGHIỆP'),
                           const SizedBox(height: 10),
                           Text(
-                            displayData['summary'] ?? "Bản tóm tắt mục tiêu nghề nghiệp của bạn...",
+                            displayData['summary'] ?? 'Bản tóm tắt mục tiêu nghề nghiệp của bạn...',
                             style: const TextStyle(fontSize: 13, height: 1.4),
                           ),
                         ],
@@ -330,7 +330,7 @@ class Cv4 extends StatelessWidget {
     final list = skills ?? [];
     if (list.isEmpty) {
       return const Text(
-        "- Kỹ năng chuyên môn\n- Kỹ năng mềm",
+        '- Kỹ năng chuyên môn\n- Kỹ năng mềm',
         style: TextStyle(color: lightText, fontSize: 12),
       );
     }
@@ -350,7 +350,7 @@ class Cv4 extends StatelessWidget {
     final list = refs ?? [];
     if (list.isEmpty) {
       return const Text(
-        "Ông Nguyễn Văn A\nCEO công ty A",
+        'Ông Nguyễn Văn A\nCEO công ty A',
         style: TextStyle(color: lightText, fontSize: 11),
       );
     }
@@ -370,18 +370,18 @@ class Cv4 extends StatelessWidget {
     final list = experiences ?? [];
     if (list.isEmpty) {
       return _buildDetailItem(
-        "Kinh nghiệm mẫu",
-        "2023 - 2024",
-        "Công ty ABC",
-        "- Mô tả trách nhiệm công việc của bạn...",
+        'Kinh nghiệm mẫu',
+        '2023 - 2024',
+        'Công ty ABC',
+        '- Mô tả trách nhiệm công việc của bạn...',
       );
     }
     return Column(
       children: list.map((e) => _buildDetailItem(
-        e['position'] ?? "",
-        e['duration'] ?? "",
-        e['company'] ?? "",
-        e['description'] ?? "",
+        e['position'] ?? '',
+        e['duration'] ?? '',
+        e['company'] ?? '',
+        e['description'] ?? '',
       )).toList(),
     );
   }
@@ -390,18 +390,18 @@ class Cv4 extends StatelessWidget {
     final list = education ?? [];
     if (list.isEmpty) {
       return _buildDetailItem(
-        "Chuyên ngành học của bạn",
-        "2018 - 2022",
-        "Đại học X",
-        "- Tốt nghiệp loại khá/giỏi...",
+        'Chuyên ngành học của bạn',
+        '2018 - 2022',
+        'Đại học X',
+        '- Tốt nghiệp loại khá/giỏi...',
       );
     }
     return Column(
       children: list.map((e) => _buildDetailItem(
-        e['degree'] ?? "",
-        e['year'] ?? "",
-        e['school'] ?? "",
-        "", // no specific note list for education in original, but degree can be major
+        e['degree'] ?? '',
+        e['year'] ?? '',
+        e['school'] ?? '',
+        '', // no specific note list for education in original, but degree can be major
       )).toList(),
     );
   }
@@ -411,10 +411,10 @@ class Cv4 extends StatelessWidget {
     if (list.isEmpty) return const SizedBox();
     return Column(
       children: list.map((a) => _buildDetailItem(
-        a['role'] ?? "",
-        a['duration'] ?? "",
-        a['organization'] ?? "",
-        a['description'] ?? "",
+        a['role'] ?? '',
+        a['duration'] ?? '',
+        a['organization'] ?? '',
+        a['description'] ?? '',
       )).toList(),
     );
   }
@@ -478,14 +478,14 @@ class Cv4 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                item['year'] ?? "",
+                item['year'] ?? '',
                 style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     color: darkTheme),
               ),
               Text(
-                item['name'] ?? "",
+                item['name'] ?? '',
                 style: const TextStyle(fontSize: 12, color: darkTheme),
               ),
             ],
@@ -506,14 +506,14 @@ class Cv4 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                item['year'] ?? "",
+                item['year'] ?? '',
                 style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     color: darkTheme),
               ),
               Text(
-                item['name'] ?? "",
+                item['name'] ?? '',
                 style: const TextStyle(fontSize: 12, color: darkTheme),
               ),
             ],

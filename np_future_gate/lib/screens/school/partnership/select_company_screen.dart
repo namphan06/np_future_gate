@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/services/supabase_service.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class SelectCompanyScreen extends StatefulWidget {
   const SelectCompanyScreen({super.key});
@@ -135,7 +133,7 @@ class _SelectCompanyScreenState extends State<SelectCompanyScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -156,7 +154,7 @@ class _SelectCompanyScreenState extends State<SelectCompanyScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.purple.withOpacity(0.1),
+                    color: Colors.purple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.business, color: Colors.purple, size: 28),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// A beautiful TextField widget with integrated speech-to-text functionality
 /// Features:
@@ -10,23 +10,6 @@ import 'package:permission_handler/permission_handler.dart';
 /// - Beautiful animated mic button
 /// - Error handling
 class SpeechTextField extends StatefulWidget {
-  final TextEditingController controller;
-  final String? label;
-  final String? hint;
-  final IconData? prefixIcon;
-  final int maxLines;
-  final TextInputType? keyboardType;
-  final String? Function(String?)? validator;
-  final bool enabled;
-  final TextCapitalization textCapitalization;
-  final FocusNode? focusNode;
-  final ValueChanged<String>? onChanged;
-  final InputDecoration? decoration;
-  final bool obscureText;
-  final TextInputAction? textInputAction;
-  final VoidCallback? onEditingComplete;
-  final ValueChanged<String>? onSubmitted;
-  final Widget? suffixIcon;
 
   const SpeechTextField({
     super.key,
@@ -48,6 +31,23 @@ class SpeechTextField extends StatefulWidget {
     this.onSubmitted,
     this.suffixIcon,
   });
+  final TextEditingController controller;
+  final String? label;
+  final String? hint;
+  final IconData? prefixIcon;
+  final int maxLines;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final bool enabled;
+  final TextCapitalization textCapitalization;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onChanged;
+  final InputDecoration? decoration;
+  final bool obscureText;
+  final TextInputAction? textInputAction;
+  final VoidCallback? onEditingComplete;
+  final ValueChanged<String>? onSubmitted;
+  final Widget? suffixIcon;
 
   @override
   State<SpeechTextField> createState() => _SpeechTextFieldState();
@@ -209,9 +209,12 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
         },
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
+        // ignore: deprecated_member_use
         partialResults: true, // Real-time results
         localeId: 'vi_VN', // Vietnamese
+        // ignore: deprecated_member_use
         cancelOnError: false,
+        // ignore: deprecated_member_use
         listenMode: stt.ListenMode.dictation,
       );
     }
@@ -310,7 +313,7 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.red,
                     shape: BoxShape.circle,
                   ),
@@ -367,7 +370,7 @@ class _SpeechTextFieldState extends State<SpeechTextField> with SingleTickerProv
                     ),
               boxShadow: [
                 BoxShadow(
-                  color: (_isListening ? Colors.red : Colors.blue).withOpacity(0.3),
+                  color: (_isListening ? Colors.red : Colors.blue).withValues(alpha: 0.3),
                   blurRadius: _isListening ? 8 : 4,
                   spreadRadius: _isListening ? 1 : 0,
                 ),

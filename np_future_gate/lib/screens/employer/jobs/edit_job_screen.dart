@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/enums/employment_types.dart';
+import 'package:np_future_gate/core/enums/experience_levels.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/enums/vietnam_provinces.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/enums/vietnam_provinces.dart';
-import '../../../core/enums/job_fields.dart';
-import '../../../core/enums/employment_types.dart';
-import '../../../core/enums/experience_levels.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../widgets/speech_text_field.dart';
 
 class EditJobScreen extends StatefulWidget {
-  final JobModel? job;
 
   const EditJobScreen({super.key, this.job});
+  final JobModel? job;
 
   @override
   State<EditJobScreen> createState() => _EditJobScreenState();
@@ -144,7 +144,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: AppMainColors.primary,
             ),
           ),
@@ -293,10 +293,10 @@ class _EditJobScreenState extends State<EditJobScreen> {
                           trailing: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppMainColors.primary.withOpacity(0.1),
+                              color: AppMainColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(Icons.calendar_today, color: AppMainColors.primary, size: 20),
+                            child: const Icon(Icons.calendar_today, color: AppMainColors.primary, size: 20),
                           ),
                           onTap: _pickDate,
                         ),
@@ -309,7 +309,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
                           ),
                           value: _isActive,
                           onChanged: (v) => setState(() => _isActive = v),
-                          activeColor: AppMainColors.primary,
+                          activeThumbColor: AppMainColors.primary,
                           contentPadding: EdgeInsets.zero,
                         ),
                       ],
@@ -332,7 +332,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -395,7 +395,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -451,7 +451,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
     required Function(String?) onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      value: items.contains(value) ? value : null,
+      initialValue: items.contains(value) ? value : null,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
@@ -531,7 +531,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
                   }
                   onChanged(newItems);
                 },
-                selectedColor: AppMainColors.primary.withOpacity(0.15),
+                selectedColor: AppMainColors.primary.withValues(alpha: 0.15),
                 checkmarkColor: AppMainColors.primary,
                 labelStyle: TextStyle(
                   color: isSelected ? AppMainColors.primary : Colors.black87,
@@ -541,7 +541,7 @@ class _EditJobScreenState extends State<EditJobScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? AppMainColors.primary.withOpacity(0.5) : Colors.transparent,
+                    color: isSelected ? AppMainColors.primary.withValues(alpha: 0.5) : Colors.transparent,
                   ),
                 ),
               );
@@ -629,13 +629,13 @@ class _EditJobScreenState extends State<EditJobScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppMainColors.primary.withOpacity(0.1),
+                  color: AppMainColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(Icons.add, size: 16, color: AppMainColors.primary),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       'Thêm',
                       style: TextStyle(
@@ -679,8 +679,8 @@ class _EditJobScreenState extends State<EditJobScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 2),
                     child: Icon(Icons.circle, size: 8, color: AppMainColors.primary),
                   ),
                   const SizedBox(width: 12),

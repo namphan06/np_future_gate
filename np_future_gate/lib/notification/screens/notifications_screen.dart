@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:np_future_gate/core/models/notification_model.dart';
+import 'package:np_future_gate/core/repositories/notification_repository.dart';
+import 'package:np_future_gate/core/services/notification/status_notification_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
+import 'package:np_future_gate/notification/widgets/notification_item_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/notification_model.dart';
-import '../models/notification_config.dart';
-import '../../../core/repositories/notification_repository.dart';
-import '../../core/services/notification/status_notification_service.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../widgets/notification_item_widget.dart';
 
 /// Màn hình hiển thị danh sách thông báo
 class NotificationsScreen extends StatefulWidget {
@@ -143,7 +143,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         _hasMore = notifications.length >= _pageSize;
       });
     } catch (e) {
-      print('Error loading more notifications: $e');
+      debugPrint('Error loading more notifications: $e');
     } finally {
       setState(() {
         _isLoading = false;
@@ -162,7 +162,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         _unreadCount = count;
       });
     } catch (e) {
-      print('Error loading unread count: $e');
+      debugPrint('Error loading unread count: $e');
     }
   }
 
@@ -224,10 +224,10 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppMainColors.primary.withOpacity(0.1),
+                        color: AppMainColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.filter_list_rounded,
                         color: AppMainColors.primary,
                         size: 20,
@@ -373,7 +373,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? chipColor.withOpacity(0.1) : Colors.grey[100],
+          color: isSelected ? chipColor.withValues(alpha: 0.1) : Colors.grey[100],
           border: Border.all(
             color: isSelected ? chipColor : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
@@ -489,7 +489,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -545,7 +545,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           Container(
             decoration: BoxDecoration(
               color: _selectedType != null 
-                  ? AppMainColors.primary.withOpacity(0.1)
+                  ? AppMainColors.primary.withValues(alpha: 0.1)
                   : Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
               border: _selectedType != null
@@ -619,7 +619,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -664,7 +664,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
             gradient: isSelected
-                ? LinearGradient(
+                ? const LinearGradient(
                     colors: [
                       AppMainColors.primary,
                       AppMainColors.primaryDark,
@@ -676,7 +676,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: AppMainColors.primary.withOpacity(0.3),
+                      color: AppMainColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -709,8 +709,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? Colors.white.withOpacity(0.25)
-                        : AppMainColors.primary.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.25)
+                        : AppMainColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -738,7 +738,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               color: AppMainColors.primary,
             ),
             const SizedBox(height: 16),
@@ -806,9 +806,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         if (index == _notifications.length) {
-          return Center(
+          return const Center(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
               child: CircularProgressIndicator(
                 color: AppMainColors.primary,
                 strokeWidth: 2,

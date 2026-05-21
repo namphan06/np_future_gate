@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/auth/change_password_screen.dart';
+import 'package:np_future_gate/screens/auth/login_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/employer/edit_company_profile_screen.dart';
+import 'package:np_future_gate/screens/employer/email_notification_settings_screen.dart';
+import 'package:np_future_gate/screens/employer/subscription/payment_history_screen.dart';
+import 'package:np_future_gate/screens/employer/subscription/upgrade_account_screen.dart';
+import 'package:np_future_gate/screens/settings/notification_settings_screen.dart';
+import 'package:np_future_gate/screens/settings/web_view_screen.dart';
+import 'package:np_future_gate/widgets/animated_avatar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../auth/change_password_screen.dart';
-import '../auth/login_screen.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/services/chat_service.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../widgets/animated_avatar.dart';
-import 'edit_company_profile_screen.dart';
-import 'email_notification_settings_screen.dart';
-import '../settings/notification_settings_screen.dart';
-import '../settings/web_view_screen.dart';
-import 'subscription/upgrade_account_screen.dart';
-import 'subscription/payment_history_screen.dart';
-import '../chat/chat_detail_screen.dart';
 
 class ProfilePageEmployer extends StatefulWidget {
   const ProfilePageEmployer({super.key});
@@ -58,7 +58,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 20,
                           offset: const Offset(0, 4),
                         ),
@@ -75,7 +75,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                             gradient: currentUser?.userMetadata?['avatar_url'] == null
                                 ? LinearGradient(
                                     colors: [
-                                      AppMainColors.primary.withOpacity(0.8),
+                                      AppMainColors.primary.withValues(alpha: 0.8),
                                       AppMainColors.primaryDark,
                                     ],
                                     begin: Alignment.topLeft,
@@ -84,7 +84,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                                 : null,
                             boxShadow: [
                               BoxShadow(
-                                color: AppMainColors.primary.withOpacity(0.3),
+                                color: AppMainColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -168,7 +168,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                         // Edit button
                         Container(
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Material(
@@ -176,8 +176,8 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: _navigateToEditProfile,
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
+                              child: const Padding(
+                                padding: EdgeInsets.all(10),
                                 child: Icon(
                                   Icons.edit_outlined,
                                   color: AppMainColors.primary,
@@ -419,7 +419,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -471,9 +471,9 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.85),
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.6),
+                    Colors.white.withValues(alpha: 0.85),
                     Colors.white,
                   ],
                   stops: const [0.0, 0.2, 0.4, 1.0],
@@ -499,7 +499,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -517,7 +517,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 26),
@@ -573,8 +573,10 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
           .maybeSingle();
 
       if (adminResponse == null) {
+        // ignore: use_build_context_synchronously
         if (mounted) Navigator.pop(context); // Close loading
         if (mounted) {
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Không tìm thấy Admin. Vui lòng thử lại sau.'),
@@ -596,10 +598,12 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
         otherUserType: 'admin',
       );
 
+      // ignore: use_build_context_synchronously
       if (mounted) Navigator.pop(context); // Close loading
 
       if (conversation != null && mounted) {
         Navigator.push(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(
             builder: (_) => ChatDetailScreen(
@@ -610,6 +614,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
           ),
         );
       } else if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
@@ -618,8 +623,10 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
         );
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       if (mounted) Navigator.pop(context); // Close loading
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
@@ -646,11 +653,11 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.info_outline, color: AppMainColors.primary),
-            const SizedBox(width: 10),
-            const Text('Về NP Future Gate'),
+            SizedBox(width: 10),
+            Text('Về NP Future Gate'),
           ],
         ),
         content: Column(
@@ -714,7 +721,7 @@ class _ProfilePageEmployerState extends State<ProfilePageEmployer> {
               try {
                 await AuthRepository().signOut();
               } catch (e) {
-                print('Logout error: $e');
+                debugPrint('Logout error: $e');
               }
 
               // 4. Navigate to LoginScreen directly

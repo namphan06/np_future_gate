@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
+import 'package:np_future_gate/screens/chatbot/chatbot_screen.dart';
+import 'package:np_future_gate/widgets/draggable_floating_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../screens/chat/chat_list_screen.dart';
-import '../screens/chatbot/chatbot_screen.dart';
-import 'draggable_floating_button.dart';
 
 class ChatFloatingOverlay extends StatefulWidget {
-  final Widget child;
-  final GlobalKey<NavigatorState> navigatorKey;
 
   const ChatFloatingOverlay({
-    Key? key,
+    super.key,
     required this.child,
     required this.navigatorKey,
-  }) : super(key: key);
+  });
+  final Widget child;
+  final GlobalKey<NavigatorState> navigatorKey;
 
   @override
   State<ChatFloatingOverlay> createState() => _ChatFloatingOverlayState();

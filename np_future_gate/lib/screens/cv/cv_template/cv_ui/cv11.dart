@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV11 - Modern Gradient Template
 /// Mẫu CV hiện đại với gradient màu sắc bắt mắt
 class Cv11 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv11({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class Cv11 extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -252,7 +252,7 @@ class Cv11 extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF667EEA).withOpacity(0.1),
+                  color: const Color(0xFF667EEA).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(duration, style: const TextStyle(fontSize: 10, color: Color(0xFF667EEA))),
@@ -331,10 +331,10 @@ class Cv11 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF667EEA).withOpacity(0.1), const Color(0xFF764BA2).withOpacity(0.1)],
+          colors: [const Color(0xFF667EEA).withValues(alpha: 0.1), const Color(0xFF764BA2).withValues(alpha: 0.1)],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF667EEA).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF667EEA).withValues(alpha: 0.3)),
       ),
       child: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF667EEA), fontWeight: FontWeight.w500)),
     );

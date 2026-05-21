@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV19 - Media & Journalism Template
 /// Mẫu CV dành cho ngành Truyền thông, Báo chí, Phát thanh
 class Cv19 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv19({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +396,7 @@ class Cv19 extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [const Color(0xFF7B1FA2).withOpacity(0.1), const Color(0xFFFF4081).withOpacity(0.1)],
+          colors: [const Color(0xFF7B1FA2).withValues(alpha: 0.1), const Color(0xFFFF4081).withValues(alpha: 0.1)],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFCE93D8)),

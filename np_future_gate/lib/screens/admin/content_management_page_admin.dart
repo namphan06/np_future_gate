@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/models/profile_model.dart';
 import 'package:intl/intl.dart';
-import 'user_detail_screen.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/admin/user_detail_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ContentManagementPageAdmin extends StatefulWidget {
   const ContentManagementPageAdmin({super.key});
@@ -74,7 +74,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
         });
       }
     } catch (e) {
-      print('Error loading pending counts: $e');
+      debugPrint('Error loading pending counts: $e');
     }
   }
 
@@ -285,7 +285,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -530,7 +530,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -548,7 +548,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: badgeColor.withOpacity(0.1),
+                        color: badgeColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -597,7 +597,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: badgeColor.withOpacity(0.1),
+                        color: badgeColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -1160,7 +1160,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
                   margin: const EdgeInsets.only(top: 6),
                   width: 6,
                   height: 6,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppMainColors.primary,
                     shape: BoxShape.circle,
                   ),
@@ -1175,7 +1175,7 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -1247,10 +1247,10 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [cardColor.withOpacity(0.1), cardColor.withOpacity(0.2)],
+              colors: [cardColor.withValues(alpha: 0.1), cardColor.withValues(alpha: 0.2)],
             ),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: cardColor.withOpacity(0.3)),
+            border: Border.all(color: cardColor.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1309,11 +1309,11 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.handshake, color: Colors.purple, size: 24),
-                  const SizedBox(width: 12),
-                  const Text(
+                  Icon(Icons.handshake, color: Colors.purple, size: 24),
+                  SizedBox(width: 12),
+                  Text(
                     'Thông tin liên kết',
                     style: TextStyle(
                       fontSize: 18,
@@ -1373,14 +1373,14 @@ class _ContentManagementPageAdminState extends State<ContentManagementPageAdmin>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 22),

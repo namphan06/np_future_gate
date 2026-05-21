@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cv9 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv9({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   // Medical Theme: Sterile, Professional, Patient-Focused
   static const Color primaryColor = Color(0xFF00796B); // Medical Teal
@@ -67,7 +67,7 @@ class Cv9 extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildSectionWrapper('summary', _buildMainSection('CLINICAL SUMMARY', Text(
-                displayData['summary'] ?? "Dedicated medical professional with extensive experience in patient care and clinical research. Committed to providing evidence-based treatment and improving patient outcomes.",
+                displayData['summary'] ?? 'Dedicated medical professional with extensive experience in patient care and clinical research. Committed to providing evidence-based treatment and improving patient outcomes.',
                 style: GoogleFonts.lato(fontSize: 14, height: 1.8, color: textColor),
               ))),
               const SizedBox(height: 50),
@@ -107,7 +107,7 @@ class Cv9 extends StatelessWidget {
         _buildSectionWrapper('personal_details', _buildSidebarSection('CONTACT DETAILS', _buildContact(personalInfo))),
         const SizedBox(height: 40),
         _buildSectionWrapper('summary', _buildMainSection('CLINICAL SUMMARY', Text(
-          displayData['summary'] ?? "Dedicated medical professional with extensive experience in patient care and clinical research. Committed to providing evidence-based treatment and improving patient outcomes.",
+          displayData['summary'] ?? 'Dedicated medical professional with extensive experience in patient care and clinical research. Committed to providing evidence-based treatment and improving patient outcomes.',
           style: GoogleFonts.lato(fontSize: 14, height: 1.8, color: textColor),
         ))),
         const SizedBox(height: 40),
@@ -127,8 +127,8 @@ class Cv9 extends StatelessWidget {
   }
 
   Widget _buildHeader(Map<String, dynamic> info, bool isNarrow) {
-    String? avatarUrl = info['avatar_url'];
-    bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
+    final String? avatarUrl = info['avatar_url'];
+    final bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
 
     return Container(
       width: double.infinity,
@@ -147,7 +147,7 @@ class Cv9 extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: primaryColor, width: 3),
                 boxShadow: [
-                  BoxShadow(color: primaryColor.withOpacity(0.1), blurRadius: 20, spreadRadius: 5),
+                  BoxShadow(color: primaryColor.withValues(alpha: 0.1), blurRadius: 20, spreadRadius: 5),
                 ],
               ),
               child: ClipOval(
@@ -167,7 +167,7 @@ class Cv9 extends StatelessWidget {
                 _buildSectionWrapper(
                   'cv_name',
                   Text(
-                    (info['full_name'] ?? "DR. CLINICAL EXPERT"),
+                    (info['full_name'] ?? 'DR. CLINICAL EXPERT'),
                     style: GoogleFonts.merriweather(
                       fontSize: isNarrow ? 28 : 38,
                       fontWeight: FontWeight.bold,
@@ -181,7 +181,7 @@ class Cv9 extends StatelessWidget {
                 _buildSectionWrapper(
                   'cv_name',
                   Text(
-                    (info['title'] ?? "Senior Consultant Specialist").toUpperCase(),
+                    (info['title'] ?? 'Senior Consultant Specialist').toUpperCase(),
                     style: GoogleFonts.lato(
                       fontSize: 14,
                       letterSpacing: 4,
@@ -217,7 +217,7 @@ class Cv9 extends StatelessWidget {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primaryColor, letterSpacing: 1),
         ),
         const SizedBox(height: 10),
-        Container(height: 1, width: double.infinity, color: primaryColor.withOpacity(0.2)),
+        Container(height: 1, width: double.infinity, color: primaryColor.withValues(alpha: 0.2)),
         const SizedBox(height: 25),
         content,
       ],
@@ -249,9 +249,9 @@ class Cv9 extends StatelessWidget {
   Widget _buildContact(Map<String, dynamic> info) {
     return Column(
       children: [
-        _buildContactItem(Icons.phone_android, info['phone'] ?? "+84 000 000 000"),
-        _buildContactItem(Icons.alternate_email, info['email'] ?? "health@medical.org"),
-        _buildContactItem(Icons.medical_information_outlined, info['address'] ?? "Metropolis Health Center"),
+        _buildContactItem(Icons.phone_android, info['phone'] ?? '+84 000 000 000'),
+        _buildContactItem(Icons.alternate_email, info['email'] ?? 'health@medical.org'),
+        _buildContactItem(Icons.medical_information_outlined, info['address'] ?? 'Metropolis Health Center'),
       ],
     );
   }
@@ -281,7 +281,7 @@ class Cv9 extends StatelessWidget {
           color: accentColor,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Text(s['name'] ?? "", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
+        child: Text(s['name'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
       )).toList(),
     );
   }
@@ -295,7 +295,7 @@ class Cv9 extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(width: 4, color: primaryColor.withOpacity(0.3)),
+              Container(width: 4, color: primaryColor.withValues(alpha: 0.3)),
               const SizedBox(width: 20),
               Expanded(
                 child: Column(
@@ -304,14 +304,14 @@ class Cv9 extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: Text(exp['position'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor))),
-                        Text(exp['duration'] ?? "", style: const TextStyle(fontSize: 11, color: secondaryColor, fontWeight: FontWeight.bold)),
+                        Expanded(child: Text(exp['position'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor))),
+                        Text(exp['duration'] ?? '', style: const TextStyle(fontSize: 11, color: secondaryColor, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(exp['company'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
+                    Text(exp['company'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
                     const SizedBox(height: 15),
-                    Text(exp['description'] ?? "", style: const TextStyle(fontSize: 13, height: 1.7, color: textColor)),
+                    Text(exp['description'] ?? '', style: const TextStyle(fontSize: 13, height: 1.7, color: textColor)),
                   ],
                 ),
               ),
@@ -336,8 +336,8 @@ class Cv9 extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(act['role'] ?? act['name'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
-                  Text(act['description'] ?? "", style: const TextStyle(fontSize: 12, height: 1.5, color: textColor)),
+                  Text(act['role'] ?? act['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
+                  Text(act['description'] ?? '', style: const TextStyle(fontSize: 12, height: 1.5, color: textColor)),
                 ],
               ),
             ),
@@ -356,9 +356,9 @@ class Cv9 extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(edu['school'] ?? "", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-            Text(edu['degree'] ?? "", style: const TextStyle(fontSize: 12, color: textColor)),
-            Text(edu['year'] ?? "", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondaryColor)),
+            Text(edu['school'] ?? '', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            Text(edu['degree'] ?? '', style: const TextStyle(fontSize: 12, color: textColor)),
+            Text(edu['year'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: secondaryColor)),
           ],
         ),
       )).toList(),

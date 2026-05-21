@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV15 - Education & Teaching Template
 /// Mẫu CV dành cho ngành Giáo dục, Giảng viên, Giáo viên
 class Cv15 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv15({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {

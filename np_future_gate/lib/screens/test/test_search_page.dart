@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class TestSearchPage extends StatelessWidget {
   const TestSearchPage({super.key});
@@ -14,7 +14,7 @@ class TestSearchPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.search_rounded,
               size: 100,
               color: AppMainColors.primaryLight,

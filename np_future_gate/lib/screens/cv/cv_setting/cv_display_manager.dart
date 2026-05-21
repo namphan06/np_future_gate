@@ -1,45 +1,45 @@
 import 'package:flutter/material.dart';
-import '../cv_template/cv_ui/cv1.dart';
-import '../cv_template/cv_ui/cv2.dart';
-import '../cv_template/cv_ui/cv3.dart';
-import '../cv_template/cv_ui/cv4.dart';
-import '../cv_template/cv_ui/cv5.dart';
-import '../cv_template/cv_ui/cv6.dart';
-import '../cv_template/cv_ui/cv7.dart';
-import '../cv_template/cv_ui/cv8.dart';
-import '../cv_template/cv_ui/cv9.dart';
-import '../cv_template/cv_ui/cv10.dart';
-import '../cv_template/cv_ui/cv11.dart';
-import '../cv_template/cv_ui/cv12.dart';
-import '../cv_template/cv_ui/cv13.dart';
-import '../cv_template/cv_ui/cv14.dart';
-import '../cv_template/cv_ui/cv15.dart';
-import '../cv_template/cv_ui/cv16.dart';
-import '../cv_template/cv_ui/cv17.dart';
-import '../cv_template/cv_ui/cv18.dart';
-import '../cv_template/cv_ui/cv19.dart';
-import '../cv_input/cv1_input_screen.dart';
-import '../cv_input/cv2_input_screen.dart';
-import '../cv_input/cv3_input_screen.dart';
-import '../cv_input/cv4_input_screen.dart';
-import '../cv_input/cv5_input_screen.dart';
-import '../cv_input/cv6_input_screen.dart';
-import '../cv_input/cv7_input_screen.dart';
-import '../cv_input/cv8_input_screen.dart';
-import '../cv_input/cv9_input_screen.dart';
-import '../cv_input/cv10_input_screen.dart';
-import '../cv_input/cv11_input_screen.dart';
-import '../cv_input/cv12_input_screen.dart';
-import '../cv_input/cv13_input_screen.dart';
-import '../cv_input/cv14_input_screen.dart';
-import '../cv_input/cv15_input_screen.dart';
-import '../cv_input/cv16_input_screen.dart';
-import '../cv_input/cv17_input_screen.dart';
-import '../cv_input/cv18_input_screen.dart';
-import '../cv_input/cv19_input_screen.dart';
-import '../cv_upload_edit_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv10_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv11_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv12_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv13_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv14_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv15_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv16_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv17_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv18_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv19_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv1_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv2_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv3_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv4_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv5_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv6_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv7_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv8_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv9_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv1.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv10.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv11.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv12.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv13.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv14.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv15.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv16.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv17.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv18.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv19.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv2.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv3.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv4.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv5.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv6.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv7.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv8.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv9.dart';
+import 'package:np_future_gate/screens/cv/cv_upload_edit_screen.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// CV Display Manager
 /// Quản lý việc hiển thị CV (View/Edit) dựa trên template code (mcv) và loại CV.
@@ -308,7 +308,7 @@ class CVDisplayManager {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: Colors.black.withValues(alpha: 0.08),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -339,7 +339,7 @@ class CVDisplayManager {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                               spreadRadius: 1,
                               offset: const Offset(0, 4),
@@ -406,7 +406,7 @@ class CVDisplayManager {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                               spreadRadius: 1,
                               offset: const Offset(0, 4),
@@ -439,7 +439,7 @@ class CVDisplayManager {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: Colors.black.withValues(alpha: 0.08),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -538,8 +538,8 @@ class CVDisplayManager {
                     end: Alignment.bottomCenter,
                     colors: [
                       const Color(0xFFF5F7FA),
-                      const Color(0xFFF5F7FA).withOpacity(0.9),
-                      const Color(0xFFF5F7FA).withOpacity(0),
+                      const Color(0xFFF5F7FA).withValues(alpha: 0.9),
+                      const Color(0xFFF5F7FA).withValues(alpha: 0),
                     ],
                   ),
                 ),
@@ -552,7 +552,7 @@ class CVDisplayManager {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -580,7 +580,7 @@ class CVDisplayManager {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -606,7 +606,7 @@ class CVDisplayManager {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -648,6 +648,7 @@ class CVDisplayManager {
                             onTap: () {
                               Future.delayed(Duration.zero, () {
                                 showDialog(
+                                  // ignore: use_build_context_synchronously
                                   context: context,
                                   builder: (ctx) => AlertDialog(
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

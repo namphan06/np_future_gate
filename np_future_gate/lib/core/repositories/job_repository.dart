@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:np_future_gate/core/models/job_model.dart';
 import 'package:np_future_gate/core/services/subscription_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -199,7 +199,7 @@ class JobRepository {
           .eq('creator_id', employerId);
       
       final jobs = jobsResponse as List;
-      int jobsCount = jobs.length;
+      final int jobsCount = jobs.length;
       int totalApplicantsCount = 0;
       int newApplicantsCount = 0;
       
@@ -665,7 +665,7 @@ class JobRepository {
 
             // Fetch profiles for these jobs
             final creatorIds = jobsList.map((j) => j['creator_id'] as String).toSet().toList();
-            Map<String, dynamic> profilesMap = {};
+            final Map<String, dynamic> profilesMap = {};
             
             if (creatorIds.isNotEmpty) {
                final profilesResponse = await _supabase
@@ -726,7 +726,7 @@ class JobRepository {
             
             // Fetch profiles
             final creatorIds = jobsList.map((j) => j['creator_id'] as String).toSet().toList();
-            Map<String, dynamic> profilesMap = {};
+            final Map<String, dynamic> profilesMap = {};
             if (creatorIds.isNotEmpty) {
                final profilesResponse = await _supabase
                    .from('profiles')

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/job_repository.dart';
-import '../candidate/job_detail_screen.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_detail_screen.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
 
 class JobApprovalPageAdmin extends StatefulWidget {
   const JobApprovalPageAdmin({super.key});
@@ -222,7 +222,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(iconData, color: color, size: 32),
@@ -365,8 +365,8 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-            SizedBox(width: 12),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 12),
             Flexible(child: Text(title)),
           ],
         ),
@@ -394,8 +394,8 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 12),
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
             Expanded(child: Text(message)),
           ],
         ),
@@ -411,8 +411,8 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error, color: Colors.white),
-            SizedBox(width: 12),
+            const Icon(Icons.error, color: Colors.white),
+            const SizedBox(width: 12),
             Expanded(child: Text(message)),
           ],
         ),
@@ -428,8 +428,8 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.block, color: Colors.white),
-            SizedBox(width: 12),
+            const Icon(Icons.block, color: Colors.white),
+            const SizedBox(width: 12),
             Expanded(child: Text(message)),
           ],
         ),
@@ -471,7 +471,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -584,7 +584,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -804,7 +804,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue.withOpacity(0.05), Colors.blue.withOpacity(0.02)],
+                  colors: [Colors.blue.withValues(alpha: 0.05), Colors.blue.withValues(alpha: 0.02)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -818,7 +818,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
                       border: Border.all(color: Colors.white, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -831,7 +831,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
                           ? NetworkImage(job.creatorAvatarUrl!)
                           : null,
                       child: job.creatorAvatarUrl == null
-                          ? Icon(Icons.business, color: Colors.blue, size: 28)
+                          ? const Icon(Icons.business, color: Colors.blue, size: 28)
                           : null,
                     ),
                   ),
@@ -875,9 +875,9 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       'Thường',
@@ -984,7 +984,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.purple.withOpacity(0.05), Colors.purple.withOpacity(0.02)],
+          colors: [Colors.purple.withValues(alpha: 0.05), Colors.purple.withValues(alpha: 0.02)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -1055,9 +1055,9 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.1),
+                      color: Colors.purple.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                      border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1102,7 +1102,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
         border: Border.all(color: Colors.white, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -1186,7 +1186,7 @@ class _JobApprovalPageAdminState extends State<JobApprovalPageAdmin>
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, size: 16, color: color),

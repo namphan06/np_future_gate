@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class PartnershipRequestsEmployerScreen extends StatefulWidget {
   const PartnershipRequestsEmployerScreen({super.key});
@@ -194,7 +192,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.purple.withOpacity(0.3),
+                            color: Colors.purple.withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -205,7 +203,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(Icons.school, color: Colors.white, size: 32),
@@ -282,7 +280,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.4),
+                              color: Colors.orange.withValues(alpha: 0.4),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -294,7 +292,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.school, size: 18, color: Colors.white),
@@ -404,8 +402,8 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                                 runSpacing: 8,
                                 children: (metadata['fields'] as List).map((field) => Chip(
                                   label: Text(field.toString()),
-                                  backgroundColor: Colors.orange.withOpacity(0.1),
-                                  side: BorderSide(color: Colors.orange.withOpacity(0.5)),
+                                  backgroundColor: Colors.orange.withValues(alpha: 0.1),
+                                  side: BorderSide(color: Colors.orange.withValues(alpha: 0.5)),
                                 )).toList(),
                               ),
                             ],
@@ -418,8 +416,8 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                                 runSpacing: 8,
                                 children: (metadata['requirements_tags'] as List).map((tag) => Chip(
                                   label: Text(tag.toString()),
-                                  backgroundColor: Colors.purple.withOpacity(0.1),
-                                  side: BorderSide(color: Colors.purple.withOpacity(0.5)),
+                                  backgroundColor: Colors.purple.withValues(alpha: 0.1),
+                                  side: BorderSide(color: Colors.purple.withValues(alpha: 0.5)),
                                 )).toList(),
                               ),
                             ],
@@ -583,9 +581,9 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,7 +676,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
@@ -712,7 +710,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                       icon: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.filter_list, color: Colors.white, size: 20),
@@ -741,7 +739,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.inbox_outlined, size: 80, color: Colors.white.withOpacity(0.5)),
+                                Icon(Icons.inbox_outlined, size: 80, color: Colors.white.withValues(alpha: 0.5)),
                                 const SizedBox(height: 16),
                                 Text(
                                   _filterStatus == 'all'
@@ -810,7 +808,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -832,7 +830,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
+                        color: Colors.purple.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.school, color: Colors.purple, size: 20),
@@ -868,7 +866,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                                 borderRadius: BorderRadius.circular(6),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.orange.withOpacity(0.3),
+                                    color: Colors.orange.withValues(alpha: 0.3),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -902,7 +900,7 @@ class _PartnershipRequestsEmployerScreenState extends State<PartnershipRequestsE
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: statusColor, width: 1),
                   ),

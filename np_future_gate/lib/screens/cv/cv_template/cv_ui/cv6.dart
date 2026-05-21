@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cv6 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv6({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   // Marketing Theme: Vibrant, Dynamic, Result-Oriented
   static const Color primaryColor = Color(0xFFFF5722); // Vibrant Orange/Coral
@@ -52,11 +52,11 @@ class Cv6 extends StatelessWidget {
                             'MARKETING OBJECTIVE',
                             Text(
                               displayData['summary'] ??
-                                  "Creative and data-driven Growth Marketer with a passion for brand storytelling and performance marketing. Specialized in digital transformation and customer acquisition strategies.",
+                                  'Creative and data-driven Growth Marketer with a passion for brand storytelling and performance marketing. Specialized in digital transformation and customer acquisition strategies.',
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 height: 1.8,
-                                color: textColor.withOpacity(0.8),
+                                color: textColor.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -155,8 +155,8 @@ class Cv6 extends StatelessWidget {
   }
 
   Widget _buildHeader(Map<String, dynamic> info, bool isNarrow) {
-    String? avatarUrl = info['avatar_url'];
-    bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
+    final String? avatarUrl = info['avatar_url'];
+    final bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
 
     return Container(
       width: double.infinity,
@@ -172,7 +172,7 @@ class Cv6 extends StatelessWidget {
               width: 250,
               height: 250,
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.2),
+                color: primaryColor.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
             ),
@@ -193,7 +193,7 @@ class Cv6 extends StatelessWidget {
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 15,
                           offset: const Offset(0, 10),
                         ),
@@ -217,7 +217,7 @@ class Cv6 extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          (info['full_name'] ?? "MARKETING PROFESSIONAL").toUpperCase(),
+                          (info['full_name'] ?? 'MARKETING PROFESSIONAL').toUpperCase(),
                           style: GoogleFonts.oswald(
                             fontSize: isNarrow ? 36 : 48,
                             fontWeight: FontWeight.bold,
@@ -234,7 +234,7 @@ class Cv6 extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            (info['title'] ?? "Global Brand Specialist").toUpperCase(),
+                            (info['title'] ?? 'Global Brand Specialist').toUpperCase(),
                             style: GoogleFonts.montserrat(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -303,7 +303,7 @@ class Cv6 extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Container(width: double.infinity, height: 1, color: secondaryColor.withOpacity(0.1)),
+        Container(width: double.infinity, height: 1, color: secondaryColor.withValues(alpha: 0.1)),
         const SizedBox(height: 20),
         content,
       ],
@@ -313,9 +313,9 @@ class Cv6 extends StatelessWidget {
   Widget _buildContact(Map<String, dynamic> info) {
     return Column(
       children: [
-        _buildContactItem(Icons.phone_iphone, info['phone'] ?? "+84 000 000 000"),
-        _buildContactItem(Icons.email_outlined, info['email'] ?? "hello@marketer.com"),
-        _buildContactItem(Icons.location_on_outlined, info['address'] ?? "Ho Chi Minh, Vietnam"),
+        _buildContactItem(Icons.phone_iphone, info['phone'] ?? '+84 000 000 000'),
+        _buildContactItem(Icons.email_outlined, info['email'] ?? 'hello@marketer.com'),
+        _buildContactItem(Icons.location_on_outlined, info['address'] ?? 'Ho Chi Minh, Vietnam'),
         if (info['website'] != null) _buildContactItem(Icons.link, info['website']),
       ],
     );
@@ -345,15 +345,15 @@ class Cv6 extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(e['position'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor))),
+                Expanded(child: Text(e['position'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor))),
                 const SizedBox(width: 8),
-                Flexible(child: Text(e['duration'] ?? "", style: const TextStyle(fontSize: 11, color: secondaryColor, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                Flexible(child: Text(e['duration'] ?? '', style: const TextStyle(fontSize: 11, color: secondaryColor, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
               ],
             ),
             const SizedBox(height: 4),
-            Text(e['company'] ?? "", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: greyColor)),
+            Text(e['company'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: greyColor)),
             const SizedBox(height: 12),
-            Text(e['description'] ?? "", style: const TextStyle(fontSize: 13, height: 1.6)),
+            Text(e['description'] ?? '', style: const TextStyle(fontSize: 13, height: 1.6)),
           ],
         ),
       )).toList(),
@@ -369,7 +369,7 @@ class Cv6 extends StatelessWidget {
         decoration: BoxDecoration(
           color: accentColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: primaryColor.withOpacity(0.1)),
+          border: Border.all(color: primaryColor.withValues(alpha: 0.1)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,8 +380,8 @@ class Cv6 extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p['role'] ?? p['name'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
-                  Text(p['description'] ?? "", style: const TextStyle(fontSize: 12, height: 1.5, color: textColor)),
+                  Text(p['role'] ?? p['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textColor)),
+                  Text(p['description'] ?? '', style: const TextStyle(fontSize: 12, height: 1.5, color: textColor)),
                 ],
               ),
             ),
@@ -401,9 +401,9 @@ class Cv6 extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: secondaryColor.withOpacity(0.1)),
+          border: Border.all(color: secondaryColor.withValues(alpha: 0.1)),
         ),
-        child: Text(s['name'] ?? "", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: secondaryColor)),
+        child: Text(s['name'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: secondaryColor)),
       )).toList(),
     );
   }
@@ -416,9 +416,9 @@ class Cv6 extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(e['school'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            Text(e['degree'] ?? "", style: const TextStyle(fontSize: 12, color: greyColor)),
-            Text(e['year'] ?? "", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
+            Text(e['school'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(e['degree'] ?? '', style: const TextStyle(fontSize: 12, color: greyColor)),
+            Text(e['year'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
           ],
         ),
       )).toList(),

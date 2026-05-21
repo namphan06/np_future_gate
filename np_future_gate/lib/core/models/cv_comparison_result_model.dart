@@ -1,9 +1,5 @@
 /// Model representing the result of comparing multiple CVs for a job.
 class CVComparisonResult {
-  final String jobTitle;
-  final List<CandidateScore> candidates;
-  final String recommendation;
-  final String comparisonNotes;
 
   CVComparisonResult({
     required this.jobTitle,
@@ -45,6 +41,10 @@ class CVComparisonResult {
       comparisonNotes: _parseString(json['comparison_notes']) ?? '',
     );
   }
+  final String jobTitle;
+  final List<CandidateScore> candidates;
+  final String recommendation;
+  final String comparisonNotes;
 
   static String? _parseString(dynamic v) {
     if (v == null) return null;
@@ -62,16 +62,6 @@ class CVComparisonResult {
 
 /// Model representing a single candidate's score in a comparison.
 class CandidateScore {
-  final String name;
-  final int rank;
-  final double skillsScore;
-  final double experienceScore;
-  final double educationScore;
-  final double overallScore;
-  final double potentialScore;
-  final List<String> strengths;
-  final List<String> weaknesses;
-  final String summary;
 
   CandidateScore({
     required this.name,
@@ -85,4 +75,14 @@ class CandidateScore {
     required this.weaknesses,
     required this.summary,
   });
+  final String name;
+  final int rank;
+  final double skillsScore;
+  final double experienceScore;
+  final double educationScore;
+  final double overallScore;
+  final double potentialScore;
+  final List<String> strengths;
+  final List<String> weaknesses;
+  final String summary;
 }

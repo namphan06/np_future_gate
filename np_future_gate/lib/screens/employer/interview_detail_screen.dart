@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/interview_model.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/interview_repository.dart';
-import '../../core/services/cv_supabase_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/speech_text_field.dart';
-import '../cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/core/models/interview_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/interview_repository.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class InterviewDetailScreen extends StatefulWidget {
-  final InterviewModel interview;
-  final Profile? candidate;
-  final JobModel? job;
 
   const InterviewDetailScreen({
     super.key,
@@ -20,6 +17,9 @@ class InterviewDetailScreen extends StatefulWidget {
     this.candidate,
     this.job,
   });
+  final InterviewModel interview;
+  final Profile? candidate;
+  final JobModel? job;
 
   @override
   State<InterviewDetailScreen> createState() => _InterviewDetailScreenState();
@@ -35,7 +35,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
   double _positionRating = 0;
   double _potentialRating = 0;
   double _communicationRating = 0;
-  Map<String, double> _requirementsEvaluation = {};
+  final Map<String, double> _requirementsEvaluation = {};
   List<String> _tags = [];
   final TextEditingController _tagController = TextEditingController();
   bool _isSaving = false;
@@ -370,7 +370,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
                       ],
                     ),
                     child: Row(
@@ -497,7 +497,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _share ? AppMainColors.primary.withOpacity(0.3) : Colors.grey.shade300,
+                        color: _share ? AppMainColors.primary.withValues(alpha: 0.3) : Colors.grey.shade300,
                         width: 1.5,
                       ),
                     ),
@@ -538,7 +538,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                         Switch(
                           value: _share,
                           onChanged: _updateShareStatus,
-                          activeColor: AppMainColors.primary,
+                          activeThumbColor: AppMainColors.primary,
                         ),
                       ],
                     ),
@@ -647,10 +647,10 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppMainColors.primary.withOpacity(0.3)),
+                                border: Border.all(color: AppMainColors.primary.withValues(alpha: 0.3)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppMainColors.primary.withOpacity(0.05),
+                                    color: AppMainColors.primary.withValues(alpha: 0.05),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -661,7 +661,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                                 children: [
                                   Text(
                                     tag,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: AppMainColors.primary,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -669,7 +669,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                                   const SizedBox(width: 4),
                                   InkWell(
                                     onTap: () => setState(() => _tags.remove(tag)),
-                                    child: Icon(Icons.close, size: 16, color: AppMainColors.primary),
+                                    child: const Icon(Icons.close, size: 16, color: AppMainColors.primary),
                                   ),
                                 ],
                               ),
@@ -684,9 +684,9 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: Colors.grey.shade300),
                                 ),
-                                child: Row(
+                                child: const Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: const [
+                                  children: [
                                     Icon(Icons.add, size: 16, color: Colors.black54),
                                     SizedBox(width: 4),
                                     Text(
@@ -717,7 +717,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
@@ -766,9 +766,9 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            side: BorderSide(color: AppMainColors.primary),
+                            side: const BorderSide(color: AppMainColors.primary),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Lưu nháp',
                             style: TextStyle(
                               color: AppMainColors.primary,
@@ -875,7 +875,7 @@ class _InterviewDetailScreenState extends State<InterviewDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

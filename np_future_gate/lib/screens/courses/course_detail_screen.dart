@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../core/models/course_model.dart';
-import '../../core/models/course_lesson_model.dart';
-import '../../core/repositories/course_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'lesson_video_screen.dart';
+import 'package:np_future_gate/core/models/course_lesson_model.dart';
+import 'package:np_future_gate/core/models/course_model.dart';
+import 'package:np_future_gate/core/repositories/course_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/courses/lesson_video_screen.dart';
 
 class CourseDetailScreen extends StatefulWidget {
-  final String courseId;
 
   const CourseDetailScreen({
     super.key,
     required this.courseId,
   });
+  final String courseId;
 
   @override
   State<CourseDetailScreen> createState() => _CourseDetailScreenState();
@@ -89,7 +89,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 8,
                             ),
                           ],
@@ -129,12 +129,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               decoration: BoxDecoration(
-                                color: AppMainColors.primary.withOpacity(0.1),
+                                color: AppMainColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 _course!.levelLabel,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: AppMainColors.primary,
@@ -337,13 +337,13 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppMainColors.primary.withOpacity(0.1),
+                    color: AppMainColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
                     child: Text(
                       '$number',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: AppMainColors.primary,
@@ -403,7 +403,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 ),
 
                 // Play icon
-                Icon(
+                const Icon(
                   Icons.play_circle_outline,
                   color: AppMainColors.primary,
                   size: 28,

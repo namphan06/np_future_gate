@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/notification/application_notification_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/cv_selection_screen.dart';
+import 'package:np_future_gate/screens/candidate/job_interview_ai_page.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/repositories/auth_repository.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../../core/services/chat_service.dart';
-import '../../../core/services/notification/application_notification_service.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../chat/chat_list_screen.dart';
-import '../chat/chat_detail_screen.dart';
-import 'cv_selection_screen.dart';
-import 'job_interview_ai_page.dart';
 
 class JobDetailScreen extends StatefulWidget {
-  final JobModel job;
 
   const JobDetailScreen({super.key, required this.job});
+  final JobModel job;
 
   @override
   State<JobDetailScreen> createState() => _JobDetailScreenState();
@@ -183,7 +183,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
   void _openChatList() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChatListScreen()),
+      MaterialPageRoute(builder: (context) => const ChatListScreen()),
     );
   }
 
@@ -206,6 +206,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         ),
       );
     } else {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không thể tạo cuộc trò chuyện')),
       );
@@ -266,7 +267,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
                                       : null,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
+                                      color: Colors.black.withValues(alpha: 0.05),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -451,7 +452,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -502,7 +503,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

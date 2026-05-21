@@ -1,13 +1,4 @@
 class CourseCategoryModel {
-  final String id;
-  final DateTime createdAt;
-  final String name;
-  final String slug;
-  final String? description;
-  final String? icon;
-  final String color;
-  final int order;
-  final bool isActive;
 
   CourseCategoryModel({
     required this.id,
@@ -34,6 +25,15 @@ class CourseCategoryModel {
       isActive: json['is_active'] as bool? ?? true,
     );
   }
+  final String id;
+  final DateTime createdAt;
+  final String name;
+  final String slug;
+  final String? description;
+  final String? icon;
+  final String color;
+  final int order;
+  final bool isActive;
 
   Map<String, dynamic> toJson() {
     return {

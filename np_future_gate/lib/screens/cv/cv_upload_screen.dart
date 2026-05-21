@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
+import 'package:np_future_gate/core/services/ocr_service.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../../core/services/ocr_service.dart';
-import '../../../core/services/mistral_service.dart';
-import '../../core/enums/job_fields.dart';
-import '../../widgets/speech_text_field.dart';
 
 class CVUploadScreen extends StatefulWidget {
   const CVUploadScreen({super.key});
@@ -37,6 +38,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
   final MistralService _mistralService = MistralService();
   
   // Tag management
+  // ignore: unused_field
   final List<String> _availableTags = [
     'IT', 'Marketing', 'Business', 'Design', 'Engineer', 'Manager', 'Fresher', 'Junior', 'Senior'
   ];
@@ -100,6 +102,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
         });
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi chọn file: $e')),
       );
@@ -471,7 +474,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -501,10 +504,10 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.blue.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.05),
+            color: Colors.blue.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
@@ -621,7 +624,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 5,
                 offset: const Offset(0, 2),
               ),
@@ -630,7 +633,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
-              hint: val_has_hint(hint),
+              hint: valHasHint(hint),
               isExpanded: true,
               icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[400]),
               items: items.map((String item) {
@@ -647,7 +650,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
     );
   }
 
-  Widget val_has_hint(String hint) {
+  Widget valHasHint(String hint) {
     return Row(
       children: [
         Icon(Icons.category, color: Colors.grey[400]),
@@ -666,7 +669,7 @@ class _CVUploadScreenState extends State<CVUploadScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, -5),
             blurRadius: 20,
           ),

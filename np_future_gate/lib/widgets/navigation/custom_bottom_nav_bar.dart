@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
-  final Color primaryColor;
 
   const CustomBottomNavBar({
     super.key,
@@ -11,6 +8,9 @@ class CustomBottomNavBar extends StatelessWidget {
     required this.onTap,
     this.primaryColor = Colors.blue,
   });
+  final int currentIndex;
+  final Function(int) onTap;
+  final Color primaryColor;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -75,7 +75,7 @@ class CustomBottomNavBar extends StatelessWidget {
           vertical: 12,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? primaryColor.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(

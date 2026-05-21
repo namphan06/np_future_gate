@@ -1,21 +1,7 @@
-import '../../notification/models/notification_config.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
 
 /// Model đại diện cho một thông báo
-class NotificationModel {
-  final String id;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String recipientIds;
-  final String title;
-  final String content;
-  final String? actionCode;
-  final Map<String, dynamic>? actionData;
-  final bool isActive;
-  final NotificationType type;
-  final String? senderId;
-  final DateTime? expiresAt;
-  final bool isRead; // Trạng thái đã đọc (từ notification_reads)
-  final DateTime? readAt; // Thời gian đọc
+class NotificationModel { // Thời gian đọc
 
   NotificationModel({
     required this.id,
@@ -59,6 +45,20 @@ class NotificationModel {
           : null,
     );
   }
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String recipientIds;
+  final String title;
+  final String content;
+  final String? actionCode;
+  final Map<String, dynamic>? actionData;
+  final bool isActive;
+  final NotificationType type;
+  final String? senderId;
+  final DateTime? expiresAt;
+  final bool isRead; // Trạng thái đã đọc (từ notification_reads)
+  final DateTime? readAt;
 
   /// Chuyển NotificationModel sang JSON
   Map<String, dynamic> toJson() {
@@ -192,14 +192,6 @@ class NotificationModel {
 
 /// Model để tạo notification mới
 class CreateNotificationRequest {
-  final String recipientIds; // 'all', uuid, hoặc JSON array
-  final String title;
-  final String content;
-  final NotificationActionCode? actionCode;
-  final Map<String, dynamic>? actionData;
-  final NotificationType type;
-  final String? senderId;
-  final DateTime? expiresAt;
 
   CreateNotificationRequest({
     required this.recipientIds,
@@ -211,6 +203,14 @@ class CreateNotificationRequest {
     this.senderId,
     this.expiresAt,
   });
+  final String recipientIds; // 'all', uuid, hoặc JSON array
+  final String title;
+  final String content;
+  final NotificationActionCode? actionCode;
+  final Map<String, dynamic>? actionData;
+  final NotificationType type;
+  final String? senderId;
+  final DateTime? expiresAt;
 
   Map<String, dynamic> toJson() {
     return {

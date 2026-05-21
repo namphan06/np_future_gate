@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'data/job_data.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/test/data/job_data.dart';
 
 class TestHomePage extends StatefulWidget {
   const TestHomePage({super.key});
@@ -31,7 +31,7 @@ class _TestHomePageState extends State<TestHomePage> {
 
       final position = renderBox.localToGlobal(Offset.zero);
       final screenHeight = MediaQuery.of(context).size.height;
-      final navbarHeight = 100.0;
+      const navbarHeight = 100.0;
       final visibleBottom = screenHeight - navbarHeight;
 
       final itemBottom = position.dy + renderBox.size.height;
@@ -102,7 +102,7 @@ class _TestHomePageState extends State<TestHomePage> {
                                 currentUser!.userMetadata!['avatar_url'],
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
+                                  return const Icon(
                                     Icons.person,
                                     size: 35,
                                     color: AppMainColors.primary,
@@ -110,7 +110,7 @@ class _TestHomePageState extends State<TestHomePage> {
                                 },
                               ),
                             )
-                          : Icon(
+                          : const Icon(
                               Icons.person,
                               size: 35,
                               color: AppMainColors.primary,
@@ -161,7 +161,7 @@ class _TestHomePageState extends State<TestHomePage> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -170,7 +170,7 @@ class _TestHomePageState extends State<TestHomePage> {
                       child: IconButton(
                         icon: Stack(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.notifications_outlined,
                               color: AppMainColors.primaryDark,
                             ),
@@ -239,7 +239,7 @@ class _TestHomePageState extends State<TestHomePage> {
                     return AnimatedBuilder(
                       animation: _scrollController,
                       builder: (context, child) {
-                        double opacity = _calculateOpacity(index);
+                        final double opacity = _calculateOpacity(index);
                         return Opacity(opacity: opacity, child: child!);
                       },
                       child: Container(
@@ -250,7 +250,7 @@ class _TestHomePageState extends State<TestHomePage> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
+                              color: Colors.black.withValues(alpha: 0.06),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -442,10 +442,10 @@ class _TestHomePageState extends State<TestHomePage> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppMainColors.primaryLight.withOpacity(0),
-                AppMainColors.primaryLight.withOpacity(0.3),
-                AppMainColors.primaryLight.withOpacity(0.6),
-                AppMainColors.primaryLight.withOpacity(0.9),
+                AppMainColors.primaryLight.withValues(alpha: 0),
+                AppMainColors.primaryLight.withValues(alpha: 0.3),
+                AppMainColors.primaryLight.withValues(alpha: 0.6),
+                AppMainColors.primaryLight.withValues(alpha: 0.9),
               ],
               stops: const [0.0, 0.3, 0.6, 1.0],
             ),

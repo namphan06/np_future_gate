@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/models/auth_models.dart';
-import '../auth/login_screen.dart';
-import '../candidate/candidate_home_screen.dart';
-import '../employer/employer_home_screen.dart';
-import '../school/school_home_screen.dart';
-import '../admin/admin_home_screen.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/screens/admin/admin_home_screen.dart';
+import 'package:np_future_gate/screens/auth/login_screen.dart';
+import 'package:np_future_gate/screens/candidate/candidate_home_screen.dart';
+import 'package:np_future_gate/screens/employer/employer_home_screen.dart';
+import 'package:np_future_gate/screens/school/school_home_screen.dart';
 
 /// Splash Screen - Kiểm tra auth state khi khởi động app
 class SplashScreen extends StatefulWidget {
@@ -64,13 +64,14 @@ class _SplashScreenState extends State<SplashScreen> {
         } else {
           // Profile không tồn tại → đăng xuất và quay về login
           await authRepository.signOut();
+          if (!mounted) return;
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const LoginScreen()),
           );
         }
       } catch (e) {
         // Lỗi khi lấy profile → quay về login
-        print('Error loading profile: $e');
+        debugPrint('Error loading profile: $e');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LoginScreen()),
         );

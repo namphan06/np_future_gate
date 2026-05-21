@@ -1,10 +1,10 @@
-import '../models/ai_intent_model.dart';
+import 'package:np_future_gate/core/models/ai_intent_model.dart';
 
 /// Service quản lý các Intent cho AI Assistant
 class AIIntentService {
-  static final AIIntentService _instance = AIIntentService._internal();
   factory AIIntentService() => _instance;
   AIIntentService._internal();
+  static final AIIntentService _instance = AIIntentService._internal();
 
   // Cache các intent đã load
   List<AIIntent> _intents = [];
@@ -31,7 +31,7 @@ class AIIntentService {
     double bestScore = 0.0;
 
     for (final intent in allowedIntents) {
-      double score = _calculateMatchScore(normalizedQuery, intent);
+      final double score = _calculateMatchScore(normalizedQuery, intent);
       if (score > bestScore) {
         bestScore = score;
         bestMatch = intent;

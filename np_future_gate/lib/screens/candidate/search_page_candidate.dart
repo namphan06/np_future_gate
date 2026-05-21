@@ -75,7 +75,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Row(
+            const Row(
               children: [
                 Text(
                   'Tìm kiếm việc làm',
@@ -124,7 +124,7 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
                         : 'Bộ lọc nâng cao'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppMainColors.primary,
-                      side: BorderSide(color: AppMainColors.primary),
+                      side: const BorderSide(color: AppMainColors.primary),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -174,10 +174,10 @@ class _SearchPageCandidateState extends State<SearchPageCandidate> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
                 Icon(Icons.tune, color: AppMainColors.primary, size: 20),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   'Bộ lọc tìm kiếm',
                   style: TextStyle(

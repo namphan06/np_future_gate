@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/fcm_service.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
 import 'package:np_future_gate/screens/admin/admin_home_screen.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/buttons/gradient_button.dart';
-import '../../widgets/inputs/gradient_text_field.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/models/auth_models.dart';
-import '../../core/services/fcm_service.dart';
-import '../candidate/candidate_home_screen.dart';
-import '../employer/employer_home_screen.dart';
-import '../school/school_home_screen.dart';
-import 'register_screen.dart';
+import 'package:np_future_gate/screens/auth/register_screen.dart';
+import 'package:np_future_gate/screens/candidate/candidate_home_screen.dart';
+import 'package:np_future_gate/screens/employer/employer_home_screen.dart';
+import 'package:np_future_gate/screens/school/school_home_screen.dart';
+import 'package:np_future_gate/widgets/buttons/gradient_button.dart';
+import 'package:np_future_gate/widgets/inputs/gradient_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -71,12 +71,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   userId: profile.id,
                   role: profile.role.value,
                 );
-                print('✅ Real FCM token saved: ${fcmToken.substring(0, 20)}...');
+                debugPrint('✅ Real FCM token saved: ${fcmToken.substring(0, 20)}...');
               } else {
-                print('⚠️ FCM token not available yet');
+                debugPrint('⚠️ FCM token not available yet');
               }
             } catch (e) {
-              print('⚠️ Failed to save FCM token: $e');
+              debugPrint('⚠️ Failed to save FCM token: $e');
             }
 
             // Điều hướng theo role
@@ -96,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 break;
             }
             
+            // ignore: use_build_context_synchronously
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => homeScreen),
             );
@@ -138,12 +139,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 userId: profile.id,
                 role: profile.role.value,
               );
-              print('✅ Real FCM token saved (Google login): ${fcmToken.substring(0, 20)}...');
+              debugPrint('✅ Real FCM token saved (Google login): ${fcmToken.substring(0, 20)}...');
             } else {
-              print('⚠️ FCM token not available yet');
+              debugPrint('⚠️ FCM token not available yet');
             }
           } catch (e) {
-            print('⚠️ Failed to save FCM token: $e');
+            debugPrint('⚠️ Failed to save FCM token: $e');
           }
 
           // Điều hướng theo role
@@ -163,6 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
               break;
           }
           
+          // ignore: use_build_context_synchronously
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => homeScreen),
           );
@@ -209,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryBlue.withOpacity(0.3),
+                            color: AppColors.primaryBlue.withValues(alpha: 0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),

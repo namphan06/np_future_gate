@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../core/services/subscription_service.dart';
-import '../../../core/services/supabase_service.dart';
-import '../../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/services/subscription_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class PaymentHistoryScreen extends StatefulWidget {
   const PaymentHistoryScreen({super.key});
@@ -81,12 +81,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 end: Alignment.bottomRight,
                 colors: [
                   Colors.purple,
-                  Colors.purple.withOpacity(0.8),
+                  Colors.purple.withValues(alpha: 0.8),
                 ],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.purple.withOpacity(0.3),
+                  color: Colors.purple.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -101,7 +101,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                     // Back button
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
@@ -124,7 +124,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                               Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -148,7 +148,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                           Text(
                             'Xem tất cả giao dịch của bạn',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 13,
                             ),
                           ),
@@ -199,12 +199,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.purple.withOpacity(0.1),
+                                      color: Colors.purple.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       '${_transactions.length}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.purple,
@@ -237,13 +237,13 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.1),
+              color: Colors.purple.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.receipt_long_rounded,
               size: 80,
-              color: Colors.purple.withOpacity(0.5),
+              color: Colors.purple.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 24),
@@ -278,13 +278,13 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         gradient: LinearGradient(
           colors: sub.plan == SubscriptionPlan.free
               ? [Colors.grey, Colors.grey.shade600]
-              : [AppMainColors.primary, AppMainColors.primary.withOpacity(0.8)],
+              : [AppMainColors.primary, AppMainColors.primary.withValues(alpha: 0.8)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: (sub.plan == SubscriptionPlan.free ? Colors.grey : AppMainColors.primary)
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -306,7 +306,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -376,7 +376,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -390,7 +390,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.bar_chart_rounded, color: Colors.blue, size: 24),
@@ -450,9 +450,9 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -495,7 +495,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -516,7 +516,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: planInfo.color.withOpacity(0.1),
+                        color: planInfo.color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(planInfo.icon, color: planInfo.color, size: 24),
@@ -563,14 +563,14 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.check_circle, color: Colors.green, size: 12),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Text(
                                 'Thành công',
                                 style: TextStyle(
@@ -636,7 +636,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: planInfo.color.withOpacity(0.1),
+                      color: planInfo.color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(planInfo.icon, color: planInfo.color, size: 32),
@@ -772,10 +772,6 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
 }
 
 class PaymentTransaction {
-  final String transactionId;
-  final String planCode;
-  final int amount;
-  final DateTime date;
 
   PaymentTransaction({
     required this.transactionId,
@@ -792,6 +788,10 @@ class PaymentTransaction {
       date: DateTime.parse(json['date']),
     );
   }
+  final String transactionId;
+  final String planCode;
+  final int amount;
+  final DateTime date;
 
   Map<String, dynamic> toJson() {
     return {
@@ -804,13 +804,13 @@ class PaymentTransaction {
 }
 
 class PlanInfo {
-  final String name;
-  final IconData icon;
-  final Color color;
 
   PlanInfo({
     required this.name,
     required this.icon,
     required this.color,
   });
+  final String name;
+  final IconData icon;
+  final Color color;
 }

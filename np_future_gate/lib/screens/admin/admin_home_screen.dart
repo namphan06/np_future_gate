@@ -1,18 +1,18 @@
-﻿import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../auth/login_screen.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/repositories/auth_repository.dart';
-import 'dashboard_page_admin.dart';
-import 'users_management_page_admin.dart';
-import 'content_management_page_admin.dart';
-import 'reports_page_admin.dart';
-import 'test_page_admin.dart';
-import 'settings_page_admin.dart';
-import '../chat/chat_list_screen.dart';
-import '../demo/demo_candidate_home.dart';
-import '../demo/demo_employer_home.dart';
-import '../demo/demo_school_home.dart';
+import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/admin/content_management_page_admin.dart';
+import 'package:np_future_gate/screens/admin/dashboard_page_admin.dart';
+import 'package:np_future_gate/screens/admin/reports_page_admin.dart';
+import 'package:np_future_gate/screens/admin/settings_page_admin.dart';
+import 'package:np_future_gate/screens/admin/test_page_admin.dart';
+import 'package:np_future_gate/screens/admin/users_management_page_admin.dart';
+import 'package:np_future_gate/screens/auth/login_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
+import 'package:np_future_gate/screens/demo/demo_candidate_home.dart';
+import 'package:np_future_gate/screens/demo/demo_employer_home.dart';
+import 'package:np_future_gate/screens/demo/demo_school_home.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -30,7 +30,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     UsersManagementPageAdmin(),
     ContentManagementPageAdmin(),
     ReportsPageAdmin(),
-    const ChatListScreen(),
+    ChatListScreen(),
     TestPageAdmin(),
     SettingsPageAdmin(),
   ];
@@ -104,7 +104,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [AppMainColors.primary, AppMainColors.primaryDark],
                 ),
                 borderRadius: BorderRadius.circular(10),
@@ -173,7 +173,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [AppMainColors.primary, AppMainColors.primaryDark],
                     begin: Alignment.topLeft,
@@ -193,8 +193,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                           gradient: currentUser?.userMetadata?['avatar_url'] == null
                               ? LinearGradient(
                                   colors: [
-                                    Colors.white.withOpacity(0.3),
-                                    Colors.white.withOpacity(0.1),
+                                    Colors.white.withValues(alpha: 0.3),
+                                    Colors.white.withValues(alpha: 0.1),
                                   ],
                                 )
                               : null,
@@ -233,7 +233,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Row(
@@ -269,7 +269,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: isActive ? AppMainColors.primary.withOpacity(0.1) : null,
+                        color: isActive ? AppMainColors.primary.withValues(alpha: 0.1) : null,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
@@ -388,7 +388,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: color, size: 20),
@@ -464,7 +464,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               try {
                 await AuthRepository().signOut();
               } catch (e) {
-                print('Logout error: $e');
+                debugPrint('Logout error: $e');
               }
               if (context.mounted) {
                 Navigator.pop(context); // Pop loading

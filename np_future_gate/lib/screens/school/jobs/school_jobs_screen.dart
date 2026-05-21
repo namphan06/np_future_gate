@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/employer/jobs/job_applicants_screen.dart';
+import 'package:np_future_gate/screens/school/jobs/assign_students_screen.dart';
+import 'package:np_future_gate/screens/school/jobs/create_school_job_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../widgets/speech_text_field.dart';
-import '../../employer/jobs/job_applicants_screen.dart';
-import 'create_school_job_screen.dart';
-import 'assign_students_screen.dart';
 
 class SchoolJobsScreen extends StatefulWidget {
   const SchoolJobsScreen({super.key});
@@ -32,7 +32,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
   String _statusFilter = 'All'; // All, Active, Inactive
   String _approvalStatusFilter = 'All'; // All, Pending, Approved, Rejected
   DateTimeRange? _dateRange;
-  List<String> _selectedCompanies = []; // For filtering partnership jobs by company
+  final List<String> _selectedCompanies = []; // For filtering partnership jobs by company
 
   @override
   void initState() {
@@ -323,7 +323,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                       },
                       activeColor: AppMainColors.primary,
                     );
-                  }).toList(),
+                  }),
               ],
             ),
           ),
@@ -545,6 +545,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
     }
     
     final result = await Navigator.push(
+      // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(
         builder: (context) => CreateSchoolJobScreen(
@@ -641,7 +642,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: AppMainColors.primary.withOpacity(0.3),
+                      color: AppMainColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -750,7 +751,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -790,7 +791,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                                 borderRadius: BorderRadius.circular(6),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.orange.withOpacity(0.3),
+                                    color: Colors.orange.withValues(alpha: 0.3),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -819,7 +820,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                                padding: const EdgeInsets.only(top: 4.0),
                                child: Text(
                                  'DN: $companyName',
-                                 style: TextStyle(
+                                 style: const TextStyle(
                                    fontSize: 13,
                                    color: AppMainColors.primary,
                                    fontWeight: FontWeight.w500,
@@ -866,7 +867,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
                     const Spacer(),
                     Text(
                       '${job.applicants.length} ứng viên',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppMainColors.primary,
                       ),
@@ -975,7 +976,7 @@ class _SchoolJobsScreenState extends State<SchoolJobsScreen> with SingleTickerPr
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isOutline ? Colors.transparent : color.withOpacity(0.1),
+        color: isOutline ? Colors.transparent : color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
         border: isOutline ? Border.all(color: color) : null,
       ),

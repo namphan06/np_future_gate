@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'mock_data/mock_jobs.dart';
-import '../../core/models/job_model.dart';
-import '../../widgets/cards/job_card.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/screens/demo/mock_data/mock_jobs.dart';
 
 /// Demo Candidate Home - Màn hình preview cho admin
 /// Không cần login, chỉ hiển thị mock data
@@ -87,9 +86,9 @@ class DemoCandidateHome extends StatelessWidget {
 
 /// Demo job card - simplified version
 class _DemoJobCard extends StatelessWidget {
-  final JobModel job;
 
   const _DemoJobCard({required this.job});
+  final JobModel job;
 
   String _formatSalary(JobSalary salary) {
     if (salary.min != null && salary.max != null) {

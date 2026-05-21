@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/models/mi_model.dart';
-import '../../core/repositories/mi_repository.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'mi_result_screen.dart';
+import 'package:np_future_gate/core/models/mi_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/mi_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/mi_result_screen.dart';
 
 class MIQuestionScreen extends StatefulWidget {
   const MIQuestionScreen({super.key});
@@ -17,7 +17,7 @@ class _MIQuestionScreenState extends State<MIQuestionScreen> {
   final AuthRepository _authRepository = AuthRepository();
   
   List<MIQuestion> _questions = [];
-  Map<String, int> _answers = {}; // questionId -> score
+  final Map<String, int> _answers = {}; // questionId -> score
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
 
@@ -53,7 +53,7 @@ class _MIQuestionScreenState extends State<MIQuestionScreen> {
     }
 
     // Calculate scores per type
-    Map<String, int> typeScores = {
+    final Map<String, int> typeScores = {
       'LI': 0, 'LO': 0, 'SP': 0, 'BO': 0, 'MU': 0, 'IE': 0, 'IA': 0, 'NA': 0, 'EX': 0
     };
 
@@ -225,7 +225,7 @@ class _MIQuestionScreenState extends State<MIQuestionScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
         ],
       ),
       child: SafeArea(
@@ -244,7 +244,7 @@ class _MIQuestionScreenState extends State<MIQuestionScreen> {
                   LinearProgressIndicator(
                     value: progress,
                     backgroundColor: Colors.grey.shade200,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppMainColors.primary),
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppMainColors.primary),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ],

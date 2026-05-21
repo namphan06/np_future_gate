@@ -1,7 +1,9 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:http/http.dart' as http;
 
 /// Push Notification Service với FCM V1 API
 /// Sử dụng OAuth2 authentication với Service Account
@@ -37,10 +39,10 @@ class PushNotificationService {
       // Close client
       authClient.close();
       
-      print('✅ OAuth2 access token obtained');
+      debugPrint('✅ OAuth2 access token obtained');
       return accessToken;
     } catch (e) {
-      print('❌ Error getting access token: $e');
+      debugPrint('❌ Error getting access token: $e');
       rethrow;
     }
   }
@@ -53,13 +55,13 @@ class PushNotificationService {
     Map<String, dynamic>? data,
   }) async {
     try {
-      print('═══════════════════════════════════════');
-      print('📱 Sending FCM Notification');
-      print('═══════════════════════════════════════');
-      print('Token: ${deviceToken.substring(0, min(20, deviceToken.length))}...');
-      print('Title: $title');
-      print('Body: $body');
-      print('───────────────────────────────────────');
+      debugPrint('═══════════════════════════════════════');
+      debugPrint('📱 Sending FCM Notification');
+      debugPrint('═══════════════════════════════════════');
+      debugPrint('Token: ${deviceToken.substring(0, min(20, deviceToken.length))}...');
+      debugPrint('Title: $title');
+      debugPrint('Body: $body');
+      debugPrint('───────────────────────────────────────');
       
       // Get OAuth2 token
       final accessToken = await _getAccessToken();
@@ -112,20 +114,20 @@ class PushNotificationService {
       );
       
       if (response.statusCode == 200) {
-        print('✅ Notification sent successfully!');
-        print('Response: ${response.body}');
-        print('═══════════════════════════════════════\n');
+        debugPrint('✅ Notification sent successfully!');
+        debugPrint('Response: ${response.body}');
+        debugPrint('═══════════════════════════════════════\n');
         return true;
       } else {
-        print('❌ Failed to send notification');
-        print('Status: ${response.statusCode}');
-        print('Response: ${response.body}');
-        print('═══════════════════════════════════════\n');
+        debugPrint('❌ Failed to send notification');
+        debugPrint('Status: ${response.statusCode}');
+        debugPrint('Response: ${response.body}');
+        debugPrint('═══════════════════════════════════════\n');
         return false;
       }
     } catch (e) {
-      print('❌ Error sending notification: $e');
-      print('═══════════════════════════════════════\n');
+      debugPrint('❌ Error sending notification: $e');
+      debugPrint('═══════════════════════════════════════\n');
       return false;
     }
   }
@@ -137,11 +139,11 @@ class PushNotificationService {
     required String body,
     Map<String, dynamic>? data,
   }) async {
-    print('📱 Sending to ${deviceTokens.length} devices\n');
+    debugPrint('📱 Sending to ${deviceTokens.length} devices\n');
     
     bool allSuccess = true;
     for (var i = 0; i < deviceTokens.length; i++) {
-      print('Device ${i + 1}/${deviceTokens.length}:');
+      debugPrint('Device ${i + 1}/${deviceTokens.length}:');
       final success = await sendNotificationToDevice(
         deviceToken: deviceTokens[i],
         title: title,
@@ -162,9 +164,9 @@ class PushNotificationService {
     Map<String, dynamic>? data,
   }) async {
     try {
-      print('═══════════════════════════════════════');
-      print('📢 Sending to Topic: $topic');
-      print('═══════════════════════════════════════');
+      debugPrint('═══════════════════════════════════════');
+      debugPrint('📢 Sending to Topic: $topic');
+      debugPrint('═══════════════════════════════════════');
       
       final accessToken = await _getAccessToken();
       
@@ -214,17 +216,17 @@ class PushNotificationService {
       );
       
       if (response.statusCode == 200) {
-        print('✅ Topic notification sent!');
-        print('═══════════════════════════════════════\n');
+        debugPrint('✅ Topic notification sent!');
+        debugPrint('═══════════════════════════════════════\n');
         return true;
       } else {
-        print('❌ Failed: ${response.statusCode}');
-        print('Response: ${response.body}');
-        print('═══════════════════════════════════════\n');
+        debugPrint('❌ Failed: ${response.statusCode}');
+        debugPrint('Response: ${response.body}');
+        debugPrint('═══════════════════════════════════════\n');
         return false;
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       return false;
     }
   }

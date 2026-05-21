@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/company_detail_screen.dart'; // Using CompanyDetail reused for School view or similar profile view
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../core/theme/app_main_colors.dart';
-import '../../candidate/company_detail_screen.dart'; // Using CompanyDetail reused for School view or similar profile view
-import '../../../../core/models/profile_model.dart';
 
 class SchoolPartnershipsScreen extends StatefulWidget {
   const SchoolPartnershipsScreen({super.key});
@@ -151,8 +151,11 @@ class _SchoolPartnershipsScreenState extends State<SchoolPartnershipsScreen> wit
                 onChanged: (val) {
                   setState(() {
                     isUnlimited = val ?? false;
-                    if (isUnlimited) limitPeriod = 'unlimited';
-                    else limitPeriod = 'month'; 
+                    if (isUnlimited) {
+                      limitPeriod = 'unlimited';
+                    } else {
+                      limitPeriod = 'month';
+                    } 
                   });
                 },
               ),
@@ -178,7 +181,7 @@ class _SchoolPartnershipsScreenState extends State<SchoolPartnershipsScreen> wit
                     Expanded(
                       flex: 3,
                       child: DropdownButtonFormField<String>(
-                        value: limitPeriod,
+                        initialValue: limitPeriod,
                         decoration: const InputDecoration(
                           labelText: 'Chu kỳ',
                           border: OutlineInputBorder(),
@@ -244,8 +247,11 @@ class _SchoolPartnershipsScreenState extends State<SchoolPartnershipsScreen> wit
                 onChanged: (val) {
                   setState(() {
                     isUnlimited = val ?? false;
-                    if (isUnlimited) limitPeriod = 'unlimited';
-                    else if (limitPeriod == 'unlimited') limitPeriod = 'month';
+                    if (isUnlimited) {
+                      limitPeriod = 'unlimited';
+                    } else if (limitPeriod == 'unlimited') {
+                      limitPeriod = 'month';
+                    }
                   });
                 },
               ),
@@ -264,7 +270,7 @@ class _SchoolPartnershipsScreenState extends State<SchoolPartnershipsScreen> wit
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: limitPeriod,
+                  initialValue: limitPeriod,
                   decoration: const InputDecoration(
                     labelText: 'Chu kỳ reset giới hạn',
                     border: OutlineInputBorder(),
@@ -435,7 +441,7 @@ class _SchoolPartnershipsScreenState extends State<SchoolPartnershipsScreen> wit
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.1),
+                                color: Colors.orange.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
@@ -560,7 +566,7 @@ class _SchoolPartnershipsScreenState extends State<SchoolPartnershipsScreen> wit
                            Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: isUnlimited ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                              color: isUnlimited ? Colors.green.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(

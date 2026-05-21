@@ -1,8 +1,7 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
-
-import '../models/mbti_model.dart';
-import '../services/supabase_service.dart';
+import 'package:np_future_gate/core/models/mbti_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MBTIRepository {
   final SupabaseClient _client = SupabaseService.instance.client;

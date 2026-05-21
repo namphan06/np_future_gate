@@ -1,14 +1,16 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/repositories/device_token_repository.dart';
+import 'package:np_future_gate/core/repositories/notification_repository.dart';
+import 'package:np_future_gate/core/services/push_notification_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../notification/models/notification_config.dart';
-import '../../repositories/notification_repository.dart';
-import '../../repositories/device_token_repository.dart';
-import '../push_notification_service.dart';
-import '../supabase_service.dart';
 
 /// Service xử lý gửi notification khi có ứng viên ứng tuyển
 class ApplicationNotificationService {
   final NotificationRepository _notificationRepo = NotificationRepository();
   final DeviceTokenRepository _deviceTokenRepo = DeviceTokenRepository();
+  // ignore: unused_field
   final SupabaseClient _supabase = Supabase.instance.client;
   final SupabaseService _supabaseService = SupabaseService.instance;
 
@@ -29,11 +31,11 @@ class ApplicationNotificationService {
     bool isPartnershipJob = false,
   }) async {
     try {
-      print('📧 Preparing to send application notification...');
-      print('   Employer: $employerId');
-      print('   Job: $jobTitle ($jobId)');
-      print('   Candidate: $candidateName ($candidateId)');
-      print('   Partnership: $isPartnershipJob');
+      debugPrint('📧 Preparing to send application notification...');
+      debugPrint('   Employer: $employerId');
+      debugPrint('   Job: $jobTitle ($jobId)');
+      debugPrint('   Candidate: $candidateName ($candidateId)');
+      debugPrint('   Partnership: $isPartnershipJob');
 
       // 1. Tạo notification trong database
       final notification = await _notificationRepo.createNotificationToUser(
@@ -52,50 +54,50 @@ class ApplicationNotificationService {
       );
 
       if (notification == null) {
-        print('⚠️ Failed to create notification in database');
+        debugPrint('⚠️ Failed to create notification in database');
         return;
       }
 
-      print('✅ Notification created in database: ${notification.id}');
+      debugPrint('✅ Notification created in database: ${notification.id}');
 
       // 2. Lấy danh sách device tokens của employer
-      print('🔍 DEBUG: Querying with userId: $employerId, role: employer');
+      debugPrint('🔍 DEBUG: Querying with userId: $employerId, role: employer');
       
       // Query thử TẤT CẢ employer devices (không filter userId)
       final allEmployerDevices = await _deviceTokenRepo.getActiveDeviceIds(
         role: 'employer',
       );
-      print('📱 DEBUG: All employer devices in DB: ${allEmployerDevices.length}');
+      debugPrint('📱 DEBUG: All employer devices in DB: ${allEmployerDevices.length}');
       
       // Query theo userId cụ thể
       List<String> deviceIds = await _deviceTokenRepo.getActiveDeviceIds(
         userId: employerId,
         role: 'employer',
       );
-      print('📱 DEBUG: Devices for this employer: ${deviceIds.length}');
+      debugPrint('📱 DEBUG: Devices for this employer: ${deviceIds.length}');
 
       // FALLBACK: Nếu employer không có device, gửi đến current user (để test)
       if (deviceIds.isEmpty) {
-        print('⚠️ No devices found for employer $employerId');
+        debugPrint('⚠️ No devices found for employer $employerId');
         final currentUserId = _supabaseService.currentUserId;
         
         if (currentUserId != null) {
-          print('🔄 Fallback: Sending to current user instead');
+          debugPrint('🔄 Fallback: Sending to current user instead');
           deviceIds = await _deviceTokenRepo.getActiveDeviceIds(
             userId: currentUserId,
           );
           
           if (deviceIds.isEmpty) {
-            print('ℹ️ Current user also has no active devices');
+            debugPrint('ℹ️ Current user also has no active devices');
             return;
           }
-          print('📱 Found ${deviceIds.length} device(s) for current user');
+          debugPrint('📱 Found ${deviceIds.length} device(s) for current user');
         } else {
-          print('ℹ️ No active devices found and no current user');
+          debugPrint('ℹ️ No active devices found and no current user');
           return;
         }
       } else {
-        print('📱 Found ${deviceIds.length} device(s) for employer');
+        debugPrint('📱 Found ${deviceIds.length} device(s) for employer');
       }
 
       // 3. Gửi push notification đến nhiều devices cùng lúc (học từ test_page_admin)
@@ -112,12 +114,12 @@ class ApplicationNotificationService {
       );
 
       if (success) {
-        print('✅ Push notifications sent to ${deviceIds.length} device(s)');
+        debugPrint('✅ Push notifications sent to ${deviceIds.length} device(s)');
       } else {
-        print('❌ Failed to send push notifications');
+        debugPrint('❌ Failed to send push notifications');
       }
     } catch (e) {
-      print('❌ Error in notifyNewApplication: $e');
+      debugPrint('❌ Error in notifyNewApplication: $e');
       // Không throw để không ảnh hưởng đến flow ứng tuyển chính
     }
   }
@@ -126,6 +128,7 @@ class ApplicationNotificationService {
   /// 
   /// [settings] - JSONB notification_settings từ device_tokens
   /// [category] - Loại notification: 'job', 'application', 'interview', etc.
+  // ignore: unused_element
   bool _shouldSendNotification(
     Map<String, dynamic>? settings,
     String category,
@@ -189,7 +192,7 @@ class ApplicationNotificationService {
       );
       
       if (deviceIds.isEmpty) {
-        print('ℹ️ No active devices found for candidate');
+        debugPrint('ℹ️ No active devices found for candidate');
         return;
       }
 
@@ -203,9 +206,9 @@ class ApplicationNotificationService {
         },
       );
       
-      print('✅ Push notifications sent to ${deviceIds.length} candidate device(s)');
+      debugPrint('✅ Push notifications sent to ${deviceIds.length} candidate device(s)');
     } catch (e) {
-      print('❌ Error in notifyApplicationApproved: $e');
+      debugPrint('❌ Error in notifyApplicationApproved: $e');
     }
   }
 
@@ -238,7 +241,7 @@ class ApplicationNotificationService {
       );
       
       if (deviceIds.isEmpty) {
-        print('ℹ️ No active devices found for candidate');
+        debugPrint('ℹ️ No active devices found for candidate');
         return;
       }
 
@@ -252,9 +255,9 @@ class ApplicationNotificationService {
         },
       );
       
-      print('✅ Push notifications sent to ${deviceIds.length} candidate device(s)');
+      debugPrint('✅ Push notifications sent to ${deviceIds.length} candidate device(s)');
     } catch (e) {
-      print('❌ Error in notifyApplicationRejected: $e');
+      debugPrint('❌ Error in notifyApplicationRejected: $e');
     }
   }
 }

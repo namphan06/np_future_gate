@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/employer_response_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
-import '../models/employer_response_model.dart';
 
 class EmployerResponseRepository {
   final _client = SupabaseService.instance.client;
@@ -29,7 +31,7 @@ class EmployerResponseRepository {
       
       return url;
     } catch (e) {
-      print('Error uploading file: $e');
+      debugPrint('Error uploading file: $e');
       rethrow;
     }
   }
@@ -59,7 +61,7 @@ class EmployerResponseRepository {
   ) async {
     try {
       // Upload attachments first
-      List<EmailAttachment> uploadedAttachments = [];
+      final List<EmailAttachment> uploadedAttachments = [];
       
       for (var file in attachmentFiles) {
         final url = await uploadAttachment(file, response.employerId);
@@ -90,7 +92,7 @@ class EmployerResponseRepository {
 
       return EmployerResponseModel.fromJson(data);
     } catch (e) {
-      print('Error creating response: $e');
+      debugPrint('Error creating response: $e');
       rethrow;
     }
   }
@@ -110,7 +112,7 @@ class EmployerResponseRepository {
           .map((e) => EmployerResponseModel.fromJson(e))
           .toList();
     } catch (e) {
-      print('Error fetching responses: $e');
+      debugPrint('Error fetching responses: $e');
       return [];
     }
   }
@@ -130,7 +132,7 @@ class EmployerResponseRepository {
           .map((e) => EmployerResponseModel.fromJson(e))
           .toList();
     } catch (e) {
-      print('Error fetching responses: $e');
+      debugPrint('Error fetching responses: $e');
       return [];
     }
   }
@@ -140,7 +142,7 @@ class EmployerResponseRepository {
     try {
       await _client.from('employer_responses').delete().eq('id', responseId);
     } catch (e) {
-      print('Error deleting response: $e');
+      debugPrint('Error deleting response: $e');
       rethrow;
     }
   }

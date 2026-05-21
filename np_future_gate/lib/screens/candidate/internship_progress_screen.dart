@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/evaluation_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/repositories/evaluation_repository.dart';
-import '../../core/services/supabase_service.dart';
 
 class InternshipProgressScreen extends StatefulWidget {
   const InternshipProgressScreen({super.key});
@@ -159,7 +159,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
                       border: Border.all(color: Colors.white, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: AppMainColors.primary.withOpacity(0.3),
+                          color: AppMainColors.primary.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -176,7 +176,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
                     Expanded(
                       child: Container(
                         width: 2,
-                        color: AppMainColors.primary.withOpacity(0.2),
+                        color: AppMainColors.primary.withValues(alpha: 0.2),
                       ),
                     ),
                 ],
@@ -192,7 +192,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -214,11 +214,11 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Icon(Icons.access_time, size: 14, color: AppMainColors.primary),
+                            const Icon(Icons.access_time, size: 14, color: AppMainColors.primary),
                             const SizedBox(width: 4),
                             Text(
                               'Hạn chót: ${step['deadline']}',
-                              style: TextStyle(color: AppMainColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+                              style: const TextStyle(color: AppMainColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),
@@ -250,7 +250,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [AppMainColors.primary, AppMainColors.primaryDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -258,7 +258,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppMainColors.primary.withOpacity(0.3),
+                  color: AppMainColors.primary.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -271,7 +271,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.business_center, color: Colors.white, size: 24),
@@ -287,7 +287,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
                           ),
                           Text(
                             'Đơn vị tiếp nhận',
-                            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13),
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13),
                           ),
                         ],
                       ),
@@ -327,7 +327,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
               ),
             )
           else
-            ...evaluations.map((e) => _buildEvaluationCard(e)).toList(),
+            ...evaluations.map((e) => _buildEvaluationCard(e)),
             
           const SizedBox(height: 20),
           
@@ -396,7 +396,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -415,7 +415,7 @@ class _InternshipProgressScreenState extends State<InternshipProgressScreen> wit
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _getScoreColor(score).withOpacity(0.1),
+                  color: _getScoreColor(score).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
 
 /// Các gradient màu cho ứng dụng NP FutureGate
 /// Tạo hiệu ứng hiện đại, hướng về tương lai

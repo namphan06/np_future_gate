@@ -1,14 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:np_future_gate/core/models/interview_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../models/interview_model.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 /// Service để quản lý thông báo nhắc nhở lịch phỏng vấn
 /// Gửi thông báo cho cả employer và candidate trước khi phỏng vấn
 class InterviewReminderService {
-  static final InterviewReminderService _instance = InterviewReminderService._internal();
   factory InterviewReminderService() => _instance;
   InterviewReminderService._internal();
+  static final InterviewReminderService _instance = InterviewReminderService._internal();
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -26,7 +27,7 @@ class InterviewReminderService {
 
       // Không schedule nếu thời gian phỏng vấn đã qua
       if (interviewTime.isBefore(now)) {
-        print('⏰ Interview time is in the past, skipping reminders');
+        debugPrint('⏰ Interview time is in the past, skipping reminders');
         return;
       }
 
@@ -44,7 +45,7 @@ class InterviewReminderService {
           scheduledTime: oneDayBefore,
           payload: 'interview:${interview.id}',
         );
-        print('✅ Scheduled 1-day reminder for interview ${interview.id}');
+        debugPrint('✅ Scheduled 1-day reminder for interview ${interview.id}');
       }
 
       // Schedule 1 hour before
@@ -61,7 +62,7 @@ class InterviewReminderService {
           scheduledTime: oneHourBefore,
           payload: 'interview:${interview.id}',
         );
-        print('✅ Scheduled 1-hour reminder for interview ${interview.id}');
+        debugPrint('✅ Scheduled 1-hour reminder for interview ${interview.id}');
       }
 
       // Schedule notification at interview time
@@ -76,10 +77,10 @@ class InterviewReminderService {
         scheduledTime: interviewTime,
         payload: 'interview:${interview.id}',
       );
-      print('✅ Scheduled start-time notification for interview ${interview.id}');
+      debugPrint('✅ Scheduled start-time notification for interview ${interview.id}');
 
     } catch (e) {
-      print('❌ Error scheduling interview reminders: $e');
+      debugPrint('❌ Error scheduling interview reminders: $e');
     }
   }
 
@@ -109,14 +110,14 @@ class InterviewReminderService {
             icon: '@mipmap/ic_launcher',
             styleInformation: BigTextStyleInformation(body),
             actions: [
-              AndroidNotificationAction(
+              const AndroidNotificationAction(
                 'view',
                 'Xem chi tiết',
                 showsUserInterface: true,
               ),
             ],
           ),
-          iOS: DarwinNotificationDetails(
+          iOS: const DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
@@ -129,7 +130,7 @@ class InterviewReminderService {
         payload: payload,
       );
     } catch (e) {
-      print('❌ Error scheduling notification $id: $e');
+      debugPrint('❌ Error scheduling notification $id: $e');
       rethrow;
     }
   }
@@ -140,9 +141,9 @@ class InterviewReminderService {
       await _notifications.cancel(_getNotificationId(interviewId, '1day', isForEmployer));
       await _notifications.cancel(_getNotificationId(interviewId, '1hour', isForEmployer));
       await _notifications.cancel(_getNotificationId(interviewId, 'now', isForEmployer));
-      print('✅ Cancelled all reminders for interview $interviewId');
+      debugPrint('✅ Cancelled all reminders for interview $interviewId');
     } catch (e) {
-      print('❌ Error cancelling interview reminders: $e');
+      debugPrint('❌ Error cancelling interview reminders: $e');
     }
   }
 
@@ -187,7 +188,7 @@ class InterviewReminderService {
   /// Được gọi khi app khởi động hoặc định kỳ
   Future<void> syncAllInterviewReminders(String userId, bool isEmployer) async {
     try {
-      print('🔄 Syncing interview reminders for user $userId...');
+      debugPrint('🔄 Syncing interview reminders for user $userId...');
 
       final response = await _supabase
           .from('interview_schedules')
@@ -200,7 +201,7 @@ class InterviewReminderService {
           .gte('interview_time', DateTime.now().toUtc().toIso8601String());
 
       if (response.isEmpty) {
-        print('✅ No upcoming interviews found');
+        debugPrint('✅ No upcoming interviews found');
         return;
       }
 
@@ -217,13 +218,13 @@ class InterviewReminderService {
             isForEmployer: isEmployer,
           );
         } catch (e) {
-          print('⚠️ Error processing interview ${data['id']}: $e');
+          debugPrint('⚠️ Error processing interview ${data['id']}: $e');
         }
       }
 
-      print('✅ Synced ${response.length} interview reminders');
+      debugPrint('✅ Synced ${response.length} interview reminders');
     } catch (e) {
-      print('❌ Error syncing interview reminders: $e');
+      debugPrint('❌ Error syncing interview reminders: $e');
     }
   }
 

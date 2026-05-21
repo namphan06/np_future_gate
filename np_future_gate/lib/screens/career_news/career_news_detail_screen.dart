@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import '../../core/models/career_news_model.dart';
-import '../../core/repositories/career_news_repository.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/models/career_news_model.dart';
+import 'package:np_future_gate/core/repositories/career_news_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class CareerNewsDetailScreen extends StatefulWidget {
-  final String newsId;
 
   const CareerNewsDetailScreen({
     super.key,
     required this.newsId,
   });
+  final String newsId;
 
   @override
   State<CareerNewsDetailScreen> createState() => _CareerNewsDetailScreenState();
@@ -92,7 +92,7 @@ class _CareerNewsDetailScreenState extends State<CareerNewsDetailScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 8,
                             ),
                           ],
@@ -124,7 +124,7 @@ class _CareerNewsDetailScreenState extends State<CareerNewsDetailScreen> {
                                         end: Alignment.bottomCenter,
                                         colors: [
                                           Colors.transparent,
-                                          Colors.black.withOpacity(0.3),
+                                          Colors.black.withValues(alpha: 0.3),
                                         ],
                                       ),
                                     ),
@@ -181,7 +181,7 @@ class _CareerNewsDetailScreenState extends State<CareerNewsDetailScreen> {
                                       ),
                                     ),
                                   );
-                                }).toList(),
+                                }),
                               ],
                             ),
                             const SizedBox(height: 16),

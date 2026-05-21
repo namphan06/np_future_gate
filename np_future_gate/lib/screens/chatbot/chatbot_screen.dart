@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:np_future_gate/core/services/enhanced_ai_service.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../core/services/mistral_service.dart';
-import '../../core/services/enhanced_ai_service.dart';
-import '../../core/models/ai_intent_model.dart';
-import '../../core/theme/app_colors.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatbotScreen extends StatefulWidget {
-  const ChatbotScreen({Key? key}) : super(key: key);
+  const ChatbotScreen({super.key});
 
   @override
   State<ChatbotScreen> createState() => _ChatbotScreenState();
@@ -55,7 +54,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       await _enhancedAIService.initialize();
       await _loadUserRole();
     } catch (e) {
-      print('Error initializing AI: $e');
+      debugPrint('Error initializing AI: $e');
     }
   }
 
@@ -76,7 +75,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         });
       }
     } catch (e) {
-      print('Error loading user role: $e');
+      debugPrint('Error loading user role: $e');
     }
   }
 
@@ -138,6 +137,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
+        // ignore: deprecated_member_use
         listenMode: stt.ListenMode.dictation,
       );
     }
@@ -210,7 +210,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         'Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.',
         isUser: false,
       );
-      print('Error sending message: $e');
+      debugPrint('Error sending message: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -273,7 +273,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryBlue.withOpacity(0.2),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -361,7 +361,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               borderRadius: BorderRadius.circular(50),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -446,7 +446,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -474,7 +474,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
+                color: AppColors.primaryBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
@@ -510,7 +510,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -598,7 +598,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -615,7 +615,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           return ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             leading: CircleAvatar(
-              backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+              backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
               child: Text(
                 (app['student_name'] ?? 'U')[0].toUpperCase(),
                 style: const TextStyle(
@@ -650,7 +650,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -689,7 +689,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -766,7 +766,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -799,7 +799,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.6),
+              color: AppColors.primaryBlue.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -818,7 +818,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -885,7 +885,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6C63FF).withOpacity(0.3),
+                    color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -904,11 +904,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 }
 
 class ChatMessage {
-  final String text;
-  final bool isUser;
-  final bool hasData;
-  final String? chartType;
-  final List<dynamic>? data;
 
   ChatMessage({
     required this.text,
@@ -917,4 +912,9 @@ class ChatMessage {
     this.chartType,
     this.data,
   });
+  final String text;
+  final bool isUser;
+  final bool hasData;
+  final String? chartType;
+  final List<dynamic>? data;
 }

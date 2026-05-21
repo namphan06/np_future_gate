@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/enums/employment_types.dart';
+import 'package:np_future_gate/core/enums/experience_levels.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/enums/vietnam_provinces.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/school/partnership/companies_list_screen.dart';
+import 'package:np_future_gate/screens/school/partnership/select_company_job_screen.dart';
+import 'package:np_future_gate/screens/school/partnership/select_company_screen.dart';
+import 'package:np_future_gate/screens/school/school_email_setup_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/enums/vietnam_provinces.dart';
-import '../../../core/enums/job_fields.dart';
-import '../../../core/enums/employment_types.dart';
-import '../../../core/enums/experience_levels.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../widgets/speech_text_field.dart';
-import '../partnership/select_company_screen.dart';
-import '../partnership/select_company_job_screen.dart';
-import '../partnership/companies_list_screen.dart';
-import '../school_email_setup_screen.dart';
 
 class CreateSchoolJobScreen extends StatefulWidget {
-  final bool isPartnership;
-  final JobModel? job; // For editing
-  final String? preselectedCompanyId;
-  final String? preselectedCompanyName;
 
   const CreateSchoolJobScreen({
     super.key,
@@ -26,6 +22,10 @@ class CreateSchoolJobScreen extends StatefulWidget {
     this.preselectedCompanyId,
     this.preselectedCompanyName,
   });
+  final bool isPartnership;
+  final JobModel? job; // For editing
+  final String? preselectedCompanyId;
+  final String? preselectedCompanyName;
 
   @override
   State<CreateSchoolJobScreen> createState() => _CreateSchoolJobScreenState();
@@ -95,7 +95,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
     _deadline = job.deadline;
     _isActive = job.isActive;
     _isNegotiable = meta.salary.isNegotiable;
-    _isIntern = meta.isIntern ?? false;
+    _isIntern = meta.isIntern;
     
     _workingRegions = List.from(meta.workingRegions);
     _fields = List.from(meta.fields);
@@ -111,12 +111,12 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
     final meta = companyJob.metadata;
     
     // Debug: Print để kiểm tra data
-    print('=== Copying job from company ===');
-    print('Title: ${meta.title}');
-    print('Experience: ${meta.experienceRequired}');
-    print('Employment Types: ${meta.employmentTypes}');
-    print('Fields: ${meta.fields}');
-    print('Working Regions: ${meta.workingRegions}');
+    debugPrint('=== Copying job from company ===');
+    debugPrint('Title: ${meta.title}');
+    debugPrint('Experience: ${meta.experienceRequired}');
+    debugPrint('Employment Types: ${meta.employmentTypes}');
+    debugPrint('Fields: ${meta.fields}');
+    debugPrint('Working Regions: ${meta.workingRegions}');
     
     setState(() {
       _titleController.text = meta.title;
@@ -126,7 +126,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
       
       _deadline = companyJob.deadline;
       _isNegotiable = meta.salary.isNegotiable;
-      _isIntern = meta.isIntern ?? false;
+      _isIntern = meta.isIntern;
       
       _workingRegions = List.from(meta.workingRegions);
       _fields = List.from(meta.fields);
@@ -139,9 +139,9 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
     });
     
     // Debug: Print sau khi setState
-    print('After setState:');
-    print('_selectedExperience: $_selectedExperience');
-    print('_employmentTypes: $_employmentTypes');
+    debugPrint('After setState:');
+    debugPrint('_selectedExperience: $_selectedExperience');
+    debugPrint('_employmentTypes: $_employmentTypes');
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Đã tự động điền thông tin từ tin của công ty')),
@@ -275,7 +275,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Row(
@@ -380,7 +380,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
       bool isLimitReached = false;
 
       if (limitPeriod != 'unlimited' && limitCount != null) {
-        DateTime now = DateTime.now();
+        final DateTime now = DateTime.now();
         DateTime startDate;
         if (limitPeriod == 'month') {
           startDate = DateTime(now.year, now.month, 1);
@@ -671,7 +671,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                           trailing: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppMainColors.primary.withOpacity(0.1),
+                              color: AppMainColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(Icons.calendar_today, color: AppMainColors.primary, size: 20),
@@ -687,7 +687,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                           ),
                           value: _isIntern,
                           onChanged: (v) => setState(() => _isIntern = v),
-                          activeColor: Colors.orange,
+                          activeThumbColor: Colors.orange,
                           contentPadding: EdgeInsets.zero,
                         ),
                         const Divider(height: 24),
@@ -699,7 +699,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                           ),
                           value: _isActive,
                           onChanged: (v) => setState(() => _isActive = v),
-                          activeColor: AppMainColors.primary,
+                          activeThumbColor: AppMainColors.primary,
                           contentPadding: EdgeInsets.zero,
                         ),
                       ],
@@ -725,7 +725,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: Colors.purple.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -734,11 +734,11 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.handshake, color: Colors.white, size: 24),
-              const SizedBox(width: 12),
-              const Text(
+              Icon(Icons.handshake, color: Colors.white, size: 24),
+              SizedBox(width: 12),
+              Text(
                 'Liên kết doanh nghiệp',
                 style: TextStyle(
                   fontSize: 18,
@@ -755,7 +755,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -823,7 +823,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.purple,
-                    disabledBackgroundColor: Colors.white.withOpacity(0.3),
+                    disabledBackgroundColor: Colors.white.withValues(alpha: 0.3),
                     disabledForegroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -841,7 +841,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -852,7 +852,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                   child: Text(
                     'Tin liên kết cần công ty và admin duyệt mới xuất bản',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,
                     ),
                   ),
@@ -872,7 +872,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -940,7 +940,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -996,7 +996,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
     required Function(String?) onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      value: items.contains(value) ? value : null,
+      initialValue: items.contains(value) ? value : null,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
@@ -1076,7 +1076,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                   }
                   onChanged(newItems);
                 },
-                selectedColor: (widget.isPartnership ? Colors.purple : AppMainColors.primary).withOpacity(0.15),
+                selectedColor: (widget.isPartnership ? Colors.purple : AppMainColors.primary).withValues(alpha: 0.15),
                 checkmarkColor: widget.isPartnership ? Colors.purple : AppMainColors.primary,
                 labelStyle: TextStyle(
                   color: isSelected ? (widget.isPartnership ? Colors.purple : AppMainColors.primary) : Colors.black87,
@@ -1087,7 +1087,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
                     color: isSelected 
-                      ? (widget.isPartnership ? Colors.purple : AppMainColors.primary).withOpacity(0.5) 
+                      ? (widget.isPartnership ? Colors.purple : AppMainColors.primary).withValues(alpha: 0.5) 
                       : Colors.transparent,
                   ),
                 ),
@@ -1176,7 +1176,7 @@ class _CreateSchoolJobScreenState extends State<CreateSchoolJobScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: (widget.isPartnership ? Colors.purple : AppMainColors.primary).withOpacity(0.1),
+                  color: (widget.isPartnership ? Colors.purple : AppMainColors.primary).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(

@@ -218,7 +218,7 @@ class _HomePageEmployerState extends State<HomePageEmployer> {
             padding: const EdgeInsets.all(10),
             child: Stack(
               children: [
-                Icon(
+                const Icon(
                   Icons.notifications_outlined,
                   color: AppMainColors.primary,
                   size: 24,

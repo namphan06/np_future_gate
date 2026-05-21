@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../cv_template/cv_ui/cv3.dart';
-import 'cv_input_form.dart';
-import '../../../core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv_input_form.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv3.dart';
 
 /// CV3 Input Screen - Màn hình nhập liệu cho CV3 (Technical/IT)
-class CV3InputScreen extends StatefulWidget {
-  final String? cvId; // null = tạo mới, có giá trị = chỉnh sửa
+class CV3InputScreen extends StatefulWidget { // null = tạo mới, có giá trị = chỉnh sửa
 
   const CV3InputScreen({super.key, this.cvId});
+  final String? cvId;
 
   @override
   State<CV3InputScreen> createState() => _CV3InputScreenState();
@@ -128,6 +128,7 @@ class _CV3InputScreenState extends State<CV3InputScreen> {
       } else {
         final newId = await _cvService.createCV(_cvData);
         _showSuccess('Đã tạo CV mới: $newId');
+        // ignore: use_build_context_synchronously
         Navigator.pop(context, newId);
       }
     } catch (e) {
@@ -183,7 +184,7 @@ class _CV3InputScreenState extends State<CV3InputScreen> {
                       color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -214,7 +215,7 @@ class _CV3InputScreenState extends State<CV3InputScreen> {
                             color: Colors.white,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -238,7 +239,7 @@ class _CV3InputScreenState extends State<CV3InputScreen> {
                       color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 10,
                           offset: const Offset(-2, 0),
                         ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/models/notification_settings_model.dart';
-import '../../core/repositories/device_token_repository.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/services/fcm_service.dart';
+import 'package:np_future_gate/core/models/notification_settings_model.dart';
+import 'package:np_future_gate/core/repositories/device_token_repository.dart';
+import 'package:np_future_gate/core/services/fcm_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -35,7 +35,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       final deviceToken = _fcmService.fcmToken;
       
       if (userId == null || deviceToken == null) {
-        print('⚠️ User ID or Device Token not available');
+        debugPrint('⚠️ User ID or Device Token not available');
         setState(() {
           _settings = NotificationSettingsModel();
           _isLoading = false;
@@ -55,7 +55,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         _isLoading = false;
       });
     } catch (e) {
-      print('❌ Error loading settings: $e');
+      debugPrint('❌ Error loading settings: $e');
       setState(() {
         _settings = NotificationSettingsModel();
         _isLoading = false;
@@ -94,7 +94,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         );
       }
     } catch (e) {
-      print('❌ Error saving settings: $e');
+      debugPrint('❌ Error saving settings: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -312,13 +312,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _settings!.enabled 
-              ? AppMainColors.primary.withOpacity(0.3)
+              ? AppMainColors.primary.withValues(alpha: 0.3)
               : Colors.grey.shade200,
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -331,7 +331,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             decoration: BoxDecoration(
               color: (_settings!.enabled 
                   ? AppMainColors.primary 
-                  : Colors.grey.shade400).withOpacity(0.1),
+                  : Colors.grey.shade400).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -347,7 +347,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Thông báo Push',
                   style: TextStyle(
                     color: Colors.black87,
@@ -373,7 +373,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 _settings = _settings!.copyWith(enabled: value);
               });
             },
-            activeColor: AppMainColors.primary,
+            activeThumbColor: AppMainColors.primary,
           ),
         ],
       ),
@@ -408,7 +408,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -426,7 +426,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppMainColors.primary.withOpacity(enabled ? 0.1 : 0.05),
+                    color: AppMainColors.primary.withValues(alpha: enabled ? 0.1 : 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -462,7 +462,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 Switch(
                   value: value,
                   onChanged: enabled ? onChanged : null,
-                  activeColor: AppMainColors.primary,
+                  activeThumbColor: AppMainColors.primary,
                 ),
               ],
             ),
@@ -489,7 +489,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -542,7 +542,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                       onChanged: _settings!.enabled 
                           ? (value) => _toggleType(type['key'] as String)
                           : null,
-                      activeColor: AppMainColors.primary,
+                      activeThumbColor: AppMainColors.primary,
                     ),
                   ],
                 ),
@@ -610,6 +610,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     });
   }
 
+  // ignore: unused_element
   Widget _buildTypeCard({
     required IconData icon,
     required String title,
@@ -623,12 +624,12 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: value && enabled ? color.withOpacity(0.3) : Colors.transparent,
+          color: value && enabled ? color.withValues(alpha: 0.3) : Colors.transparent,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -646,7 +647,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: (enabled && value ? color : Colors.grey).withOpacity(0.1),
+                    color: (enabled && value ? color : Colors.grey).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -669,7 +670,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 Switch(
                   value: value,
                   onChanged: enabled ? onChanged : null,
-                  activeColor: color,
+                  activeThumbColor: color,
                 ),
               ],
             ),

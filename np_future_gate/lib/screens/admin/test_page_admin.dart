@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/services/push_notification_service.dart';
-import '../../core/repositories/device_token_repository.dart';
-import '../../core/services/supabase_service.dart';
+import 'package:np_future_gate/core/repositories/device_token_repository.dart';
+import 'package:np_future_gate/core/services/push_notification_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class TestPageAdmin extends StatefulWidget {
   const TestPageAdmin({super.key});
@@ -88,7 +88,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
         return;
       }
 
-      print('📱 Sending to current user: ${deviceIds.length} device(s)');
+      debugPrint('📱 Sending to current user: ${deviceIds.length} device(s)');
 
       final success = await PushNotificationService.sendNotificationToDevice(
         deviceToken: deviceIds.first,
@@ -107,7 +107,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
         _showMessage('❌ Gửi thất bại!', isError: true);
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       _showMessage('Lỗi: $e', isError: true);
     } finally {
       setState(() {
@@ -130,7 +130,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
         return;
       }
 
-      print('📱 Sending to ALL users: ${allDeviceIds.length} device(s)');
+      debugPrint('📱 Sending to ALL users: ${allDeviceIds.length} device(s)');
 
       final success = await PushNotificationService.sendNotificationToMultipleDevices(
         deviceTokens: allDeviceIds,
@@ -149,7 +149,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
         _showMessage('❌ Có lỗi xảy ra!', isError: true);
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       _showMessage('Lỗi: $e', isError: true);
     } finally {
       setState(() {
@@ -218,7 +218,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
         return;
       }
 
-      print('📱 Sending to role "$role": ${deviceIds.length} device(s)');
+      debugPrint('📱 Sending to role "$role": ${deviceIds.length} device(s)');
 
       final success = await PushNotificationService.sendNotificationToMultipleDevices(
         deviceTokens: deviceIds,
@@ -232,12 +232,12 @@ class _TestPageAdminState extends State<TestPageAdmin> {
       );
 
       if (success) {
-        _showMessage('✅ Đã gửi đến ${deviceIds.length} ${role}(s)!');
+        _showMessage('✅ Đã gửi đến ${deviceIds.length} $role(s)!');
       } else {
         _showMessage('❌ Có lỗi xảy ra!', isError: true);
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       _showMessage('Lỗi: $e', isError: true);
     } finally {
       setState(() {
@@ -274,7 +274,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [AppMainColors.primary, AppMainColors.primaryDark],
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -404,7 +404,7 @@ class _TestPageAdminState extends State<TestPageAdmin> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 40),

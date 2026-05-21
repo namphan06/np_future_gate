@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/interview_model.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/repositories/interview_repository.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/speech_text_field.dart';
-import 'interview_detail_screen.dart';
+import 'package:np_future_gate/core/models/interview_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/interview_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/employer/interview_detail_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class InterviewScheduleScreen extends StatefulWidget {
   const InterviewScheduleScreen({super.key});
@@ -24,7 +24,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
   
   List<InterviewModel> _allInterviews = [];
   Map<String, Profile> _candidateProfiles = {};
-  Map<String, JobModel> _jobs = {};
+  final Map<String, JobModel> _jobs = {};
   bool _isLoading = true;
 
   // Filters
@@ -103,8 +103,8 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
         final tags = job?.metadata.requirementsTags.map((e) => e.toLowerCase()).toList() ?? [];
         final fields = job?.metadata.fields.map((e) => e.toLowerCase()).toList() ?? [];
         
-        bool matchTags = tags.any((t) => t.contains(query));
-        bool matchFields = fields.any((f) => f.contains(query));
+        final bool matchTags = tags.any((t) => t.contains(query));
+        final bool matchFields = fields.any((f) => f.contains(query));
 
         if (!candidateName.contains(query) && !jobTitle.contains(query) && !matchTags && !matchFields) {
           return false;
@@ -169,6 +169,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
     
     // Sort dates: upcoming first, then past
     final now = DateTime.now();
+    // ignore: unused_local_variable
     final todayStr = DateFormat('yyyy-MM-dd').format(now);
     final sortedDates = groupedInterviews.keys.toList();
     
@@ -253,7 +254,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                               builder: (context, child) {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
-                                    colorScheme: ColorScheme.light(
+                                    colorScheme: const ColorScheme.light(
                                       primary: AppMainColors.primary,
                                     ),
                                   ),
@@ -379,7 +380,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                   margin: const EdgeInsets.only(bottom: 16),
                                   decoration: BoxDecoration(
                                     color: isIntern 
-                                        ? Colors.deepPurple.withOpacity(0.03)
+                                        ? Colors.deepPurple.withValues(alpha: 0.03)
                                         : Colors.white,
                                     borderRadius: BorderRadius.circular(12),
                                     border: isIntern ? Border.all(
@@ -388,7 +389,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                     ) : null,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withValues(alpha: 0.05),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -402,23 +403,23 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                         Container(
                                           width: double.infinity,
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                             color: Colors.deepPurple,
-                                            borderRadius: const BorderRadius.only(
+                                            borderRadius: BorderRadius.only(
                                               topLeft: Radius.circular(10),
                                               topRight: Radius.circular(10),
                                             ),
                                           ),
-                                          child: Row(
+                                          child: const Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Icon(
+                                              Icon(
                                                 Icons.school,
                                                 size: 16,
                                                 color: Colors.white,
                                               ),
-                                              const SizedBox(width: 6),
-                                              const Text(
+                                              SizedBox(width: 6),
+                                              Text(
                                                 'CHƯƠNG TRÌNH THỰC TẬP',
                                                 style: TextStyle(
                                                   color: Colors.white,
@@ -450,7 +451,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.purple.withOpacity(0.1),
+                                                  color: Colors.purple.withValues(alpha: 0.1),
                                                   borderRadius: BorderRadius.circular(6),
                                                 ),
                                                 child: const Text(
@@ -508,7 +509,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                                     Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                                       decoration: BoxDecoration(
-                                                        color: _getStatusColor(interview.status).withOpacity(0.1),
+                                                        color: _getStatusColor(interview.status).withValues(alpha: 0.1),
                                                         borderRadius: BorderRadius.circular(4),
                                                       ),
                                                       child: Text(
@@ -528,7 +529,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
                                                 Container(
                                                   height: 40,
                                                   width: 2,
-                                                  color: AppMainColors.primary.withOpacity(0.2),
+                                                  color: AppMainColors.primary.withValues(alpha: 0.2),
                                                 ),
                                                 const SizedBox(width: 16),
 
@@ -614,6 +615,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
     }
   }
 
+  // ignore: unused_element
   Widget _buildStatusBadge(String status) {
     Color color;
     String text;
@@ -643,7 +645,7 @@ class _InterviewScheduleScreenState extends State<InterviewScheduleScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

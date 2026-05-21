@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/interview_model.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/repositories/interview_repository.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/speech_text_field.dart';
-import 'interview_detail_candidate_screen.dart';
+import 'package:np_future_gate/core/models/interview_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/interview_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/interview_detail_candidate_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class InterviewScheduleCandidateScreen extends StatefulWidget {
   const InterviewScheduleCandidateScreen({super.key});
@@ -24,7 +24,7 @@ class _InterviewScheduleCandidateScreenState extends State<InterviewScheduleCand
   
   List<InterviewModel> _allInterviews = [];
   Map<String, Profile> _employerProfiles = {};
-  Map<String, JobModel> _jobs = {};
+  final Map<String, JobModel> _jobs = {};
   bool _isLoading = true;
 
   // Filters
@@ -228,7 +228,7 @@ class _InterviewScheduleCandidateScreenState extends State<InterviewScheduleCand
                               builder: (context, child) {
                                 return Theme(
                                   data: Theme.of(context).copyWith(
-                                    colorScheme: ColorScheme.light(
+                                    colorScheme: const ColorScheme.light(
                                       primary: AppMainColors.primary,
                                     ),
                                   ),
@@ -363,7 +363,7 @@ class _InterviewScheduleCandidateScreenState extends State<InterviewScheduleCand
                                       borderRadius: BorderRadius.circular(12),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
+                                          color: Colors.black.withValues(alpha: 0.05),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
                                         ),
@@ -433,7 +433,7 @@ class _InterviewScheduleCandidateScreenState extends State<InterviewScheduleCand
                                                       Container(
                                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                                         decoration: BoxDecoration(
-                                                          color: _getStatusColor(interview.status).withOpacity(0.1),
+                                                          color: _getStatusColor(interview.status).withValues(alpha: 0.1),
                                                           borderRadius: BorderRadius.circular(4),
                                                         ),
                                                         child: Text(
@@ -453,7 +453,7 @@ class _InterviewScheduleCandidateScreenState extends State<InterviewScheduleCand
                                                   Container(
                                                     height: 40,
                                                     width: 2,
-                                                    color: AppMainColors.primary.withOpacity(0.2),
+                                                    color: AppMainColors.primary.withValues(alpha: 0.2),
                                                   ),
                                                   const SizedBox(width: 16),
 

@@ -1,5 +1,7 @@
 import 'dart:convert';
-import 'mistral_service.dart';
+
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
 
 class MIAnalysisService {
   final MistralService _mistralService = MistralService();
@@ -73,11 +75,11 @@ JSON format:
       
       return response; // Fallback
     } catch (e) {
-      print('Error analyzing MI results: $e');
+      debugPrint('Error analyzing MI results: $e');
       return jsonEncode({
-        "strengths_weaknesses": "Không thể phân tích kết quả vào lúc này. Lỗi: $e",
-        "thinking_creative": "Vui lòng thử lại sau.",
-        "job_criteria": "Vui lòng thử lại sau."
+        'strengths_weaknesses': 'Không thể phân tích kết quả vào lúc này. Lỗi: $e',
+        'thinking_creative': 'Vui lòng thử lại sau.',
+        'job_criteria': 'Vui lòng thử lại sau.'
       });
     }
   }

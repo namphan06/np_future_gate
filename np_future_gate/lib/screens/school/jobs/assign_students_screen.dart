@@ -1,17 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../../widgets/speech_text_field.dart';
-import '../../cv/cv_setting/cv_display_manager.dart';
 
 class AssignStudentsScreen extends StatefulWidget {
-  final JobModel job;
-  final List<String> assignedStudents;
-  final bool isPartnershipJob;
 
   const AssignStudentsScreen({
     super.key,
@@ -19,12 +16,16 @@ class AssignStudentsScreen extends StatefulWidget {
     required this.assignedStudents,
     required this.isPartnershipJob,
   });
+  final JobModel job;
+  final List<String> assignedStudents;
+  final bool isPartnershipJob;
 
   @override
   State<AssignStudentsScreen> createState() => _AssignStudentsScreenState();
 }
 
 class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
+  // ignore: unused_field
   final CVSupabaseService _cvService = CVSupabaseService();
   List<dynamic> _students = [];
   List<dynamic> _filteredStudents = [];
@@ -74,7 +75,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
         _selectedStudents = List.from(widget.assignedStudents);
         _originalAssignedStudents = List.from(widget.assignedStudents);
       });
-      print('Error loading job metadata: $e');
+      debugPrint('Error loading job metadata: $e');
 
       await _loadAssignedJobsMap(
         currentJobAssignedStudents: widget.assignedStudents,
@@ -847,7 +848,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withOpacity(0.3),
+                  color: Colors.orange.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -858,7 +859,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -1165,7 +1166,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
                                         _viewStudentProfile(student),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: AppMainColors.primary,
-                                      side: BorderSide(
+                                      side: const BorderSide(
                                         color: AppMainColors.primary,
                                       ),
                                       padding: const EdgeInsets.symmetric(
@@ -1221,7 +1222,7 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -4),
             ),
@@ -1265,9 +1266,9 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1289,10 +1290,10 @@ class _AssignStudentsScreenState extends State<AssignStudentsScreen> {
 }
 
 class StudentProfileDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> student;
-  final CVSupabaseService _cvService = CVSupabaseService();
 
   StudentProfileDetailScreen({super.key, required this.student});
+  final Map<String, dynamic> student;
+  final CVSupabaseService _cvService = CVSupabaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -1317,7 +1318,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: [
                     AppMainColors.primary,
-                    AppMainColors.primary.withOpacity(0.8),
+                    AppMainColors.primary.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -1330,7 +1331,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1341,7 +1342,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                       backgroundColor: Colors.white,
                       child: Text(
                         (student['full_name'] ?? 'N')[0].toUpperCase(),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
                           color: AppMainColors.primary,
@@ -1377,7 +1378,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -1385,7 +1386,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                     ),
                     child: Text(
                       student['role']?.toString().toUpperCase() ?? 'CANDIDATE',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppMainColors.primary,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
@@ -1406,7 +1407,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -1446,7 +1447,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -1455,15 +1456,15 @@ class StudentProfileDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
                       Icon(
                         Icons.account_box_rounded,
                         color: AppMainColors.primary,
                         size: 24,
                       ),
-                      const SizedBox(width: 12),
-                      const Text(
+                      SizedBox(width: 12),
+                      Text(
                         'Profile chi tiết',
                         style: TextStyle(
                           fontSize: 20,
@@ -1577,7 +1578,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: Colors.red.withOpacity(0.3),
+                                      color: Colors.red.withValues(alpha: 0.3),
                                     ),
                                   ),
                                   child: ListTile(
@@ -1585,10 +1586,10 @@ class StudentProfileDetailScreen extends StatelessWidget {
                                     leading: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: Colors.red.withOpacity(0.1),
+                                        color: Colors.red.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.picture_as_pdf,
                                         color: Colors.red,
                                         size: 24,
@@ -1641,11 +1642,11 @@ class StudentProfileDetailScreen extends StatelessWidget {
                               .map(
                                 (field) => Chip(
                                   label: Text(field.toString()),
-                                  backgroundColor: Colors.purple.withOpacity(
+                                  backgroundColor: Colors.purple.withValues(alpha: 
                                     0.1,
                                   ),
                                   side: BorderSide(
-                                    color: Colors.purple.withOpacity(0.3),
+                                    color: Colors.purple.withValues(alpha: 0.3),
                                   ),
                                 ),
                               )
@@ -1669,11 +1670,11 @@ class StudentProfileDetailScreen extends StatelessWidget {
                               .map(
                                 (loc) => Chip(
                                   label: Text(loc.toString()),
-                                  backgroundColor: Colors.green.withOpacity(
+                                  backgroundColor: Colors.green.withValues(alpha: 
                                     0.1,
                                   ),
                                   side: BorderSide(
-                                    color: Colors.green.withOpacity(0.3),
+                                    color: Colors.green.withValues(alpha: 0.3),
                                   ),
                                 ),
                               )
@@ -1697,11 +1698,11 @@ class StudentProfileDetailScreen extends StatelessWidget {
                               .map(
                                 (type) => Chip(
                                   label: Text(type.toString()),
-                                  backgroundColor: Colors.orange.withOpacity(
+                                  backgroundColor: Colors.orange.withValues(alpha: 
                                     0.1,
                                   ),
                                   side: BorderSide(
-                                    color: Colors.orange.withOpacity(0.3),
+                                    color: Colors.orange.withValues(alpha: 0.3),
                                   ),
                                 ),
                               )
@@ -1729,9 +1730,9 @@ class StudentProfileDetailScreen extends StatelessWidget {
                                     Icons.check_circle,
                                     size: 16,
                                   ),
-                                  backgroundColor: Colors.blue.withOpacity(0.1),
+                                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
                                   side: BorderSide(
-                                    color: Colors.blue.withOpacity(0.3),
+                                    color: Colors.blue.withValues(alpha: 0.3),
                                   ),
                                 ),
                               )
@@ -1825,9 +1826,9 @@ class StudentProfileDetailScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1837,7 +1838,7 @@ class StudentProfileDetailScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, size: 20, color: color),

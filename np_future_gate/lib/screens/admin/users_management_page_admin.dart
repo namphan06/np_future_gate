@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/auth_models.dart';
-import '../../core/repositories/admin_user_repository.dart';
-import '../../widgets/speech_text_field.dart';
-import 'user_detail_screen.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/admin_user_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/admin/user_detail_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class UsersManagementPageAdmin extends StatefulWidget {
   const UsersManagementPageAdmin({super.key});
@@ -341,7 +341,7 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha: 0.06),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -358,7 +358,7 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: roleColor.withOpacity(0.1),
+                          color: roleColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: user.avatarUrl != null
@@ -697,7 +697,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 await _adminRepo.updateUserMetadata(user.id, updatedMetadata);
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã xóa giới hạn')),
                   );
@@ -705,7 +707,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -736,7 +740,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 await _adminRepo.setPostLimit(user.id, limit);
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Đã cập nhật: $limit tin')),
                   );
@@ -744,7 +750,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -824,7 +832,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 await _adminRepo.updateUserMetadata(user.id, updatedMetadata);
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã xóa tất cả giới hạn')),
                   );
@@ -832,7 +842,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -885,7 +897,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 if (partnershipLimit != null) messages.add('Liên kết: $partnershipLimit');
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -899,7 +913,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -948,7 +964,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 await _adminRepo.deleteUserAccount(user.id);
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context); // Close loading
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã xóa tài khoản')),
                   );
@@ -956,7 +974,9 @@ class _UsersManagementPageAdminState extends State<UsersManagementPageAdmin> wit
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context); // Close loading
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi xóa tài khoản: $e')),
                   );

@@ -1,10 +1,4 @@
 class MBTIQuestionOption {
-  final String id;
-  final String questionId;
-  final String optionText;
-  final String mappedLetter;
-  final int order;
-  final bool isActive;
 
   MBTIQuestionOption({
     required this.id,
@@ -25,16 +19,15 @@ class MBTIQuestionOption {
       isActive: (json['is_active'] ?? true) as bool,
     );
   }
+  final String id;
+  final String questionId;
+  final String optionText;
+  final String mappedLetter;
+  final int order;
+  final bool isActive;
 }
 
 class MBTIQuestion {
-  final String id;
-  final String questionText;
-  final String? questionDimension;
-  final String? placeholderHint;
-  final int order;
-  final bool isActive;
-  final List<MBTIQuestionOption> options;
 
   MBTIQuestion({
     required this.id,
@@ -56,6 +49,13 @@ class MBTIQuestion {
       isActive: (json['is_active'] ?? true) as bool,
     );
   }
+  final String id;
+  final String questionText;
+  final String? questionDimension;
+  final String? placeholderHint;
+  final int order;
+  final bool isActive;
+  final List<MBTIQuestionOption> options;
 
   MBTIQuestion copyWith({List<MBTIQuestionOption>? options}) {
     return MBTIQuestion(
@@ -71,12 +71,6 @@ class MBTIQuestion {
 }
 
 class MBTITypeSection {
-  final String id;
-  final String mbtiTypeId;
-  final String title;
-  final String content;
-  final int order;
-  final bool isActive;
 
   MBTITypeSection({
     required this.id,
@@ -97,17 +91,15 @@ class MBTITypeSection {
       isActive: (json['is_active'] ?? true) as bool,
     );
   }
+  final String id;
+  final String mbtiTypeId;
+  final String title;
+  final String content;
+  final int order;
+  final bool isActive;
 }
 
 class MBTIType {
-  final String id;
-  final String code;
-  final String? name;
-  final String? shortDescription;
-  final String? imageUrl;
-  final String? colorHex;
-  final bool isActive;
-  final List<MBTITypeSection> sections;
 
   MBTIType({
     required this.id,
@@ -131,6 +123,14 @@ class MBTIType {
       isActive: (json['is_active'] ?? true) as bool,
     );
   }
+  final String id;
+  final String code;
+  final String? name;
+  final String? shortDescription;
+  final String? imageUrl;
+  final String? colorHex;
+  final bool isActive;
+  final List<MBTITypeSection> sections;
 
   MBTIType copyWith({List<MBTITypeSection>? sections}) {
     return MBTIType(
@@ -147,15 +147,15 @@ class MBTIType {
 }
 
 class MBTIAnsweredQuestion {
-  final MBTIQuestion question;
-  final MBTIQuestionOption selectedOption;
 
   MBTIAnsweredQuestion({required this.question, required this.selectedOption});
+  final MBTIQuestion question;
+  final MBTIQuestionOption selectedOption;
 }
 
 class MBTIAnalysisResult {
-  final String resultCode;
-  final String? reasoning;
 
   MBTIAnalysisResult({required this.resultCode, this.reasoning});
+  final String resultCode;
+  final String? reasoning;
 }

@@ -1,22 +1,24 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pdfx/pdfx.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfx/pdfx.dart';
 
 /// Service sử dụng Google ML Kit để nhận diện văn bản từ ảnh/PDF CV (on-device)
 /// Hỗ trợ cả ảnh (JPG, PNG) và PDF (render từng trang thành ảnh rồi OCR)
 class MLKitOcrService {
-  static final MLKitOcrService _instance = MLKitOcrService._internal();
   factory MLKitOcrService() => _instance;
   MLKitOcrService._internal();
+  static final MLKitOcrService _instance = MLKitOcrService._internal();
 
   final ImagePicker _picker = ImagePicker();
 
   /// Trích xuất text từ file ảnh (File object)
   Future<MLKitOcrResult> extractTextFromFile(File imageFile) async {
     try {
+      // ignore: avoid_slow_async_io
       if (!await imageFile.exists()) {
         return MLKitOcrResult.failure('File không tồn tại');
       }
@@ -59,6 +61,7 @@ class MLKitOcrService {
   /// Trích xuất text từ file PDF (render từng trang thành ảnh → ML Kit OCR)
   Future<MLKitOcrResult> extractTextFromPdf(File pdfFile) async {
     try {
+      // ignore: avoid_slow_async_io
       if (!await pdfFile.exists()) {
         return MLKitOcrResult.failure('File PDF không tồn tại');
       }
@@ -104,6 +107,7 @@ class MLKitOcrService {
           debugPrint('📄 Page $i OCR: ${result.success ? "${result.text.length} chars" : "FAILED: ${result.error}"}');
 
           // Cleanup temp image
+          // ignore: avoid_slow_async_io
           if (await tempImageFile.exists()) {
             await tempImageFile.delete();
           }
@@ -175,6 +179,7 @@ class MLKitOcrService {
         }
       } finally {
         // Cleanup temp file
+        // ignore: avoid_slow_async_io
         if (await tempFile.exists()) {
           await tempFile.delete();
         }
@@ -265,11 +270,6 @@ class MLKitOcrService {
 
 /// Kết quả OCR từ ML Kit
 class MLKitOcrResult {
-  final bool success;
-  final String text;
-  final String? error;
-  final List<TextBlockInfo> blocks;
-  final int pageCount;
 
   MLKitOcrResult({
     required this.success,
@@ -285,15 +285,20 @@ class MLKitOcrResult {
       error: error,
     );
   }
+  final bool success;
+  final String text;
+  final String? error;
+  final List<TextBlockInfo> blocks;
+  final int pageCount;
 }
 
 /// Thông tin một block text được nhận diện
 class TextBlockInfo {
-  final String text;
-  final double confidence;
 
   TextBlockInfo({
     required this.text,
     this.confidence = 0.0,
   });
+  final String text;
+  final double confidence;
 }

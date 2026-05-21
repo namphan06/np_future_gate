@@ -2,15 +2,6 @@ import 'package:flutter/material.dart';
 
 /// CV Metadata - Định nghĩa thông tin, tags và mcv cho mỗi mẫu CV
 class CVMetadata {
-  final String mcv; // Mã CV duy nhất
-  final String title;
-  final String description;
-  final String type; // Loại CV: general, field, upload, etc.
-  final List<CVTag> tags;
-  final IconData icon;
-  final String thumbnailPath;
-  final String templatePath; // Đường dẫn tới file template UI
-  final String? typeField;
 
   const CVMetadata({
     required this.mcv,
@@ -24,17 +15,6 @@ class CVMetadata {
     this.typeField
   });
 
-  Map<String, dynamic> toJson() => {
-    'mcv': mcv,
-    'title': title,
-    'description': description,
-    'type': type,
-    'tags': tags.map((t) => t.toJson()).toList(),
-    'icon': icon.codePoint,
-    'thumbnailPath': thumbnailPath,
-    'templatePath': templatePath,
-  };
-
   factory CVMetadata.fromJson(Map<String, dynamic> json) => CVMetadata(
     mcv: json['mcv'],
     title: json['title'],
@@ -45,13 +25,30 @@ class CVMetadata {
     thumbnailPath: json['thumbnailPath'],
     templatePath: json['templatePath'],
   );
+  final String mcv; // Mã CV duy nhất
+  final String title;
+  final String description;
+  final String type; // Loại CV: general, field, upload, etc.
+  final List<CVTag> tags;
+  final IconData icon;
+  final String thumbnailPath;
+  final String templatePath; // Đường dẫn tới file template UI
+  final String? typeField;
+
+  Map<String, dynamic> toJson() => {
+    'mcv': mcv,
+    'title': title,
+    'description': description,
+    'type': type,
+    'tags': tags.map((t) => t.toJson()).toList(),
+    'icon': icon.codePoint,
+    'thumbnailPath': thumbnailPath,
+    'templatePath': templatePath,
+  };
 }
 
 /// CV Tag - Thẻ phân loại CV
 class CVTag {
-  final String label;
-  final Color color;
-  final IconData? icon;
 
   const CVTag({
     required this.label,
@@ -59,17 +56,21 @@ class CVTag {
     this.icon,
   });
 
-  Map<String, dynamic> toJson() => {
-    'label': label,
-    'color': color.value,
-    if (icon != null) 'icon': icon!.codePoint,
-  };
-
   factory CVTag.fromJson(Map<String, dynamic> json) => CVTag(
     label: json['label'],
     color: Color(json['color']),
     icon: json['icon'] != null ? IconData(json['icon'], fontFamily: 'MaterialIcons') : null,
   );
+  final String label;
+  final Color color;
+  final IconData? icon;
+
+  Map<String, dynamic> toJson() => {
+    'label': label,
+    // ignore: deprecated_member_use
+    'color': color.value,
+    if (icon != null) 'icon': icon!.codePoint,
+  };
 }
 
 /// Registry - Đăng ký tất cả CV templates
@@ -97,7 +98,7 @@ class CVRegistry {
   /// Khởi tạo registry với các CV mẫu
   static void initialize() {
     // CV1 - Professional Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV001',
       title: 'Professional CV',
       description: 'Mẫu CV chuyên nghiệp, phù hợp cho mọi ngành nghề',
@@ -114,7 +115,7 @@ class CVRegistry {
     ));
 
     // CV2 - Creative Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV002',
       title: 'Creative CV',
       description: 'Mẫu CV sáng tạo cho designer, marketer',
@@ -130,7 +131,7 @@ class CVRegistry {
     ));
 
     // CV3 - Technical Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV003',
       title: 'Technical CV',
       description: 'Mẫu CV kỹ thuật cho IT, Developer',
@@ -148,7 +149,7 @@ class CVRegistry {
 
 
     // CV4 - Technical IT Template (User Provided)
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV004',
       title: 'Technical IT CV',
       description: 'Mẫu CV kỹ thuật tối giản phối màu Cam - Đen chuyên nghiệp',
@@ -165,7 +166,7 @@ class CVRegistry {
     ));
 
     // CV5 - Business Administration Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV005',
       title: 'Business Administration CV',
       description: 'Mẫu CV quản trị kinh doanh chuyên nghiệp với bảng dự án chi tiết',
@@ -182,7 +183,7 @@ class CVRegistry {
     ));
 
     // CV6 - Marketing Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV006',
       title: 'Marketing Strategy CV',
       description: 'Mẫu CV Marketing hiện đại, tập trung vào chiến dịch và kết quả',
@@ -199,7 +200,7 @@ class CVRegistry {
     ));
 
     // CV7 - Creative Design Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV007',
       title: 'Creative Design CV',
       description: 'Mẫu CV thiết kế tối giản, sang trọng theo phong cách editorial',
@@ -216,7 +217,7 @@ class CVRegistry {
     ));
 
     // CV8 - Finance & Banking Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV008',
       title: 'Finance & Banking CV',
       description: 'Mẫu CV tài chính ngân hàng truyền thống, chuyên nghiệp và tin cậy',
@@ -233,7 +234,7 @@ class CVRegistry {
     ));
 
     // CV9 - Healthcare & Medical Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV009',
       title: 'Healthcare & Medical CV',
       description: 'Mẫu CV y tế sạch sẽ, chính xác và chuyên nghiệp',
@@ -252,7 +253,7 @@ class CVRegistry {
     // ===== 5 MẪU CV CHUNG MỚI (CV010 - CV014) =====
 
     // CV10 - Elegant Minimalist Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV010',
       title: 'Elegant Minimalist CV',
       description: 'Mẫu CV tối giản sang trọng với typography đẹp và khoảng trắng hài hòa',
@@ -268,7 +269,7 @@ class CVRegistry {
     ));
 
     // CV11 - Modern Gradient Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV011',
       title: 'Modern Gradient CV',
       description: 'Mẫu CV hiện đại với gradient màu sắc bắt mắt, nổi bật',
@@ -284,7 +285,7 @@ class CVRegistry {
     ));
 
     // CV12 - Classic Timeline Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV012',
       title: 'Classic Timeline CV',
       description: 'Mẫu CV dòng thời gian cổ điển, rõ ràng và chuyên nghiệp',
@@ -300,7 +301,7 @@ class CVRegistry {
     ));
 
     // CV13 - Bold Sidebar Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV013',
       title: 'Bold Sidebar CV',
       description: 'Mẫu CV với thanh bên nổi bật, phong cách mạnh mẽ và hiện đại',
@@ -316,7 +317,7 @@ class CVRegistry {
     ));
 
     // CV14 - Compact Professional Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV014',
       title: 'Compact Professional CV',
       description: 'Mẫu CV chuyên nghiệp gọn gàng, tối ưu cho 1 trang A4',
@@ -334,7 +335,7 @@ class CVRegistry {
     // ===== 5 MẪU CV THEO LĨNH VỰC MỚI (CV015 - CV019) =====
 
     // CV15 - Education & Teaching Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV015',
       title: 'Education & Teaching CV',
       description: 'Mẫu CV dành cho giảng viên, giáo viên, nhà giáo dục',
@@ -351,7 +352,7 @@ class CVRegistry {
     ));
 
     // CV16 - Legal & Law Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV016',
       title: 'Legal & Law CV',
       description: 'Mẫu CV dành cho luật sư, cố vấn pháp lý, chuyên viên luật',
@@ -368,7 +369,7 @@ class CVRegistry {
     ));
 
     // CV17 - Engineering Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV017',
       title: 'Engineering CV',
       description: 'Mẫu CV dành cho kỹ sư xây dựng, cơ khí, điện',
@@ -385,7 +386,7 @@ class CVRegistry {
     ));
 
     // CV18 - Hospitality & Tourism Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV018',
       title: 'Hospitality & Tourism CV',
       description: 'Mẫu CV dành cho ngành du lịch, nhà hàng, khách sạn',
@@ -402,7 +403,7 @@ class CVRegistry {
     ));
 
     // CV19 - Media & Journalism Template
-    register(CVMetadata(
+    register(const CVMetadata(
       mcv: 'CV019',
       title: 'Media & Journalism CV',
       description: 'Mẫu CV dành cho nhà báo, biên tập viên, truyền thông',

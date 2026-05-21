@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/services/ai_matching_service.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_gradients.dart';
-import '../../../core/theme/app_text_styles.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/ai_matching_service.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
 
 class CVAnalysisScreen extends StatefulWidget {
-  final JobModel job;
-  final Map<String, dynamic> cvData;
-  final String applicantName;
 
   const CVAnalysisScreen({
     super.key,
@@ -16,6 +13,9 @@ class CVAnalysisScreen extends StatefulWidget {
     required this.cvData,
     required this.applicantName,
   });
+  final JobModel job;
+  final Map<String, dynamic> cvData;
+  final String applicantName;
 
   @override
   State<CVAnalysisScreen> createState() => _CVAnalysisScreenState();
@@ -71,11 +71,11 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen> {
   }
 
   Widget _buildLoading() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 80,
             height: 80,
             child: CircularProgressIndicator(
@@ -83,8 +83,8 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen> {
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
             ),
           ),
-          const SizedBox(height: 32),
-          const Text(
+          SizedBox(height: 32),
+          Text(
             'AI đang phân tích CV...\n(ML Kit OCR → Mistral AI Matching)',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey, fontSize: 16),
@@ -110,7 +110,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen> {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -129,7 +129,7 @@ class _CVAnalysisScreenState extends State<CVAnalysisScreen> {
                           child: CircularProgressIndicator(
                             value: _result!.overallScore / 100,
                             strokeWidth: 10,
-                            backgroundColor: Colors.white.withOpacity(0.2),
+                            backgroundColor: Colors.white.withValues(alpha: 0.2),
                             valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         ),

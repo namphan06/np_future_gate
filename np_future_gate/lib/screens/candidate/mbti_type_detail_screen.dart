@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../core/models/mbti_model.dart';
-import '../../core/repositories/mbti_repository.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/models/mbti_model.dart';
+import 'package:np_future_gate/core/repositories/mbti_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class MBTITypeDetailScreen extends StatefulWidget {
-  final MBTIType type;
-  final List<MBTIType> allTypes;
 
   const MBTITypeDetailScreen({
     super.key,
     required this.type,
     this.allTypes = const [],
   });
+  final MBTIType type;
+  final List<MBTIType> allTypes;
 
   @override
   State<MBTITypeDetailScreen> createState() => _MBTITypeDetailScreenState();

@@ -1,7 +1,7 @@
-import 'package:np_future_gate/core/enums/vietnam_provinces.dart';
-import 'package:np_future_gate/core/enums/experience_levels.dart';
 import 'package:np_future_gate/core/enums/employment_types.dart';
+import 'package:np_future_gate/core/enums/experience_levels.dart';
 import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/enums/vietnam_provinces.dart';
 
 // Danh sách các thành phố
 final List<String> cities = VietnamProvince.valuesList;

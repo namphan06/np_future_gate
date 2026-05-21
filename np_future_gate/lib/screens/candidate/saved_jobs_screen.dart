@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/data/filter_data.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
+import 'package:np_future_gate/widgets/cards/job_card.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'job_detail_screen.dart';
-import 'data/filter_data.dart';
-import '../../widgets/cards/job_card.dart';
-import '../../widgets/speech_text_field.dart';
 
 class SavedJobsScreen extends StatefulWidget {
   const SavedJobsScreen({super.key});

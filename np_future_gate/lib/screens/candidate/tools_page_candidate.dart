@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/applied_jobs_screen.dart';
+import 'package:np_future_gate/screens/candidate/companies_list_screen.dart';
+import 'package:np_future_gate/screens/candidate/internship_progress_screen.dart';
+import 'package:np_future_gate/screens/candidate/interview_schedule_candidate_screen.dart';
+import 'package:np_future_gate/screens/candidate/mbti_question_screen.dart';
+import 'package:np_future_gate/screens/candidate/mi_question_screen.dart';
+import 'package:np_future_gate/screens/candidate/saved_jobs_screen.dart';
+import 'package:np_future_gate/screens/candidate/school_jobs_screen.dart';
+import 'package:np_future_gate/screens/career_news/career_news_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
+import 'package:np_future_gate/screens/courses/courses_screen.dart';
 import 'package:np_future_gate/screens/cv/cv_creation_screen.dart';
 import 'package:np_future_gate/screens/cv/cv_management_screen.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'applied_jobs_screen.dart';
-import 'saved_jobs_screen.dart';
-import 'companies_list_screen.dart';
-import 'school_jobs_screen.dart';
-import 'interview_schedule_candidate_screen.dart';
-import 'mi_question_screen.dart';
-import 'mbti_question_screen.dart';
-import '../career_news/career_news_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_list_screen.dart';
-import '../chat/chat_detail_screen.dart';
-import '../courses/courses_screen.dart';
-import 'internship_progress_screen.dart';
 
 
 class ToolsPageCandidate extends StatelessWidget {
@@ -39,7 +39,7 @@ class ToolsPageCandidate extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Công cụ & Tiện ích',
                           style: TextStyle(
                             fontSize: 24,
@@ -254,7 +254,7 @@ class ToolsPageCandidate extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.green.withOpacity(0.3),
+                                color: Colors.green.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -280,7 +280,7 @@ class ToolsPageCandidate extends StatelessWidget {
                                     Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.3),
+                                        color: Colors.white.withValues(alpha: 0.3),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Icon(
@@ -533,9 +533,9 @@ class ToolsPageCandidate extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.85),
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.6),
+                    Colors.white.withValues(alpha: 0.85),
                     Colors.white,
                   ],
                   stops: const [0.0, 0.2, 0.4, 1.0],
@@ -562,7 +562,7 @@ class ToolsPageCandidate extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -582,7 +582,7 @@ class ToolsPageCandidate extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(icon, color: color, size: 28),
@@ -623,7 +623,7 @@ class ToolsPageCandidate extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -641,7 +641,7 @@ class ToolsPageCandidate extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 28),

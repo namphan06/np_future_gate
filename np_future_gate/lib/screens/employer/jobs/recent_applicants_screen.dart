@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/repositories/auth_repository.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../cv/cv_setting/cv_display_manager.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../core/models/profile_model.dart';
-import '../../../core/models/job_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
 
 class RecentApplicantsScreen extends StatefulWidget {
   const RecentApplicantsScreen({super.key});
@@ -81,6 +80,7 @@ class _RecentApplicantsScreenState extends State<RecentApplicantsScreen> {
       }
 
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
@@ -157,7 +157,7 @@ class _RecentApplicantsScreenState extends State<RecentApplicantsScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
+                              color: Colors.black.withValues(alpha: 0.06),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -169,7 +169,7 @@ class _RecentApplicantsScreenState extends State<RecentApplicantsScreen> {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
+                                color: Colors.blue.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: ClipRRect(

@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/models/job_model.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class JobCard extends StatelessWidget {
-  final JobModel job;
-  final bool isSaved;
-  final VoidCallback? onToggleSave;
-  final bool isApplied;
-  final VoidCallback? onTap;
-  final Widget? bottomAction;
-  final Widget? topRightBadge;
 
   const JobCard({
     super.key,
@@ -21,6 +14,13 @@ class JobCard extends StatelessWidget {
     this.bottomAction,
     this.topRightBadge,
   });
+  final JobModel job;
+  final bool isSaved;
+  final VoidCallback? onToggleSave;
+  final bool isApplied;
+  final VoidCallback? onTap;
+  final Widget? bottomAction;
+  final Widget? topRightBadge;
 
   String _getTimeAgo(DateTime? dateTime) {
     if (dateTime == null) return 'Vừa xong';
@@ -67,7 +67,7 @@ class JobCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../auth/login_screen.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/screens/auth/login_screen.dart';
 
 class TestScreen extends StatelessWidget {
   const TestScreen({super.key});
@@ -34,7 +34,7 @@ class TestScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              "Test Screen",
+              'Test Screen',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),

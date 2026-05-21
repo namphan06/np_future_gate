@@ -1,17 +1,18 @@
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/models/profile_model.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../widgets/speech_text_field.dart';
+import 'package:http/http.dart' as http;
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobSelectionDialog extends StatefulWidget {
-  final Profile candidate;
 
   const JobSelectionDialog({super.key, required this.candidate});
+  final Profile candidate;
 
   @override
   State<JobSelectionDialog> createState() => _JobSelectionDialogState();
@@ -187,7 +188,7 @@ class _JobSelectionDialogState extends State<JobSelectionDialog> {
           );
         }
       } else {
-        print(response.body);
+        debugPrint(response.body);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

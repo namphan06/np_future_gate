@@ -1,17 +1,17 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
 
 class DraggableFloatingButton extends StatefulWidget {
-  final VoidCallback onChatPressed;
-  final VoidCallback onChatbotPressed;
 
   const DraggableFloatingButton({
-    Key? key,
+    super.key,
     required this.onChatPressed,
     required this.onChatbotPressed,
-  }) : super(key: key);
+  });
+  final VoidCallback onChatPressed;
+  final VoidCallback onChatbotPressed;
 
   @override
   State<DraggableFloatingButton> createState() =>
@@ -178,7 +178,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.3),
+            color: AppColors.primaryBlue.withValues(alpha: 0.3),
             blurRadius: 15,
             spreadRadius: 2,
             offset: const Offset(0, 4),
@@ -200,7 +200,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       width: 2,
                     ),
                   ),
@@ -226,12 +226,12 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -253,7 +253,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
           Container(
             width: 1,
             height: 30,
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
           ),
           const SizedBox(width: 8),
           _buildMenuItem(
@@ -287,7 +287,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 24),

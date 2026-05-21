@@ -1,9 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EvaluationRepository {
-  final SupabaseClient _supabase;
 
   EvaluationRepository(this._supabase);
+  final SupabaseClient _supabase;
 
   /// Fetch all student work progress records for a specific company
   /// Returns a list of records including student and school profiles

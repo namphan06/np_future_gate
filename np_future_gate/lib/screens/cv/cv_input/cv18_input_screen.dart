@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../cv_template/cv_ui/cv18.dart';
-import 'cv_input_form.dart';
-import '../../../core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv_input_form.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv18.dart';
 
 /// CV18 Input Screen - Hospitality & Tourism
 class CV18InputScreen extends StatefulWidget {
-  final String? cvId;
   const CV18InputScreen({super.key, this.cvId});
+  final String? cvId;
 
   @override
   State<CV18InputScreen> createState() => _CV18InputScreenState();
@@ -83,7 +83,7 @@ class _CV18InputScreenState extends State<CV18InputScreen> {
       body: Container(
         color: Colors.grey[100],
         child: SingleChildScrollView(controller: _scrollController, padding: const EdgeInsets.all(24),
-          child: Center(child: Container(constraints: const BoxConstraints(maxWidth: 800), decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]),
+          child: Center(child: Container(constraints: const BoxConstraints(maxWidth: 800), decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))]),
             child: Cv18(data: _cvData, onSectionTap: _onSectionTap),
           )),
         ),

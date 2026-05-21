@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/notification/application_notification_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/cv_selection_screen.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/repositories/auth_repository.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../../core/services/notification/application_notification_service.dart';
-import '../../../core/theme/app_main_colors.dart';
-import 'cv_selection_screen.dart';
-import 'job_detail_screen.dart';
 
 class PartnershipJobDetailScreen extends StatelessWidget {
-  final JobModel job;
 
   const PartnershipJobDetailScreen({super.key, required this.job});
+  final JobModel job;
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +21,9 @@ class PartnershipJobDetailScreen extends StatelessWidget {
 }
 
 class _PartnershipJobDetailWrapper extends StatefulWidget {
-  final JobModel job;
 
   const _PartnershipJobDetailWrapper({required this.job});
+  final JobModel job;
 
   @override
   State<_PartnershipJobDetailWrapper> createState() => _PartnershipJobDetailWrapperState();
@@ -114,24 +114,22 @@ class _PartnershipJobDetailWrapperState extends State<_PartnershipJobDetailWrapp
       await _jobRepository.applyForPartnershipJob(widget.job.id!, _currentUserId!, cvId);
       
       // 2. Gửi notification đến nhà tuyển dụng
-      if (widget.job.creatorId != null) {
-        // Lấy thông tin candidate
-        final candidateProfile = await _authRepository.getCurrentUserProfile();
-        final candidateName = candidateProfile?.fullName ?? 'Ứng viên';
-        
-        // Gửi notification (chạy background)
-        _appNotificationService.notifyNewApplication(
-          employerId: widget.job.creatorId!,
-          jobId: widget.job.id!,
-          jobTitle: widget.job.metadata.title,
-          candidateId: _currentUserId!,
-          candidateName: candidateName,
-          isPartnershipJob: true, // Đánh dấu đây là partnership job
-        ).catchError((e) {
-          print('⚠️ Failed to send partnership notification: $e');
-        });
-      }
+      // Lấy thông tin candidate
+      final candidateProfile = await _authRepository.getCurrentUserProfile();
+      final candidateName = candidateProfile?.fullName ?? 'Ứng viên';
       
+      // Gửi notification (chạy background)
+      _appNotificationService.notifyNewApplication(
+        employerId: widget.job.creatorId,
+        jobId: widget.job.id!,
+        jobTitle: widget.job.metadata.title,
+        candidateId: _currentUserId!,
+        candidateName: candidateName,
+        isPartnershipJob: true, // Đánh dấu đây là partnership job
+      ).catchError((e) {
+        debugPrint('⚠️ Failed to send partnership notification: $e');
+      });
+          
       if (mounted) {
         setState(() {
           _hasApplied = true;
@@ -166,7 +164,7 @@ class _PartnershipJobDetailWrapperState extends State<_PartnershipJobDetailWrapp
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

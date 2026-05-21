@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'cv_setting/cv_general_templates_screen.dart';
-import 'cv_setting/cv_field_templates_screen.dart';
-import 'cv_upload_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_field_templates_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_general_templates_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_upload_screen.dart';
 
 /// Main CV Creation Screen with 3 options:
 /// 1. Use general CV templates
@@ -39,7 +39,7 @@ class CVCreationScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -57,7 +57,7 @@ class CVCreationScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           // boxShadow: [
                           //   BoxShadow(
-                          //     color: Colors.black.withOpacity(0.05),
+                          //     color: Colors.black.withValues(alpha: 0.05),
                           //     blurRadius: 10,
                           //     offset: const Offset(0, 2),
                           //   ),
@@ -189,7 +189,7 @@ class CVCreationScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: Colors.blue.withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 6),
                       ),
@@ -200,7 +200,7 @@ class CVCreationScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -227,7 +227,7 @@ class CVCreationScreen extends StatelessWidget {
                               'Chọn mẫu CV theo lĩnh vực sẽ giúp tăng 30% cơ hội được nhà tuyển dụng chú ý.',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 height: 1.4,
                               ),
                             ),
@@ -264,7 +264,7 @@ class CVCreationScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -287,7 +287,7 @@ class CVCreationScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: iconColor.withOpacity(0.12),
+                          color: iconColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(icon, color: iconColor, size: 28),
@@ -320,7 +320,7 @@ class CVCreationScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: iconColor.withOpacity(0.15),
+                          color: iconColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -377,9 +377,10 @@ class CVCreationScreen extends StatelessWidget {
     );
   }
 
+  // ignore: unused_element
   Future<void> _handleUploadCV(BuildContext context) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx'],
         allowMultiple: false,

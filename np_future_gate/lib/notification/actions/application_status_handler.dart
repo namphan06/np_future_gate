@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../screens/candidate/job_detail_screen.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
 
 /// Handler để xử lý navigation khi application được approved/rejected
 /// Điều hướng candidate đến job detail screen để xem thông tin công việc
@@ -22,11 +22,11 @@ class ApplicationStatusHandler {
   }) async {
     if (!context.mounted) return;
 
-    print('🔍 ========== APPLICATION STATUS HANDLER ==========');
-    print('📋 Navigate to job detail');
-    print('   jobId: $jobId');
-    print('   userId: $userId');
-    print('   isApproved: $isApproved');
+    debugPrint('🔍 ========== APPLICATION STATUS HANDLER ==========');
+    debugPrint('📋 Navigate to job detail');
+    debugPrint('   jobId: $jobId');
+    debugPrint('   userId: $userId');
+    debugPrint('   isApproved: $isApproved');
 
     // Show loading
     showDialog(
@@ -44,7 +44,7 @@ class ApplicationStatusHandler {
 
       // Step 2: If not found, try partnership job
       if (job == null) {
-        print('📋 Job not found in regular jobs, trying partnership...');
+        debugPrint('📋 Job not found in regular jobs, trying partnership...');
         job = await _jobRepository.getPartnershipJobById(jobId);
         isPartnershipJob = true;
       }
@@ -55,13 +55,13 @@ class ApplicationStatusHandler {
       Navigator.pop(context);
 
       if (job == null) {
-        print('❌ Job not found in both regular and partnership jobs');
+        debugPrint('❌ Job not found in both regular and partnership jobs');
         _showErrorDialog(context, 'Không tìm thấy công việc');
         return;
       }
 
-      print('✅ Job found: ${job.metadata.title}');
-      print('📋 Job type: ${isPartnershipJob ? "Partnership" : "Regular"}');
+      debugPrint('✅ Job found: ${job.metadata.title}');
+      debugPrint('📋 Job type: ${isPartnershipJob ? "Partnership" : "Regular"}');
 
       // Navigate to job detail screen
       await Navigator.push(
@@ -71,10 +71,10 @@ class ApplicationStatusHandler {
         ),
       );
 
-      print('✅ Navigation completed');
+      debugPrint('✅ Navigation completed');
     } catch (e, stackTrace) {
-      print('❌ Error in navigateToJobDetail: $e');
-      print('❌ Stack trace: $stackTrace');
+      debugPrint('❌ Error in navigateToJobDetail: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
 
       if (!context.mounted) return;
 

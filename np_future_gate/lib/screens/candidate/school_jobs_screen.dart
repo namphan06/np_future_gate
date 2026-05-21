@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/models/job_model.dart';
-import 'partnership_job_detail_screen.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/screens/candidate/partnership_job_detail_screen.dart';
 
 class SchoolJobsForCandidateScreen extends StatefulWidget {
   const SchoolJobsForCandidateScreen({super.key});
@@ -232,7 +232,7 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
       
       return response;
     } catch (e) {
-      print('Error loading work progress: $e');
+      debugPrint('Error loading work progress: $e');
       return null;
     }
   }
@@ -254,7 +254,7 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.1),
+                      color: Colors.purple.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.assignment, color: Colors.purple),
@@ -340,9 +340,9 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,9 +376,9 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.05),
+        color: Colors.amber.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -431,9 +431,9 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -493,13 +493,13 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: Colors.purple.withOpacity(0.2),
+          color: Colors.purple.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -525,8 +525,8 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                 ),
               );
             } catch (e, stackTrace) {
-              print('Error navigating to job detail: $e');
-              print('Stack trace: $stackTrace');
+              debugPrint('Error navigating to job detail: $e');
+              debugPrint('Stack trace: $stackTrace');
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -550,10 +550,10 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
+                        color: Colors.purple.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.purple.withOpacity(0.3),
+                          color: Colors.purple.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -623,10 +623,10 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: Colors.green.withOpacity(0.3),
+                                  color: Colors.green.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -745,10 +745,10 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.blue.withOpacity(0.3),
+                            color: Colors.blue.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Text(
@@ -812,7 +812,7 @@ class _SchoolJobsForCandidateScreenState extends State<SchoolJobsForCandidateScr
                                 ),
                               ),
                               if (hasProgress)
-                                Icon(
+                                const Icon(
                                   Icons.chevron_right,
                                   color: Colors.purple,
                                   size: 20,

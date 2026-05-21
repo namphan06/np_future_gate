@@ -4,15 +4,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class MistralService {
-  static final MistralService _instance = MistralService._internal();
   factory MistralService() => _instance;
   MistralService._internal();
+  static final MistralService _instance = MistralService._internal();
 
   final String _apiKey = dotenv.env['MISTRAL_API_KEY'] ?? '';
   final String _model = dotenv.env['MISTRAL_MODEL'] ?? 'open-mistral-7b';
   final String _baseUrl = 'https://api.mistral.ai/v1';
 
-  List<Map<String, String>> _conversationHistory = [];
+  final List<Map<String, String>> _conversationHistory = [];
 
   /// Gửi tin nhắn đến Mistral AI và nhận phản hồi
   Future<String> sendMessage(String message) async {
@@ -71,7 +71,7 @@ Hãy trả lời thân thiện, chuyên nghiệp và súc tích bằng tiếng V
         throw Exception('Lỗi API: ${error['message'] ?? response.statusCode}');
       }
     } catch (e) {
-      print('❌ Mistral API Error: $e');
+      debugPrint('❌ Mistral API Error: $e');
       rethrow;
     }
   }

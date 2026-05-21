@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/theme/app_main_colors.dart';
 
 class EmployerStatisticsScreen extends StatefulWidget {
   const EmployerStatisticsScreen({super.key});
@@ -60,6 +60,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
       debugPrint('✅ Jobs response: ${jobsResponse.length} jobs');
       
       final jobs = jobsResponse as List;
+      // ignore: unused_local_variable
       final jobIds = jobs.map((j) => j['id'] as String).toList();
       
       _totalJobs = jobs.length;
@@ -280,7 +281,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -330,22 +331,22 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: AppMainColors.primary.withOpacity(0.1),
+                                  color: AppMainColors.primary.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: AppMainColors.primary.withOpacity(0.3),
+                                    color: AppMainColors.primary.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: DropdownButton<String>(
                                   value: _selectedPeriod,
                                   isDense: true,
                                   underline: const SizedBox(),
-                                  icon: Icon(
+                                  icon: const Icon(
                                     Icons.keyboard_arrow_down,
                                     color: AppMainColors.primary,
                                     size: 18,
                                   ),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: AppMainColors.primary,
@@ -488,7 +489,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -502,7 +503,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 16),
@@ -562,10 +563,10 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppMainColors.primary.withOpacity(0.1),
+                  color: AppMainColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.show_chart,
                   color: AppMainColors.primary,
                   size: 18,
@@ -676,7 +677,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
                           barRods: [
                             BarChartRodData(
                               toY: (data['count'] as int).toDouble(),
-                              gradient: LinearGradient(
+                              gradient: const LinearGradient(
                                 begin: Alignment.bottomCenter,
                                 end: Alignment.topCenter,
                                 colors: [
@@ -938,7 +939,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
+                  color: Colors.purple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -1008,7 +1009,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
                           height: 8,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [color, color.withOpacity(0.7)],
+                              colors: [color, color.withValues(alpha: 0.7)],
                             ),
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -1041,7 +1042,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -1087,7 +1088,9 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
 
   Widget _buildApplicationItem(Map<String, dynamic> app) {
     final status = app['status'] as String?;
+    // ignore: unused_local_variable
     Color statusColor;
+    // ignore: unused_local_variable
     String statusText;
     
     switch (status) {
@@ -1143,7 +1146,7 @@ class _EmployerStatisticsScreenState extends State<EmployerStatisticsScreen> {
           // Container(
           //   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           //   decoration: BoxDecoration(
-          //     color: statusColor.withOpacity(0.1),
+          //     color: statusColor.withValues(alpha: 0.1),
           //     borderRadius: BorderRadius.circular(12),
           //   ),
           //   child: Text(

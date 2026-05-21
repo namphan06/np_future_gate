@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../cv_template/cv_ui/cv4.dart';
-import 'cv_input_form.dart';
-import '../../../core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv_input_form.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv4.dart';
 
 /// CV4 Input Screen - Màn hình nhập liệu tương tác cho CV4
 class CV4InputScreen extends StatefulWidget {
-  final String? cvId;
 
   const CV4InputScreen({super.key, this.cvId});
+  final String? cvId;
 
   @override
   State<CV4InputScreen> createState() => _CV4InputScreenState();
@@ -16,6 +16,7 @@ class CV4InputScreen extends StatefulWidget {
 class _CV4InputScreenState extends State<CV4InputScreen> {
   final CVSupabaseService _cvService = CVSupabaseService();
   Map<String, dynamic> _cvData = {};
+  // ignore: unused_field
   String? _selectedSection;
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
@@ -111,6 +112,7 @@ class _CV4InputScreenState extends State<CV4InputScreen> {
       } else {
         final newId = await _cvService.createCV(_cvData);
         _showSuccess('Đã tạo CV mới: $newId');
+        // ignore: use_build_context_synchronously
         Navigator.pop(context, newId);
       }
     } catch (e) {
@@ -164,7 +166,7 @@ class _CV4InputScreenState extends State<CV4InputScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

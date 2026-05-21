@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'models/notification_config.dart';
-import '../core/services/notification/status_notification_service.dart';
-import 'actions/actions.dart';
+import 'package:np_future_gate/core/services/notification/status_notification_service.dart';
+import 'package:np_future_gate/notification/actions/actions.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
 
 /// File này chứa cấu hình navigation cho notification system
 /// 
@@ -49,7 +49,7 @@ Future<void> _handleNavigate(
           //     builder: (context) => JobDetailScreen(jobId: jobId),
           //   ),
           // );
-          print('Navigate to JobDetailScreen with jobId: $jobId');
+          debugPrint('Navigate to JobDetailScreen with jobId: $jobId');
         }
         break;
 
@@ -66,7 +66,7 @@ Future<void> _handleNavigate(
             userId: userId, // Optional - for future scroll to specific applicant
           );
         } else {
-          print('Error: Missing jobId in applicationReceived action');
+          debugPrint('Error: Missing jobId in applicationReceived action');
         }
         break;
 
@@ -85,7 +85,7 @@ Future<void> _handleNavigate(
             isApproved: isApproved,
           );
         } else {
-          print('Error: Missing jobId in application status action');
+          debugPrint('Error: Missing jobId in application status action');
         }
         break;
 

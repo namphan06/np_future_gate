@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../core/services/cv_supabase_service.dart';
-import '../../core/enums/job_fields.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class CVUploadEditScreen extends StatefulWidget {
-  final String cvId;
-  final Map<String, dynamic> initialData;
 
   const CVUploadEditScreen({
     super.key,
     required this.cvId,
     required this.initialData,
   });
+  final String cvId;
+  final Map<String, dynamic> initialData;
 
   @override
   State<CVUploadEditScreen> createState() => _CVUploadEditScreenState();
@@ -220,7 +220,7 @@ class _CVUploadEditScreenState extends State<CVUploadEditScreen> {
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           hint: Text(hint),
           items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
           onChanged: onChanged,

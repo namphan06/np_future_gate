@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class OcrService {
   // URL server mới trên Render
@@ -19,7 +21,7 @@ class OcrService {
   }) async {
     try {
       // Tạo FormData
-      var formData = FormData.fromMap({
+      final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           file.path,
           filename: file.path.split('/').last,
@@ -37,7 +39,7 @@ class OcrService {
         data: formData,
       );
       
-      print('🚀 OCR Response Status: ${response.statusCode}');
+      debugPrint('🚀 OCR Response Status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -59,7 +61,7 @@ class OcrService {
       if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         // Retry sau 5 giây (đợi server wake up từ cold start)
-        print('⏳ Server cold start, retrying in 5 seconds...');
+        debugPrint('⏳ Server cold start, retrying in 5 seconds...');
         await Future.delayed(const Duration(seconds: 5));
         return await extractText(file: file, language: language);
       }

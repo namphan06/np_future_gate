@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../widgets/speech_text_field.dart';
 
 class CompaniesListScreen extends StatefulWidget {
   const CompaniesListScreen({super.key});
@@ -65,7 +65,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         // Fallback for development if table not ready or empty
         // Mock data for demo if query fails (e.g. table doesn't exist yet/not deployed)
         // Or just show error
-        print('Error loading partnerships: $e');
+        debugPrint('Error loading partnerships: $e');
         setState(() => _isLoading = false);
       }
     }
@@ -116,7 +116,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -137,7 +137,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
             const Text('Loại yêu cầu', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: selectedRequestType,
+              initialValue: selectedRequestType,
               decoration: InputDecoration(
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -236,7 +236,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 2),
             blurRadius: 4,
           ),
@@ -286,7 +286,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -322,7 +322,7 @@ class _CompaniesListScreenState extends State<CompaniesListScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(

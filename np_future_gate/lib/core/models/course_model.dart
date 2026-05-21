@@ -1,19 +1,4 @@
 class CourseModel {
-  final String id;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String title;
-  final String slug;
-  final String? description;
-  final String? thumbnailUrl;
-  final String? categoryId;
-  final String level; // beginner, intermediate, advanced
-  final List<String> tags;
-  final int durationMinutes;
-  final String status; // draft, published, archived
-  final bool isFeatured;
-  final String? authorId;
-  final int viewCount;
 
   CourseModel({
     required this.id,
@@ -52,6 +37,21 @@ class CourseModel {
       viewCount: json['view_count'] as int? ?? 0,
     );
   }
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String title;
+  final String slug;
+  final String? description;
+  final String? thumbnailUrl;
+  final String? categoryId;
+  final String level; // beginner, intermediate, advanced
+  final List<String> tags;
+  final int durationMinutes;
+  final String status; // draft, published, archived
+  final bool isFeatured;
+  final String? authorId;
+  final int viewCount;
 
   Map<String, dynamic> toJson() {
     return {

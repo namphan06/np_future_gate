@@ -1,28 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/auth_models.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/models/profile_model.dart';
-import '../../../core/repositories/auth_repository.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/repositories/candidate_repository.dart';
-import '../../../core/repositories/interview_repository.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../../core/services/emailjs_service.dart';
-import '../../../core/services/supabase_service.dart';
-import '../../../core/services/notification/application_notification_service.dart';
-import '../../cv/cv_setting/cv_display_manager.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../core/services/ai_matching_service.dart';
-import 'cv_analysis_screen.dart';
-import 'cv_scan_analysis_screen.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/candidate_repository.dart';
+import 'package:np_future_gate/core/repositories/interview_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/ai_matching_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/emailjs_service.dart';
+import 'package:np_future_gate/core/services/notification/application_notification_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/screens/employer/jobs/cv_analysis_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/cv_scan_analysis_screen.dart';
 
-class JobApplicantsScreen extends StatefulWidget {
-  final String jobId;
-  final List<JobApplication> applicants;
-  final bool isPartnershipJob;
-  final bool isReadOnly; // New flag for read-only mode
+class JobApplicantsScreen extends StatefulWidget { // New flag for read-only mode
 
   const JobApplicantsScreen({
     super.key,
@@ -31,6 +25,10 @@ class JobApplicantsScreen extends StatefulWidget {
     this.isPartnershipJob = false,
     this.isReadOnly = false, // Default to false
   });
+  final String jobId;
+  final List<JobApplication> applicants;
+  final bool isPartnershipJob;
+  final bool isReadOnly;
 
   @override
   State<JobApplicantsScreen> createState() => _JobApplicantsScreenState();
@@ -103,7 +101,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
         });
       }
     } catch (e) {
-      print('Error loading job details: $e');
+      debugPrint('Error loading job details: $e');
     }
   }
 
@@ -208,6 +206,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       if (pickedDate == null) return;
 
       final TimeOfDay? pickedTime = await showTimePicker(
+        // ignore: use_build_context_synchronously
         context: context,
         initialTime: const TimeOfDay(hour: 9, minute: 0),
         helpText: 'Chọn giờ phỏng vấn',
@@ -257,9 +256,9 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: Colors.orange.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,7 +363,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
             jobTitle: _jobTitle ?? 'Công việc',
             employerName: employerName,
           );
-          print('✅ Sent application approved notification to candidate $userId');
+          debugPrint('✅ Sent application approved notification to candidate $userId');
         } else if (newStatus.toLowerCase() == 'rejected') {
           // Send rejected notification
           await _notificationService.notifyApplicationRejected(
@@ -373,10 +372,10 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
             jobTitle: _jobTitle ?? 'Công việc',
             employerName: employerName,
           );
-          print('✅ Sent application rejected notification to candidate $userId');
+          debugPrint('✅ Sent application rejected notification to candidate $userId');
         }
       } catch (e) {
-        print('⚠️ Error sending notification to candidate: $e');
+        debugPrint('⚠️ Error sending notification to candidate: $e');
         // Don't show error to user - notification is not critical
       }
       
@@ -427,6 +426,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       // Update status to 'viewed' if it is 'pending'
       if (currentStatus == 'pending') {
         await _updateStatus(userId, 'viewed');
+        if (!mounted) return;
       }
 
       // Show loading indicator
@@ -438,6 +438,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
 
       // Use getCVFullDataForEmployer for employer access
       final cvData = await _cvService.getCVFullDataForEmployer(cvId);
+      if (!mounted) return;
       
       // Hide loading indicator
       if (mounted) Navigator.pop(context);
@@ -489,6 +490,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
     }
   }
@@ -533,6 +535,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
     }
   }
@@ -642,7 +645,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
     try {
       final profile = _profiles[userId];
       if (profile == null || profile.email == null) {
-        print('Cannot send rejection email: profile or email not found for user $userId');
+        debugPrint('Cannot send rejection email: profile or email not found for user $userId');
         return;
       }
 
@@ -657,7 +660,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       final companyName = employerProfile?.metadata['company_name'] ?? employerName;
 
       if (employerId == null) {
-        print('Cannot send rejection email: employer not found');
+        debugPrint('Cannot send rejection email: employer not found');
         return;
       }
 
@@ -717,7 +720,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           companyAddress: companyAddress,
         );
 
-        print('📧 Using custom template for rejection email');
+        debugPrint('📧 Using custom template for rejection email');
       } else {
         // Fallback to default template
         subject = 'Thông báo kết quả ứng tuyển - $jobTitle';
@@ -735,7 +738,7 @@ Chúc bạn thành công trong sự nghiệp!
 Trân trọng,
 $employerName
 ''';
-        print('📧 Using default rejection email template');
+        debugPrint('📧 Using default rejection email template');
       }
       // Get attachments from template 
       List<Map<String, dynamic>> attachments = [];
@@ -757,12 +760,12 @@ $employerName
       );
 
       if (success) {
-        print('✅ Rejection email sent successfully to $candidateEmail');
+        debugPrint('✅ Rejection email sent successfully to $candidateEmail');
       } else {
-        print('⚠️ Failed to send rejection email to $candidateEmail');
+        debugPrint('⚠️ Failed to send rejection email to $candidateEmail');
       }
     } catch (e) {
-      print('❌ Error sending rejection email: $e');
+      debugPrint('❌ Error sending rejection email: $e');
       // Don't show error to user as this is a background operation
     }
   }
@@ -771,7 +774,7 @@ $employerName
     try {
       final profile = _profiles[userId];
       if (profile == null || profile.email == null) {
-        print('Cannot send acceptance email: profile or email not found for user $userId');
+        debugPrint('Cannot send acceptance email: profile or email not found for user $userId');
         return;
       }
 
@@ -785,7 +788,7 @@ $employerName
       final companyName = employerProfile?.metadata['company_name'] ?? employerName;
 
       if (employerId == null) {
-        print('Cannot send acceptance email: employer not found');
+        debugPrint('Cannot send acceptance email: employer not found');
         return;
       }
 
@@ -841,7 +844,7 @@ $employerName
           companyAddress: companyAddress,
         );
 
-        print('📧 Using custom template for acceptance email');
+        debugPrint('📧 Using custom template for acceptance email');
       } else {
         subject = 'Thông báo kết quả ứng tuyển - $jobTitle';
         messageBody = '''
@@ -854,7 +857,7 @@ Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để tra
 Trân trọng,
 $employerName
 ''';
-        print('📧 Using default acceptance email template');
+        debugPrint('📧 Using default acceptance email template');
       }
 
       List<Map<String, dynamic>> attachments = [];
@@ -876,12 +879,12 @@ $employerName
       );
 
       if (success) {
-        print('✅ Acceptance email sent successfully to $candidateEmail');
+        debugPrint('✅ Acceptance email sent successfully to $candidateEmail');
       } else {
-        print('⚠️ Failed to send acceptance email to $candidateEmail');
+        debugPrint('⚠️ Failed to send acceptance email to $candidateEmail');
       }
     } catch (e) {
-      print('❌ Error sending acceptance email: $e');
+      debugPrint('❌ Error sending acceptance email: $e');
     }
   }
 
@@ -1040,7 +1043,7 @@ $employerName
                                 border: Border.all(color: Colors.white, width: 4),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 5),
                                   ),
@@ -1195,7 +1198,7 @@ $employerName
                                 const SizedBox(height: 4),
                                 Text(
                                   exp['position'] ?? 'Vị trí',
-                                  style: TextStyle(color: AppMainColors.primary, fontWeight: FontWeight.w500),
+                                  style: const TextStyle(color: AppMainColors.primary, fontWeight: FontWeight.w500),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -1246,7 +1249,7 @@ $employerName
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppMainColors.primary.withOpacity(0.1),
+              color: AppMainColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 18, color: AppMainColors.primary),
@@ -1284,9 +1287,9 @@ $employerName
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isField ? AppMainColors.primary.withOpacity(0.1) : Colors.grey.shade100,
+        color: isField ? AppMainColors.primary.withValues(alpha: 0.1) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(6),
-        border: isField ? Border.all(color: AppMainColors.primary.withOpacity(0.2)) : null,
+        border: isField ? Border.all(color: AppMainColors.primary.withValues(alpha: 0.2)) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1447,7 +1450,7 @@ $employerName
                           : null,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -1516,7 +1519,7 @@ $employerName
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: _getStatusColor(applicant.status).withOpacity(0.1),
+                                              color: _getStatusColor(applicant.status).withValues(alpha: 0.1),
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: Text(
@@ -1578,12 +1581,12 @@ $employerName
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                       ),
-                                      child: Row(
+                                      child: const Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          const Icon(Icons.description_outlined, size: 16),
-                                          const SizedBox(width: 4),
-                                          const Text('Xem CV', style: TextStyle(fontSize: 12)),
+                                          Icon(Icons.description_outlined, size: 16),
+                                          SizedBox(width: 4),
+                                          Text('Xem CV', style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
                                     ),
@@ -1601,12 +1604,12 @@ $employerName
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                       ),
-                                      child: Row(
+                                      child: const Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          const Icon(Icons.person_outline, size: 16),
-                                          const SizedBox(width: 4),
-                                          const Text('Profile', style: TextStyle(fontSize: 12)),
+                                          Icon(Icons.person_outline, size: 16),
+                                          SizedBox(width: 4),
+                                          Text('Profile', style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
                                     ),
@@ -1624,12 +1627,12 @@ $employerName
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                       ),
-                                      child: Row(
+                                      child: const Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          const Icon(Icons.auto_awesome, size: 16),
-                                          const SizedBox(width: 4),
-                                          const Text('Phân tích AI', style: TextStyle(fontSize: 12)),
+                                          Icon(Icons.auto_awesome, size: 16),
+                                          SizedBox(width: 4),
+                                          Text('Phân tích AI', style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
                                     ),
@@ -1659,12 +1662,12 @@ $employerName
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                       ),
-                                      child: Row(
+                                      child: const Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          const Icon(Icons.document_scanner, size: 16),
-                                          const SizedBox(width: 4),
-                                          const Text('Scan CV', style: TextStyle(fontSize: 12)),
+                                          Icon(Icons.document_scanner, size: 16),
+                                          SizedBox(width: 4),
+                                          Text('Scan CV', style: TextStyle(fontSize: 12)),
                                         ],
                                       ),
                                     ),
@@ -1765,6 +1768,7 @@ $employerName
     return '${date.day}/${date.month}/${date.year}';
   }
 
+  // ignore: unused_element
   Widget _buildStatusBadge(String status) {
     final color = _getStatusColor(status);
     final text = _getStatusText(status);
@@ -1772,7 +1776,7 @@ $employerName
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -1788,23 +1792,23 @@ $employerName
 
   // View evaluation from interview_schedules
   Future<void> _viewEvaluation(String userId, String candidateName) async {
-    print('🔍 ========== VIEW EVALUATION DEBUG ==========');
-    print('📋 Input Parameters:');
-    print('   candidateId: $userId');
-    print('   jobId: ${widget.jobId}');
-    print('   candidateName: $candidateName');
+    debugPrint('🔍 ========== VIEW EVALUATION DEBUG ==========');
+    debugPrint('📋 Input Parameters:');
+    debugPrint('   candidateId: $userId');
+    debugPrint('   jobId: ${widget.jobId}');
+    debugPrint('   candidateName: $candidateName');
     
     try {
       // Get evaluation from repository
-      print('⏳ Calling repository.getEvaluationForCandidate()...');
+      debugPrint('⏳ Calling repository.getEvaluationForCandidate()...');
       final evaluationData = await _interviewRepository.getEvaluationForCandidate(
         candidateId: userId,
         jobId: widget.jobId,
       );
 
-      print('📦 Repository Response:');
+      debugPrint('📦 Repository Response:');
       if (evaluationData == null) {
-        print('   ❌ Result: NULL (No interview found)');
+        debugPrint('   ❌ Result: NULL (No interview found)');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Chưa có lịch phỏng vấn cho ứng viên này')),
@@ -1813,23 +1817,23 @@ $employerName
         return;
       }
 
-      print('   ✅ Result: Data found');
-      print('   📊 Keys: ${evaluationData.keys.toList()}');
-      print('   🔓 is_shared: ${evaluationData['is_shared']}');
-      print('   📝 evaluation: ${evaluationData['evaluation']}');
-      print('   🕐 interview_time: ${evaluationData['interview_time']}');
+      debugPrint('   ✅ Result: Data found');
+      debugPrint('   📊 Keys: ${evaluationData.keys.toList()}');
+      debugPrint('   🔓 is_shared: ${evaluationData['is_shared']}');
+      debugPrint('   📝 evaluation: ${evaluationData['evaluation']}');
+      debugPrint('   🕐 interview_time: ${evaluationData['interview_time']}');
 
       final isShared = evaluationData['is_shared'] as bool;
       
       if (!isShared) {
-        print('   🔒 Share status: FALSE - showing locked dialog');
+        debugPrint('   🔒 Share status: FALSE - showing locked dialog');
         if (mounted) {
           _showNotSharedDialog(candidateName);
         }
         return;
       }
 
-      print('   ✅ Share status: TRUE - showing evaluation detail');
+      debugPrint('   ✅ Share status: TRUE - showing evaluation detail');
       // Show evaluation detail
       final evaluation = evaluationData['evaluation'] as Map<String, dynamic>;
       final interviewTime = evaluationData['interview_time'] as String;
@@ -1837,11 +1841,11 @@ $employerName
       if (mounted) {
         _showEvaluationDetail(candidateName, evaluation, interviewTime);
       }
-      print('🔍 ========== END DEBUG ==========');
+      debugPrint('🔍 ========== END DEBUG ==========');
     } catch (e, stackTrace) {
-      print('❌ ERROR in _viewEvaluation:');
-      print('   Error: $e');
-      print('   StackTrace: $stackTrace');
+      debugPrint('❌ ERROR in _viewEvaluation:');
+      debugPrint('   Error: $e');
+      debugPrint('   StackTrace: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi tải đánh giá: $e')),
@@ -1941,12 +1945,12 @@ $employerName
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             '${rating.toStringAsFixed(1)}/10',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: AppMainColors.primary,
@@ -1994,13 +1998,13 @@ $employerName
                         children: tags.map((tag) => Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppMainColors.primary.withOpacity(0.3)),
+                            border: Border.all(color: AppMainColors.primary.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             tag,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppMainColors.primary,
                               fontWeight: FontWeight.w500,
                               fontSize: 13,
@@ -2063,12 +2067,12 @@ $employerName
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppMainColors.primary.withOpacity(0.1),
+              color: AppMainColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               '${rating.toStringAsFixed(1)}/10',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppMainColors.primary,

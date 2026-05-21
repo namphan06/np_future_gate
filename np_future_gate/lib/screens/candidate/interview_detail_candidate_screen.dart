@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/interview_model.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/models/interview_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class InterviewDetailCandidateScreen extends StatelessWidget {
-  final InterviewModel interview;
-  final Profile? employer;
-  final JobModel? job;
 
   const InterviewDetailCandidateScreen({
     super.key,
@@ -16,6 +13,9 @@ class InterviewDetailCandidateScreen extends StatelessWidget {
     this.employer,
     this.job,
   });
+  final InterviewModel interview;
+  final Profile? employer;
+  final JobModel? job;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class InterviewDetailCandidateScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
                 ],
               ),
               child: Row(
@@ -169,12 +169,12 @@ class InterviewDetailCandidateScreen extends StatelessWidget {
                         children: (eval['tags'] as List).map((tag) => Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             tag.toString(),
-                            style: TextStyle(color: AppMainColors.primary, fontSize: 12, fontWeight: FontWeight.w500),
+                            style: const TextStyle(color: AppMainColors.primary, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         )).toList(),
                       ),
@@ -252,7 +252,7 @@ class InterviewDetailCandidateScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
@@ -303,7 +303,7 @@ class InterviewDetailCandidateScreen extends StatelessWidget {
             child: LinearProgressIndicator(
               value: rating / 5.0,
               backgroundColor: Colors.grey.shade100,
-              valueColor: AlwaysStoppedAnimation<Color>(AppMainColors.primary),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppMainColors.primary),
               minHeight: 6,
             ),
           ),

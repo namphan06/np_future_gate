@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:np_future_gate/firebase_options.dart';
-import 'package:np_future_gate/core/theme/app_theme.dart';
-import 'package:np_future_gate/core/services/supabase_service.dart';
-import 'package:np_future_gate/core/services/fcm_service.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:np_future_gate/core/repositories/auth_repository.dart';
-import 'package:np_future_gate/screens/splash/splash_screen.dart';
+import 'package:np_future_gate/core/services/fcm_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_theme.dart';
+import 'package:np_future_gate/firebase_options.dart';
 import 'package:np_future_gate/notification/notification_navigation_setup.dart';
+import 'package:np_future_gate/screens/splash/splash_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 // Global navigator key để access navigator từ bất kỳ đâu
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

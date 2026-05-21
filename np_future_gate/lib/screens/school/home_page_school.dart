@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/job_repository.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'jobs/school_jobs_screen.dart';
-import 'jobs/create_school_job_screen.dart';
-import 'jobs/school_partnership_applicants_screen.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/school/jobs/create_school_job_screen.dart';
+import 'package:np_future_gate/screens/school/jobs/school_jobs_screen.dart';
 
 class HomePageSchool extends StatefulWidget {
   const HomePageSchool({super.key});
@@ -26,9 +23,11 @@ class _HomePageSchoolState extends State<HomePageSchool> {
   int _newApplicants = 0;
 
   // Recent data
+  // ignore: unused_field
   List<JobModel> _recentJobs = [];
   List<Map<String, dynamic>> _recentPartnershipJobs = [];
-  List<Map<String, dynamic>> _recentApplicants = [];
+  // ignore: unused_field
+  final List<Map<String, dynamic>> _recentApplicants = [];
 
   @override
   void initState() {
@@ -42,7 +41,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
       final userId = SupabaseService.instance.client.auth.currentUser?.id;
       if (userId == null) return;
 
-      print('📊 Loading school home data for user: $userId');
+      debugPrint('📊 Loading school home data for user: $userId');
 
       // Load regular jobs (jobs table where creator_id = school)
       final regularJobsData = await SupabaseService.instance.client
@@ -55,7 +54,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
           .map((e) => JobModel.fromJson(e))
           .toList();
       
-      print('📝 Regular jobs count: ${regularJobs.length}');
+      debugPrint('📝 Regular jobs count: ${regularJobs.length}');
       
       // Load partnership jobs
       final partnershipJobsData = await SupabaseService.instance.client
@@ -64,14 +63,14 @@ class _HomePageSchoolState extends State<HomePageSchool> {
           .eq('school_id', userId)
           .order('created_at', ascending: false);
 
-      print('🤝 Partnership jobs count: ${(partnershipJobsData as List).length}');
+      debugPrint('🤝 Partnership jobs count: ${(partnershipJobsData as List).length}');
 
       // Calculate statistics for partnership jobs
       final pendingPartnership = (partnershipJobsData as List).where(
         (job) => job['company_status'] == 'pending' || job['admin_status'] == 'pending'
       ).length;
 
-      print('⏳ Pending partnership jobs: $pendingPartnership');
+      debugPrint('⏳ Pending partnership jobs: $pendingPartnership');
 
       // Count applicants from regular jobs
       int totalApplicants = 0;
@@ -79,7 +78,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
       final oneDayAgo = DateTime.now().subtract(const Duration(days: 1));
 
       for (var job in regularJobs) {
-        final applicants = job.applicants ?? [];
+        final applicants = job.applicants;
         totalApplicants += applicants.length;
         for (var applicant in applicants) {
           try {
@@ -88,7 +87,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
               newApplicants++;
             }
           } catch (e) {
-            print('Error parsing applicant date: $e');
+            debugPrint('Error parsing applicant date: $e');
           }
         }
       }
@@ -107,13 +106,13 @@ class _HomePageSchoolState extends State<HomePageSchool> {
               }
             }
           } catch (e) {
-            print('Error parsing partnership applicant date: $e');
+            debugPrint('Error parsing partnership applicant date: $e');
           }
         }
       }
 
-      print('👥 Total applicants: $totalApplicants');
-      print('🆕 New applicants (last 24h): $newApplicants');
+      debugPrint('👥 Total applicants: $totalApplicants');
+      debugPrint('🆕 New applicants (last 24h): $newApplicants');
 
       setState(() {
         _totalRegularJobs = regularJobs.length;
@@ -126,10 +125,10 @@ class _HomePageSchoolState extends State<HomePageSchool> {
         _isLoading = false;
       });
 
-      print('✅ School home data loaded successfully');
+      debugPrint('✅ School home data loaded successfully');
     } catch (e, stackTrace) {
-      print('❌ Error loading school home data: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('❌ Error loading school home data: $e');
+      debugPrint('Stack trace: $stackTrace');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -191,7 +190,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundColor: Colors.white.withOpacity(0.2),
+                                backgroundColor: Colors.white.withValues(alpha: 0.2),
                                 child: const Icon(Icons.school, color: Colors.white, size: 30),
                               ),
                               const SizedBox(width: 16),
@@ -202,7 +201,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
                                     Text(
                                       'Xin chào! 👋',
                                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                            color: Colors.white.withOpacity(0.9),
+                                            color: Colors.white.withValues(alpha: 0.9),
                                             fontWeight: FontWeight.w500,
                                           ),
                                     ),
@@ -210,7 +209,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
                                     Text(
                                       'Quản lý tuyển dụng nhà trường',
                                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: Colors.white.withOpacity(0.7),
+                                            color: Colors.white.withValues(alpha: 0.7),
                                           ),
                                     ),
                                   ],
@@ -303,7 +302,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
                                   subtitle: 'Tuyển dụng trực tiếp',
                                   icon: Icons.add_circle_outline,
                                   gradient: LinearGradient(
-                                    colors: [AppMainColors.primary, AppMainColors.primary.withOpacity(0.7)],
+                                    colors: [AppMainColors.primary, AppMainColors.primary.withValues(alpha: 0.7)],
                                   ),
                                   onTap: () async {
                                     final result = await Navigator.push(
@@ -383,7 +382,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
                             child: Container(
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Center(
@@ -429,7 +428,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -444,7 +443,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -506,7 +505,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -529,7 +528,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 fontSize: 12,
               ),
             ),
@@ -553,7 +552,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -589,7 +588,7 @@ class _HomePageSchoolState extends State<HomePageSchool> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: statusColor, width: 1),
                       ),

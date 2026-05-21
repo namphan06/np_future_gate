@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/mi_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/mi_model.dart';
-import '../services/supabase_service.dart';
 
 class MIRepository {
   final SupabaseClient _client = SupabaseService.instance.client;
@@ -15,7 +16,7 @@ class MIRepository {
 
       return (response as List).map((e) => MIQuestion.fromJson(e)).toList();
     } catch (e) {
-      print('Error fetching MI questions: $e');
+      debugPrint('Error fetching MI questions: $e');
       return [];
     }
   }

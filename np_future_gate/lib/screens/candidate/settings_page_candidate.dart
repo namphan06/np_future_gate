@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/animated_avatar.dart';
-import '../auth/change_password_screen.dart';
-import '../auth/login_screen.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/models/profile_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/auth/change_password_screen.dart';
+import 'package:np_future_gate/screens/auth/login_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/profile/edit_profile_screen.dart';
+import 'package:np_future_gate/screens/settings/notification_settings_screen.dart';
+import 'package:np_future_gate/screens/settings/web_view_screen.dart';
+import 'package:np_future_gate/widgets/animated_avatar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_detail_screen.dart';
-import '../profile/edit_profile_screen.dart';
-import '../settings/notification_settings_screen.dart';
-import '../settings/web_view_screen.dart';
 
 
 class SettingsPageCandidate extends StatefulWidget {
@@ -89,7 +89,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 20,
                               offset: const Offset(0, 4),
                             ),
@@ -106,7 +106,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                                 gradient: avatarUrl == null
                                     ? LinearGradient(
                                         colors: [
-                                          AppMainColors.primary.withOpacity(0.8),
+                                          AppMainColors.primary.withValues(alpha: 0.8),
                                           AppMainColors.primaryDark,
                                         ],
                                         begin: Alignment.topLeft,
@@ -115,7 +115,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                                     : null,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppMainColors.primary.withOpacity(0.3),
+                                    color: AppMainColors.primary.withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -203,7 +203,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                         // Edit button
                         Container(
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Material(
@@ -211,8 +211,8 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: _navigateToEditProfile,
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
+                              child: const Padding(
+                                padding: EdgeInsets.all(10),
                                 child: Icon(
                                   Icons.edit_outlined,
                                   color: AppMainColors.primary,
@@ -393,7 +393,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -445,9 +445,9 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.85),
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.6),
+                    Colors.white.withValues(alpha: 0.85),
                     Colors.white,
                   ],
                   stops: const [0.0, 0.2, 0.4, 1.0],
@@ -473,7 +473,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -491,7 +491,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 26),
@@ -545,11 +545,11 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.info_outline, color: AppMainColors.primary),
-            const SizedBox(width: 10),
-            const Text('Về NP Future Gate'),
+            SizedBox(width: 10),
+            Text('Về NP Future Gate'),
           ],
         ),
         content: Column(
@@ -613,7 +613,7 @@ class _SettingsPageCandidateState extends State<SettingsPageCandidate> {
               try {
                 await _authRepo.signOut();
               } catch (e) {
-                print('Error during sign out: $e');
+                debugPrint('Error during sign out: $e');
               }
 
               // 4. Close loading dialog and Navigate to LoginScreen

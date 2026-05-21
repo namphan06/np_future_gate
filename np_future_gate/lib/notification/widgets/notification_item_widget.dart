@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../core/models/notification_model.dart';
-import '../models/notification_config.dart';
+import 'package:np_future_gate/core/models/notification_model.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
 
 /// Widget hiển thị một item thông báo trong danh sách
 class NotificationItemWidget extends StatelessWidget {
-  final NotificationModel notification;
-  final VoidCallback onTap;
 
   const NotificationItemWidget({
     super.key,
     required this.notification,
     required this.onTap,
   });
+  final NotificationModel notification;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +110,10 @@ class NotificationItemWidget extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: notification.type.color.withOpacity(0.1),
+                            color: notification.type.color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: notification.type.color.withOpacity(0.3),
+                              color: notification.type.color.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
@@ -150,7 +150,7 @@ class NotificationItemWidget extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: notification.type.color.withOpacity(0.1),
+        color: notification.type.color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -164,14 +164,14 @@ class NotificationItemWidget extends StatelessWidget {
 
 /// Widget để hiển thị notification badge (số lượng chưa đọc)
 class NotificationBadge extends StatelessWidget {
-  final int count;
-  final Widget child;
 
   const NotificationBadge({
     super.key,
     required this.count,
     required this.child,
   });
+  final int count;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -213,14 +213,14 @@ class NotificationBadge extends StatelessWidget {
 
 /// Widget để hiển thị danh sách notification type filters
 class NotificationTypeFilter extends StatelessWidget {
-  final NotificationType? selectedType;
-  final ValueChanged<NotificationType?> onTypeSelected;
 
   const NotificationTypeFilter({
     super.key,
     required this.selectedType,
     required this.onTypeSelected,
   });
+  final NotificationType? selectedType;
+  final ValueChanged<NotificationType?> onTypeSelected;
 
   @override
   Widget build(BuildContext context) {

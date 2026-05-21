@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
-import '../models/profile_model.dart';
 
 class CompanyRepository {
   final SupabaseService _supabaseService = SupabaseService.instance;
@@ -16,7 +17,7 @@ class CompanyRepository {
 
       return (response as List).map((e) => Profile.fromJson(e)).toList();
     } catch (e) {
-      print('Error fetching companies: $e');
+      debugPrint('Error fetching companies: $e');
       return [];
     }
   }
@@ -34,7 +35,7 @@ class CompanyRepository {
           .map((e) => e['employer_id'] as String)
           .toList();
     } catch (e) {
-      print('Error fetching followed company IDs: $e');
+      debugPrint('Error fetching followed company IDs: $e');
       return [];
     }
   }
@@ -49,7 +50,7 @@ class CompanyRepository {
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      print('Error following company: $e');
+      debugPrint('Error following company: $e');
       rethrow;
     }
   }
@@ -64,7 +65,7 @@ class CompanyRepository {
           .eq('employer_id', employerId)
           .eq('followed_by', userRole);
     } catch (e) {
-      print('Error unfollowing company: $e');
+      debugPrint('Error unfollowing company: $e');
       rethrow;
     }
   }

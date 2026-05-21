@@ -1,8 +1,4 @@
 class CVModel {
-  final String id;
-  final String name;
-  final DateTime updatedAt;
-  final Map<String, dynamic> data;
 
   CVModel({
     required this.id,
@@ -21,4 +17,8 @@ class CVModel {
       data: json['data'] ?? {},
     );
   }
+  final String id;
+  final String name;
+  final DateTime updatedAt;
+  final Map<String, dynamic> data;
 }

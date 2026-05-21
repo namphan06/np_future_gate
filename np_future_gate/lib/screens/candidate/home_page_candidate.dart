@@ -213,7 +213,7 @@ class _HomePageCandidateState extends State<HomePageCandidate> {
             padding: const EdgeInsets.all(10),
             child: Stack(
               children: [
-                Icon(
+                const Icon(
                   Icons.notifications_outlined,
                   color: AppMainColors.primary,
                   size: 24,

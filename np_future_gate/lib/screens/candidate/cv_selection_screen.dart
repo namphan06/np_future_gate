@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../core/models/cv_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/services/ai_matching_service.dart';
-import '../../core/enums/job_fields.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/models/cv_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/ai_matching_service.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 /// Enhanced CV Selection Screen with search and filters
 class CVSelectionScreen extends StatefulWidget {
-  final List<CVModel> cvs;
-  final Function(String cvId) onCVSelected;
-  final JobModel? targetJob;
 
   const CVSelectionScreen({
     super.key,
@@ -17,6 +14,9 @@ class CVSelectionScreen extends StatefulWidget {
     required this.onCVSelected,
     this.targetJob,
   });
+  final List<CVModel> cvs;
+  final Function(String cvId) onCVSelected;
+  final JobModel? targetJob;
 
   @override
   State<CVSelectionScreen> createState() => _CVSelectionScreenState();
@@ -68,6 +68,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
     });
   }
 
+  // ignore: unused_element
   Future<void> _calculateScores() async {
     if (widget.targetJob == null || _isCalculatingScores) return;
 
@@ -89,7 +90,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
         }
       }
     } catch (e) {
-      print('Error calculating scores: $e');
+      debugPrint('Error calculating scores: $e');
     } finally {
       if (mounted) setState(() => _isCalculatingScores = false);
     }
@@ -143,7 +144,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
             colors: [
               Colors.blue[50]!,
               Colors.white,
-              Colors.blue[50]!.withOpacity(0.3),
+              Colors.blue[50]!.withValues(alpha: 0.3),
             ],
           ),
         ),
@@ -194,7 +195,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color: Colors.black.withValues(alpha: 0.08),
                                       blurRadius: 10,
                                       offset: const Offset(0, 2),
                                     ),
@@ -238,7 +239,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: Colors.black.withValues(alpha: 0.08),
                                 blurRadius: 20,
                                 offset: const Offset(0, 4),
                               ),
@@ -329,7 +330,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -366,7 +367,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -408,7 +409,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                   ),
                 ),
                 if (isSelected)
-                  Icon(Icons.check_circle, size: 18, color: Colors.white),
+                  const Icon(Icons.check_circle, size: 18, color: Colors.white),
               ],
             ),
           ),
@@ -430,7 +431,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -453,7 +454,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: _getTypeColor(type).withOpacity(0.1),
+                        color: _getTypeColor(type).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -485,7 +486,7 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: _getTypeColor(type).withOpacity(0.15),
+                                  color: _getTypeColor(type).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -765,8 +766,11 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
 
     final overallScore = score.overallScore;
     Color scoreColor = Colors.red;
-    if (overallScore >= 75) scoreColor = Colors.green;
-    else if (overallScore >= 50) scoreColor = Colors.orange;
+    if (overallScore >= 75) {
+      scoreColor = Colors.green;
+    } else if (overallScore >= 50) {
+      scoreColor = Colors.orange;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,9 +791,9 @@ class _CVSelectionScreenState extends State<CVSelectionScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: scoreColor.withOpacity(0.1),
+                color: scoreColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: scoreColor.withOpacity(0.5)),
+                border: Border.all(color: scoreColor.withValues(alpha: 0.5)),
               ),
               child: Text(
                 '${overallScore.toStringAsFixed(0)}%',

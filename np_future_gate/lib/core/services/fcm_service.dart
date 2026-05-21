@@ -1,21 +1,22 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter/material.dart';
 import 'dart:convert';
-import '../repositories/device_token_repository.dart';
-import '../models/notification_model.dart';
-import '../../notification/models/notification_config.dart';
-import 'notification/status_notification_service.dart';
-import '../repositories/auth_repository.dart';
-import '../../main.dart'; // For navigatorKey
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:np_future_gate/core/models/notification_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/device_token_repository.dart';
+import 'package:np_future_gate/core/services/notification/status_notification_service.dart';
+import 'package:np_future_gate/main.dart'; // For navigatorKey
+import 'package:np_future_gate/notification/models/notification_config.dart';
 
 /// Firebase Cloud Messaging Service
 /// Xử lý việc nhận và gửi push notifications
 class FCMService {
-  static final FCMService _instance = FCMService._internal();
   factory FCMService() => _instance;
   FCMService._internal();
+  static final FCMService _instance = FCMService._internal();
 
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final DeviceTokenRepository _deviceTokenRepo = DeviceTokenRepository();
@@ -35,7 +36,7 @@ class FCMService {
       await _initializeLocalNotifications();
       
       // Request permission for iOS
-      NotificationSettings settings = await _fcm.requestPermission(
+      final NotificationSettings settings = await _fcm.requestPermission(
         alert: true,
         announcement: false,
         badge: true,
@@ -45,12 +46,12 @@ class FCMService {
         sound: true,
       );
 
-      print('📱 FCM Permission status: ${settings.authorizationStatus}');
+      debugPrint('📱 FCM Permission status: ${settings.authorizationStatus}');
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         // Get FCM token
         _fcmToken = await _fcm.getToken();
-        print('✅ FCM Token: $_fcmToken');
+        debugPrint('✅ FCM Token: $_fcmToken');
 
         if (_fcmToken != null) {
           await _saveTokenForCurrentUser(_fcmToken!);
@@ -59,7 +60,7 @@ class FCMService {
         // Listen for token refresh
         _fcm.onTokenRefresh.listen((newToken) {
           _fcmToken = newToken;
-          print('🔄 FCM Token refreshed: $newToken');
+          debugPrint('🔄 FCM Token refreshed: $newToken');
           _saveTokenForCurrentUser(newToken);
         });
 
@@ -69,7 +70,7 @@ class FCMService {
         FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
       }
     } catch (e) {
-      print('❌ FCM Initialization error: $e');
+      debugPrint('❌ FCM Initialization error: $e');
     }
   }
 
@@ -87,29 +88,29 @@ class FCMService {
     await _localNotifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        print('👉 =================================');
-        print('📱 Local notification tapped!');
-        print('📱 Payload: ${response.payload}');
-        print('📱 Action ID: ${response.actionId}');
-        print('📱 Notification ID: ${response.id}');
-        print('👉 =================================');
+        debugPrint('👉 =================================');
+        debugPrint('📱 Local notification tapped!');
+        debugPrint('📱 Payload: ${response.payload}');
+        debugPrint('📱 Action ID: ${response.actionId}');
+        debugPrint('📱 Notification ID: ${response.id}');
+        debugPrint('👉 =================================');
         
         // Parse data từ payload
         if (response.payload != null && response.payload!.isNotEmpty) {
           try {
             // Parse JSON payload
             final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-            print('📦 Parsed data: $data');
+            debugPrint('📦 Parsed data: $data');
             
             // Lấy context từ navigatorKey
             final context = navigatorKey.currentContext;
-            print('🎯 Context available: ${context != null}');
-            print('🎯 Context mounted: ${context?.mounted ?? false}');
+            debugPrint('🎯 Context available: ${context != null}');
+            debugPrint('🎯 Context mounted: ${context?.mounted ?? false}');
             
             if (context != null && context.mounted) {
               // Sử dụng NotificationService để handle navigation
               final notificationService = StatusNotificationService();
-              print('✅ Creating NotificationModel...');
+              debugPrint('✅ Creating NotificationModel...');
               
               // Tạo notification model tạm từ data
               final notification = NotificationModel(
@@ -126,18 +127,18 @@ class FCMService {
                 isRead: false,
               );
               
-              print('✅ Calling handleNotificationTap...');
+              debugPrint('✅ Calling handleNotificationTap...');
               await notificationService.handleNotificationTap(context, notification);
-              print('✅ Navigation completed');
+              debugPrint('✅ Navigation completed');
             } else {
-              print('❌ Context not available or not mounted');
+              debugPrint('❌ Context not available or not mounted');
             }
           } catch (e, stackTrace) {
-            print('❌ Error handling notification tap: $e');
-            print('❌ Stack trace: $stackTrace');
+            debugPrint('❌ Error handling notification tap: $e');
+            debugPrint('❌ Stack trace: $stackTrace');
           }
         } else {
-          print('⚠️ Payload is null or empty');
+          debugPrint('⚠️ Payload is null or empty');
         }
       },
     );
@@ -156,16 +157,16 @@ class FCMService {
         role: profile.role.value,
       );
     } catch (e) {
-      print('⚠️ Error saving device token from FCMService: $e');
+      debugPrint('⚠️ Error saving device token from FCMService: $e');
     }
   }
 
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) async {
-    print('📬 Foreground message received:');
-    print('   Title: ${message.notification?.title}');
-    print('   Body: ${message.notification?.body}');
-    print('   Data: ${message.data}');
+    debugPrint('📬 Foreground message received:');
+    debugPrint('   Title: ${message.notification?.title}');
+    debugPrint('   Body: ${message.notification?.body}');
+    debugPrint('   Data: ${message.data}');
     
     // Show local notification when app is in foreground
     if (message.notification != null) {
@@ -207,27 +208,27 @@ class FCMService {
       payload: payload,
     );
     
-    print('✅ Local notification displayed');
+    debugPrint('✅ Local notification displayed');
   }
 
   /// Handle messages that opened the app
   void _handleMessageOpenedApp(RemoteMessage message) async {
-    print('👉 =================================');
-    print('📲 Message opened app (from background)!');
-    print('   Title: ${message.notification?.title}');
-    print('   Body: ${message.notification?.body}');
-    print('   Data: ${message.data}');
-    print('👉 =================================');
+    debugPrint('👉 =================================');
+    debugPrint('📲 Message opened app (from background)!');
+    debugPrint('   Title: ${message.notification?.title}');
+    debugPrint('   Body: ${message.notification?.body}');
+    debugPrint('   Data: ${message.data}');
+    debugPrint('👉 =================================');
     
     // Lấy context từ navigatorKey
     final context = navigatorKey.currentContext;
-    print('🎯 Context available: ${context != null}');
-    print('🎯 Context mounted: ${context?.mounted ?? false}');
+    debugPrint('🎯 Context available: ${context != null}');
+    debugPrint('🎯 Context mounted: ${context?.mounted ?? false}');
     
     if (context != null && context.mounted && message.data.isNotEmpty) {
       try {
         final notificationService = StatusNotificationService();
-        print('✅ Creating NotificationModel from FCM data...');
+        debugPrint('✅ Creating NotificationModel from FCM data...');
         
         // Tạo notification model từ FCM data
         final notification = NotificationModel(
@@ -244,16 +245,16 @@ class FCMService {
           isRead: false,
         );
         
-        print('✅ Calling handleNotificationTap...');
+        debugPrint('✅ Calling handleNotificationTap...');
         // Handle navigation
         await notificationService.handleNotificationTap(context, notification);
-        print('✅ Navigation completed');
+        debugPrint('✅ Navigation completed');
       } catch (e, stackTrace) {
-        print('❌ Error handling message opened app: $e');
-        print('❌ Stack trace: $stackTrace');
+        debugPrint('❌ Error handling message opened app: $e');
+        debugPrint('❌ Stack trace: $stackTrace');
       }
     } else {
-      print('❌ Cannot handle: context=${context != null}, data empty=${message.data.isEmpty}');
+      debugPrint('❌ Cannot handle: context=${context != null}, data empty=${message.data.isEmpty}');
     }
   }
 
@@ -263,7 +264,7 @@ class FCMService {
     required String role,
   }) async {
     if (_fcmToken == null) {
-      print('⚠️ No FCM token available');
+      debugPrint('⚠️ No FCM token available');
       return;
     }
 
@@ -273,9 +274,9 @@ class FCMService {
         userId: userId,
         role: role,
       );
-      print('✅ FCM token saved to database');
+      debugPrint('✅ FCM token saved to database');
     } catch (e) {
-      print('❌ Failed to save FCM token: $e');
+      debugPrint('❌ Failed to save FCM token: $e');
       rethrow;
     }
   }
@@ -284,9 +285,9 @@ class FCMService {
   Future<void> subscribeToTopic(String topic) async {
     try {
       await _fcm.subscribeToTopic(topic);
-      print('✅ Subscribed to topic: $topic');
+      debugPrint('✅ Subscribed to topic: $topic');
     } catch (e) {
-      print('❌ Failed to subscribe to topic: $e');
+      debugPrint('❌ Failed to subscribe to topic: $e');
     }
   }
 
@@ -294,9 +295,9 @@ class FCMService {
   Future<void> unsubscribeFromTopic(String topic) async {
     try {
       await _fcm.unsubscribeFromTopic(topic);
-      print('✅ Unsubscribed from topic: $topic');
+      debugPrint('✅ Unsubscribed from topic: $topic');
     } catch (e) {
-      print('❌ Failed to unsubscribe from topic: $e');
+      debugPrint('❌ Failed to unsubscribe from topic: $e');
     }
   }
   
@@ -305,28 +306,28 @@ class FCMService {
   Future<void> checkInitialMessage() async {
     try {
       // Kiểm tra xem app có được mở từ notification không
-      RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+      final RemoteMessage? initialMessage = await _fcm.getInitialMessage();
       
       if (initialMessage != null) {
-        print('🚀 ========================================');
-        print('🚀 App opened from notification (terminated state)!');
-        print('   Title: ${initialMessage.notification?.title}');
-        print('   Body: ${initialMessage.notification?.body}');
-        print('   Data: ${initialMessage.data}');
-        print('🚀 ========================================');
+        debugPrint('🚀 ========================================');
+        debugPrint('🚀 App opened from notification (terminated state)!');
+        debugPrint('   Title: ${initialMessage.notification?.title}');
+        debugPrint('   Body: ${initialMessage.notification?.body}');
+        debugPrint('   Data: ${initialMessage.data}');
+        debugPrint('🚀 ========================================');
         
         // Đợi một chút để app render xong
         await Future.delayed(const Duration(milliseconds: 500));
         
         // Lấy context từ navigatorKey
         final context = navigatorKey.currentContext;
-        print('🎯 Context available: ${context != null}');
-        print('🎯 Context mounted: ${context?.mounted ?? false}');
+        debugPrint('🎯 Context available: ${context != null}');
+        debugPrint('🎯 Context mounted: ${context?.mounted ?? false}');
         
         if (context != null && context.mounted && initialMessage.data.isNotEmpty) {
           try {
             final notificationService = StatusNotificationService();
-            print('✅ Creating NotificationModel from initial FCM data...');
+            debugPrint('✅ Creating NotificationModel from initial FCM data...');
             
             // Tạo notification model từ FCM data
             final notification = NotificationModel(
@@ -343,29 +344,30 @@ class FCMService {
               isRead: false,
             );
             
-            print('✅ Calling handleNotificationTap from terminated state...');
+            debugPrint('✅ Calling handleNotificationTap from terminated state...');
             // Handle navigation
             await notificationService.handleNotificationTap(context, notification);
-            print('✅ Navigation from terminated state completed');
+            debugPrint('✅ Navigation from terminated state completed');
           } catch (e, stackTrace) {
-            print('❌ Error handling initial message: $e');
-            print('❌ Stack trace: $stackTrace');
+            debugPrint('❌ Error handling initial message: $e');
+            debugPrint('❌ Stack trace: $stackTrace');
           }
         } else {
-          print('⚠️ Cannot handle initial message:');
-          print('   Context: ${context != null}');
-          print('   Mounted: ${context?.mounted ?? false}');
-          print('   Has data: ${initialMessage.data.isNotEmpty}');
+          debugPrint('⚠️ Cannot handle initial message:');
+          debugPrint('   Context: ${context != null}');
+          debugPrint('   Mounted: ${context?.mounted ?? false}');
+          debugPrint('   Has data: ${initialMessage.data.isNotEmpty}');
         }
       } else {
-        print('ℹ️ No initial message (app opened normally)');
+        debugPrint('ℹ️ No initial message (app opened normally)');
       }
     } catch (e) {
-      print('❌ Error checking initial message: $e');
+      debugPrint('❌ Error checking initial message: $e');
     }
   }
   
   /// Parse payload string to Map
+  // ignore: unused_element
   Map<String, dynamic> _parsePayload(String payload) {
     try {
       // Payload format: "{key1: value1, key2: value2}"
@@ -383,7 +385,7 @@ class FCMService {
       
       return map;
     } catch (e) {
-      print('❌ Error parsing payload: $e');
+      debugPrint('❌ Error parsing payload: $e');
       return {};
     }
   }
@@ -394,7 +396,7 @@ class FCMService {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print('📦 Background message received:');
-  print('   Title: ${message.notification?.title}');
-  print('   Body: ${message.notification?.body}');
+  debugPrint('📦 Background message received:');
+  debugPrint('   Title: ${message.notification?.title}');
+  debugPrint('   Body: ${message.notification?.body}');
 }

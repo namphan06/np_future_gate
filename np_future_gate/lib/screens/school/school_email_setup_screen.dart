@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class SchoolEmailSetupScreen extends StatefulWidget {
   const SchoolEmailSetupScreen({super.key});
@@ -164,18 +164,18 @@ class _SchoolEmailSetupScreenState extends State<SchoolEmailSetupScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppMainColors.primary.withOpacity(0.1),
-                            AppMainColors.primary.withOpacity(0.05),
+                            AppMainColors.primary.withValues(alpha: 0.1),
+                            AppMainColors.primary.withValues(alpha: 0.05),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: AppMainColors.primary.withOpacity(0.3),
+                          color: AppMainColors.primary.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.info_outline,
                             color: AppMainColors.primary,
                             size: 32,
@@ -215,7 +215,7 @@ class _SchoolEmailSetupScreenState extends State<SchoolEmailSetupScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                             ),
                           ],
@@ -250,8 +250,8 @@ class _SchoolEmailSetupScreenState extends State<SchoolEmailSetupScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: _isVerified == true
-                                        ? Colors.green.withOpacity(0.1)
-                                        : Colors.orange.withOpacity(0.1),
+                                        ? Colors.green.withValues(alpha: 0.1)
+                                        : Colors.orange.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
@@ -318,7 +318,7 @@ class _SchoolEmailSetupScreenState extends State<SchoolEmailSetupScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
+                          borderSide: const BorderSide(
                             color: AppMainColors.primary,
                             width: 2,
                           ),
@@ -366,10 +366,10 @@ class _SchoolEmailSetupScreenState extends State<SchoolEmailSetupScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.1),
+                        color: Colors.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.amber.withOpacity(0.3),
+                          color: Colors.amber.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cv8 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv8({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   // Finance Theme: Corporate, Solid, Trustworthy
   static const Color primaryColor = Color(0xFF1B3E6A); // Deep Executive Blue
@@ -67,7 +67,7 @@ class Cv8 extends StatelessWidget {
             children: [
               _buildSectionWrapper('summary', _buildSection('EXECUTIVE SUMMARY',
                 Text(
-                  displayData['summary'] ?? "Detail-oriented Finance Professional with 7+ years of experience in strategic planning, financial risk management, and ROI analysis.",
+                  displayData['summary'] ?? 'Detail-oriented Finance Professional with 7+ years of experience in strategic planning, financial risk management, and ROI analysis.',
                   style: const TextStyle(fontSize: 14, height: 1.7, fontWeight: FontWeight.w400, color: textColor),
                 )
               )),
@@ -112,7 +112,7 @@ class Cv8 extends StatelessWidget {
         const SizedBox(height: 30),
         _buildSectionWrapper('summary', _buildSection('EXECUTIVE SUMMARY',
           Text(
-            displayData['summary'] ?? "Detail-oriented Finance Professional with 7+ years of experience in strategic planning, financial risk management, and ROI analysis.",
+            displayData['summary'] ?? 'Detail-oriented Finance Professional with 7+ years of experience in strategic planning, financial risk management, and ROI analysis.',
             style: const TextStyle(fontSize: 14, height: 1.7, fontWeight: FontWeight.w400, color: textColor),
           )
         )),
@@ -136,8 +136,8 @@ class Cv8 extends StatelessWidget {
   }
 
   Widget _buildHeader(Map<String, dynamic> info, bool isNarrow) {
-    String? avatarUrl = info['avatar_url'];
-    bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
+    final String? avatarUrl = info['avatar_url'];
+    final bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
 
     return Container(
       width: double.infinity,
@@ -153,7 +153,7 @@ class Cv8 extends StatelessWidget {
             Container(
               width: 140,
               height: 140,
-              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 15)]),
+              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 4), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 15)]),
               child: ClipOval(child: hasAvatar ? Image.network(avatarUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildAvatarPlaceholder()) : _buildAvatarPlaceholder()),
             ),
           ),
@@ -164,9 +164,9 @@ class Cv8 extends StatelessWidget {
             child: Column(
               crossAxisAlignment: isNarrow ? CrossAxisAlignment.center : CrossAxisAlignment.start,
               children: [
-                _buildSectionWrapper('cv_name', Text((info['full_name'] ?? "EXECUTIVE PRINCIPAL").toUpperCase(), style: GoogleFonts.montserrat(fontSize: isNarrow ? 28 : 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 2))),
+                _buildSectionWrapper('cv_name', Text((info['full_name'] ?? 'EXECUTIVE PRINCIPAL').toUpperCase(), style: GoogleFonts.montserrat(fontSize: isNarrow ? 28 : 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 2))),
                 const SizedBox(height: 10),
-                _buildSectionWrapper('cv_name', Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), color: lightBlue, child: Text((info['title'] ?? "Managing Director & CF").toUpperCase(), style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor, letterSpacing: 2)))),
+                _buildSectionWrapper('cv_name', Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), color: lightBlue, child: Text((info['title'] ?? 'Managing Director & CF').toUpperCase(), style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor, letterSpacing: 2)))),
               ],
             ),
           ),
@@ -226,9 +226,9 @@ class Cv8 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildContactItem(Icons.phone_outlined, info['phone'] ?? "+84 000 000 000"),
-        _buildContactItem(Icons.email_outlined, info['email'] ?? "finance@corporate.com"),
-        _buildContactItem(Icons.location_on_outlined, info['address'] ?? "Financial Hub"),
+        _buildContactItem(Icons.phone_outlined, info['phone'] ?? '+84 000 000 000'),
+        _buildContactItem(Icons.email_outlined, info['email'] ?? 'finance@corporate.com'),
+        _buildContactItem(Icons.location_on_outlined, info['address'] ?? 'Financial Hub'),
         if (info['website'] != null) _buildContactItem(Icons.public_outlined, info['website']),
       ],
     );
@@ -260,15 +260,15 @@ class Cv8 extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(exp['position'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
+                  child: Text(exp['position'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: primaryColor)),
                 ),
-                Text(exp['duration'] ?? "", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: secondaryColor)),
+                Text(exp['duration'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: secondaryColor)),
               ],
             ),
             const SizedBox(height: 5),
-            Text(exp['company'] ?? "", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: accentColor)),
+            Text(exp['company'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: accentColor)),
             const SizedBox(height: 15),
-            Text(exp['description'] ?? "", style: const TextStyle(fontSize: 13, height: 1.7, color: textColor)),
+            Text(exp['description'] ?? '', style: const TextStyle(fontSize: 13, height: 1.7, color: textColor)),
           ],
         ),
       )).toList(),
@@ -289,8 +289,8 @@ class Cv8 extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p['role'] ?? p['name'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: primaryColor)),
-                  Text(p['description'] ?? "", style: const TextStyle(fontSize: 12, height: 1.5, color: textColor)),
+                  Text(p['role'] ?? p['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: primaryColor)),
+                  Text(p['description'] ?? '', style: const TextStyle(fontSize: 12, height: 1.5, color: textColor)),
                 ],
               ),
             ),
@@ -309,7 +309,7 @@ class Cv8 extends StatelessWidget {
           children: [
             Container(width: 5, height: 5, decoration: const BoxDecoration(color: primaryColor, shape: BoxShape.circle)),
             const SizedBox(width: 12),
-            Expanded(child: Text(s['name'] ?? "", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor))),
+            Expanded(child: Text(s['name'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor))),
           ],
         ),
       )).toList(),
@@ -324,9 +324,9 @@ class Cv8 extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(edu['school'] ?? "", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-            Text(edu['degree'] ?? "", style: const TextStyle(fontSize: 12, color: secondaryColor)),
-            Text(edu['year'] ?? "", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
+            Text(edu['school'] ?? '', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            Text(edu['degree'] ?? '', style: const TextStyle(fontSize: 12, color: secondaryColor)),
+            Text(edu['year'] ?? '', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryColor)),
           ],
         ),
       )).toList(),

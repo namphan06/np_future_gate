@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/auth_models.dart';
-import '../../core/repositories/admin_user_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/repositories/admin_user_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class CreateUserScreenAdmin extends StatefulWidget {
   const CreateUserScreenAdmin({super.key});
@@ -381,7 +381,7 @@ class _CreateUserScreenAdminState extends State<CreateUserScreenAdmin> {
           ),
           Switch(
             value: _isActive,
-            activeColor: AppMainColors.primary,
+            activeThumbColor: AppMainColors.primary,
             onChanged: (value) => setState(() => _isActive = value),
           ),
         ],

@@ -1,18 +1,19 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/services/cv_supabase_service.dart';
-import '../../core/enums/job_fields.dart';
-import '../../core/enums/employment_types.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/enums/employment_types.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  final Profile profile;
 
   const EditProfileScreen({super.key, required this.profile});
+  final Profile profile;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -120,9 +121,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _pickImage() async {
     try {
-      print('Opening image picker...');
+      debugPrint('Opening image picker...');
       final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-      print('Image picker result: ${pickedFile?.path}');
+      debugPrint('Image picker result: ${pickedFile?.path}');
       
       if (pickedFile != null) {
         setState(() {
@@ -130,8 +131,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     } catch (e, stackTrace) {
-      print('Error picking image: $e');
-      print('Stack trace: $stackTrace');
+      debugPrint('Error picking image: $e');
+      debugPrint('Stack trace: $stackTrace');
       if (mounted) {
         showDialog(
           context: context,
@@ -233,7 +234,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -400,7 +401,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   _tags.remove(tag);
                 });
               },
-              backgroundColor: Colors.blue.withOpacity(0.1),
+              backgroundColor: Colors.blue.withValues(alpha: 0.1),
               labelStyle: const TextStyle(color: Colors.blue),
               side: BorderSide.none,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -419,7 +420,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -453,7 +454,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               border: Border.all(color: Colors.white, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -485,7 +486,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: Colors.blue.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -619,7 +620,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 selected: isSelected,
-                selectedColor: Colors.blue.withOpacity(0.1),
+                selectedColor: Colors.blue.withValues(alpha: 0.1),
                 backgroundColor: Colors.grey[50],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -869,15 +870,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
+          color: Colors.orange.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
         ),
-        child: Row(
+        child: const Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            const SizedBox(width: 12),
-            const Expanded(child: Text('Bạn chưa có CV nào. Hãy tạo CV trước.', style: TextStyle(color: Colors.orange))),
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 12),
+            Expanded(child: Text('Bạn chưa có CV nào. Hãy tạo CV trước.', style: TextStyle(color: Colors.orange))),
           ],
         ),
       );
@@ -891,7 +892,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.blue.withOpacity(0.05) : Colors.grey[50],
+            color: isSelected ? Colors.blue.withValues(alpha: 0.05) : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? Colors.blue : Colors.grey[200]!,

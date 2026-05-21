@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/repositories/interview_repository.dart';
-import '../../core/models/job_model.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'job_detail_screen.dart';
-import '../cv/cv_setting/cv_display_manager.dart';
-import '../../widgets/cards/job_card.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/interview_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/widgets/cards/job_card.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AppliedJobsScreen extends StatefulWidget {
   const AppliedJobsScreen({super.key});
@@ -213,10 +213,10 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(Icons.star, color: AppMainColors.primary, size: 24),
+                          child: const Icon(Icons.star, color: AppMainColors.primary, size: 24),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -249,7 +249,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppMainColors.primary.withOpacity(0.1), AppMainColors.primary.withOpacity(0.05)],
+                          colors: [AppMainColors.primary.withValues(alpha: 0.1), AppMainColors.primary.withValues(alpha: 0.05)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -257,7 +257,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.star_rounded, color: Colors.amber, size: 48),
+                          const Icon(Icons.star_rounded, color: Colors.amber, size: 48),
                           const SizedBox(width: 16),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,13 +320,13 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                         children: tags.map((tag) => Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppMainColors.primary.withOpacity(0.1),
+                            color: AppMainColors.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: AppMainColors.primary.withOpacity(0.3)),
+                            border: Border.all(color: AppMainColors.primary.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             tag,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppMainColors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -383,12 +383,12 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppMainColors.primary.withOpacity(0.1),
+              color: AppMainColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
               '${rating.toStringAsFixed(1)}/10',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: AppMainColors.primary,
@@ -404,7 +404,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
               child: LinearProgressIndicator(
                 value: rating / 10,
                 backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(AppMainColors.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppMainColors.primary),
               ),
             ),
           ),
@@ -507,7 +507,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: _getRecruitmentStatusColor(recruitmentStatus).withOpacity(0.2),
+                                      color: _getRecruitmentStatusColor(recruitmentStatus).withValues(alpha: 0.2),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -543,7 +543,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: _getStatusColor(status).withOpacity(0.1),
+                                            color: _getStatusColor(status).withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(

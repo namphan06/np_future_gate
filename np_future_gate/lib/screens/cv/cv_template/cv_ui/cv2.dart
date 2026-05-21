@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class Cv2 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv2({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class Cv2 extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    personalInfo['full_name'] ?? "NGUYỄN VĂN B",
+                    personalInfo['full_name'] ?? 'NGUYỄN VĂN B',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -43,7 +43,7 @@ class Cv2 extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    (personalInfo['title'] ?? "Lập trình viên Flutter").toUpperCase(),
+                    (personalInfo['title'] ?? 'Lập trình viên Flutter').toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
@@ -69,12 +69,12 @@ class Cv2 extends StatelessWidget {
                   children: [
                     _buildSectionWrapper(
                       'summary',
-                      _buildSectionTitle("GIỚI THIỆU", Icons.person),
+                      _buildSectionTitle('GIỚI THIỆU', Icons.person),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 8, bottom: 20),
                       child: Text(
-                        displayData['summary'] ?? "Mô tả ngắn gọn về bản thân và mục tiêu nghề nghiệp...",
+                        displayData['summary'] ?? 'Mô tả ngắn gọn về bản thân và mục tiêu nghề nghiệp...',
                         style: const TextStyle(fontSize: 14, height: 1.5),
                       ),
                     ),
@@ -135,10 +135,10 @@ class Cv2 extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildInfoRow(Icons.email, personalInfo['email'] ?? "email@example.com"),
-                            _buildInfoRow(Icons.phone, personalInfo['phone'] ?? "0987654321"),
-                            _buildInfoRow(Icons.location_on, personalInfo['address'] ?? "Hồ Chí Minh"),
-                            _buildInfoRow(Icons.link, personalInfo['website'] ?? "linkedin.com/in/b"),
+                            _buildInfoRow(Icons.email, personalInfo['email'] ?? 'email@example.com'),
+                            _buildInfoRow(Icons.phone, personalInfo['phone'] ?? '0987654321'),
+                            _buildInfoRow(Icons.location_on, personalInfo['address'] ?? 'Hồ Chí Minh'),
+                            _buildInfoRow(Icons.link, personalInfo['website'] ?? 'linkedin.com/in/b'),
                           ],
                         ),
                       ),
@@ -226,20 +226,20 @@ class Cv2 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("KINH NGHIỆM", Icons.work),
+        _buildSectionTitle('KINH NGHIỆM', Icons.work),
         if (list.isEmpty)
           _buildExperienceItem(
-            "Công ty ABC",
-            "Senior Developer",
-            "2020 - Hiện tại",
-            "Phát triển ứng dụng mobile...",
+            'Công ty ABC',
+            'Senior Developer',
+            '2020 - Hiện tại',
+            'Phát triển ứng dụng mobile...',
           )
         else
           ...list.map((e) => _buildExperienceItem(
-            e['company'] ?? "",
-            e['position'] ?? "",
-            e['duration'] ?? "",
-            e['description'] ?? "",
+            e['company'] ?? '',
+            e['position'] ?? '',
+            e['duration'] ?? '',
+            e['description'] ?? '',
           )),
         const SizedBox(height: 20),
       ],
@@ -282,11 +282,11 @@ class Cv2 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("DỰ ÁN", Icons.folder),
+        _buildSectionTitle('DỰ ÁN', Icons.folder),
         if (list.isEmpty)
            const Padding(
              padding: EdgeInsets.only(left: 8),
-             child: Text("Chưa có dự án nào."),
+             child: Text('Chưa có dự án nào.'),
            )
         else
           ...list.map((p) => Padding(
@@ -294,8 +294,8 @@ class Cv2 extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(p['name'] ?? "Project Name", style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(p['description'] ?? "", style: const TextStyle(fontSize: 13)),
+                Text(p['name'] ?? 'Project Name', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(p['description'] ?? '', style: const TextStyle(fontSize: 13)),
               ],
             ),
           )),
@@ -309,21 +309,21 @@ class Cv2 extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "HỌC VẤN",
+          'HỌC VẤN',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
         ),
         const SizedBox(height: 10),
         if (list.isEmpty)
-          const Text("Đại học Công Nghệ\nCử nhân CNTT\n2015 - 2019", style: TextStyle(fontSize: 13))
+          const Text('Đại học Công Nghệ\nCử nhân CNTT\n2015 - 2019', style: TextStyle(fontSize: 13))
         else
           ...list.map((e) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(e['school'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                Text(e['degree'] ?? "", style: const TextStyle(fontSize: 13)),
-                Text(e['year'] ?? "", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(e['school'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(e['degree'] ?? '', style: const TextStyle(fontSize: 13)),
+                Text(e['year'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
               ],
             ),
           )),
@@ -337,7 +337,7 @@ class Cv2 extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "KỸ NĂNG",
+          'KỸ NĂNG',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
         ),
         const SizedBox(height: 10),
@@ -345,7 +345,7 @@ class Cv2 extends StatelessWidget {
           spacing: 6,
           runSpacing: 6,
           children: list.isEmpty 
-            ? [const Chip(label: Text("Flutter")), const Chip(label: Text("Dart"))]
+            ? [const Chip(label: Text('Flutter')), const Chip(label: Text('Dart'))]
             : list.map((s) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -354,7 +354,7 @@ class Cv2 extends StatelessWidget {
                   border: Border.all(color: Colors.blue[100]!),
                 ),
                 child: Text(
-                  s['name'] ?? "",
+                  s['name'] ?? '',
                   style: TextStyle(fontSize: 12, color: Colors.blue[900]),
                 ),
               )).toList(),

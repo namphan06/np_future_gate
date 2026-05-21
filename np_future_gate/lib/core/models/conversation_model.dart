@@ -1,22 +1,4 @@
 class ConversationModel {
-  final String id;
-  final String participant1Id;
-  final String participant1Type;
-  final String participant2Id;
-  final String participant2Type;
-  final String? jobId;
-  final String? applicationId;
-  final String? lastMessage;
-  final DateTime? lastMessageAt;
-  final String? lastMessageSenderId;
-  final String status;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  
-  // Thông tin bổ sung để hiển thị
-  String? otherUserName;
-  String? otherUserAvatar;
-  int unreadCount;
 
   ConversationModel({
     required this.id,
@@ -57,6 +39,24 @@ class ConversationModel {
       unreadCount: json['unread_count'] as int? ?? 0,
     );
   }
+  final String id;
+  final String participant1Id;
+  final String participant1Type;
+  final String participant2Id;
+  final String participant2Type;
+  final String? jobId;
+  final String? applicationId;
+  final String? lastMessage;
+  final DateTime? lastMessageAt;
+  final String? lastMessageSenderId;
+  final String status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  
+  // Thông tin bổ sung để hiển thị
+  String? otherUserName;
+  String? otherUserAvatar;
+  int unreadCount;
 
   Map<String, dynamic> toJson() {
     return {

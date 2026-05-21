@@ -1,4 +1,4 @@
-import '../../../core/models/job_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
 
 /// Mock data cho demo/preview
 class MockJobs {

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV13 - Bold Sidebar Template
 /// Mẫu CV với thanh bên nổi bật, phong cách mạnh mẽ
 class Cv13 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv13({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {

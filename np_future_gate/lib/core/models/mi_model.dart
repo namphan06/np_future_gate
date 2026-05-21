@@ -1,10 +1,5 @@
 
 class MIQuestion {
-  final String id;
-  final String questionText;
-  final String intelligenceType;
-  final int order;
-  final bool isActive;
 
   MIQuestion({
     required this.id,
@@ -23,6 +18,11 @@ class MIQuestion {
       isActive: json['is_active'] ?? true,
     );
   }
+  final String id;
+  final String questionText;
+  final String intelligenceType;
+  final int order;
+  final bool isActive;
 
   Map<String, dynamic> toJson() {
     return {
@@ -36,9 +36,6 @@ class MIQuestion {
 }
 
 class MIResult {
-  final Map<String, int> scores; // intelligenceType -> score
-  final String? analysis;
-  final DateTime createdAt;
 
   MIResult({
     required this.scores,
@@ -53,6 +50,9 @@ class MIResult {
       createdAt: DateTime.parse(json['created_at']),
     );
   }
+  final Map<String, int> scores; // intelligenceType -> score
+  final String? analysis;
+  final DateTime createdAt;
 
   Map<String, dynamic> toJson() {
     return {

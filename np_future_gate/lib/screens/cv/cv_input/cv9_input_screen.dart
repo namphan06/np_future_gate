@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../cv_template/cv_ui/cv9.dart';
-import 'cv_input_form.dart';
-import '../../../core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv_input_form.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv9.dart';
 
 class CV9InputScreen extends StatefulWidget {
-  final String? cvId;
   const CV9InputScreen({super.key, this.cvId});
+  final String? cvId;
 
   @override
   State<CV9InputScreen> createState() => _CV9InputScreenState();
@@ -94,7 +94,9 @@ class _CV9InputScreenState extends State<CV9InputScreen> {
                   await _cvService.updateCVData(widget.cvId!, _cvData);
                 } else {
                   await _cvService.createCV(_cvData);
+                  if (!mounted) return;
                 }
+                // ignore: use_build_context_synchronously
                 Navigator.pop(context);
               } finally {
                 setState(() => _isLoading = false);

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/employer/jobs/cv_scan_analysis_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/edit_job_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/job_applicants_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/theme/app_main_colors.dart';
-import '../../../widgets/speech_text_field.dart';
-import 'edit_job_screen.dart';
-import 'job_applicants_screen.dart';
-import 'cv_scan_analysis_screen.dart';
 
 class EmployerJobsScreen extends StatefulWidget {
   const EmployerJobsScreen({super.key});
@@ -31,7 +31,7 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
   String _statusFilter = 'All'; // All, Active, Inactive
   String _approvalStatusFilter = 'All'; // All, Pending, Approved, Rejected
   DateTimeRange? _dateRange;
-  List<String> _selectedSchools = []; // For filtering partnership jobs by school
+  final List<String> _selectedSchools = []; // For filtering partnership jobs by school
 
   @override
   void initState() {
@@ -56,7 +56,7 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
           _jobRepository.getEmployerPartnershipJobs(userId),
         ]);
         
-        final partnershipJobs = results[1] as List<JobModel>;
+        final partnershipJobs = results[1];
         
         // Fetch school info for partnership jobs
         if (partnershipJobs.isNotEmpty) {
@@ -296,7 +296,7 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
                     },
                     activeColor: AppMainColors.primary,
                   );
-                }).toList(),
+                }),
             ],
           ),
         ),
@@ -417,7 +417,7 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: AppMainColors.primary.withOpacity(0.3),
+                            color: AppMainColors.primary.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -509,12 +509,12 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: isIntern ? Border.all(
-          color: Colors.deepPurple.withOpacity(0.3),
+          color: Colors.deepPurple.withValues(alpha: 0.3),
           width: 2,
         ) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -548,10 +548,10 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.deepPurple.withOpacity(0.1),
+                                color: Colors.deepPurple.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: Colors.deepPurple.withOpacity(0.3),
+                                  color: Colors.deepPurple.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -603,7 +603,7 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
                     const Spacer(),
                     Text(
                       '${job.applicants.length} ứng viên',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         color: AppMainColors.primary,
                       ),
@@ -708,7 +708,7 @@ class _EmployerJobsScreenState extends State<EmployerJobsScreen> with SingleTick
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isOutline ? Colors.transparent : color.withOpacity(0.1),
+        color: isOutline ? Colors.transparent : color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
         border: isOutline ? Border.all(color: color) : null,
       ),

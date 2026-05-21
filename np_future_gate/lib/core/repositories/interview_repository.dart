@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/interview_model.dart';
+import 'package:np_future_gate/core/services/notification/interview_reminder_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/interview_model.dart';
-import '../services/supabase_service.dart';
-import '../services/notification/interview_reminder_service.dart';
 
 class InterviewRepository {
   final SupabaseService _supabaseService = SupabaseService.instance;
@@ -74,13 +75,13 @@ class InterviewRepository {
           isForEmployer: false,
         );
         
-        print('✅ Scheduled reminders for interview $interviewId');
+        debugPrint('✅ Scheduled reminders for interview $interviewId');
       } catch (e) {
-        print('⚠️ Error scheduling reminders: $e');
+        debugPrint('⚠️ Error scheduling reminders: $e');
         // Don't throw - interview was created successfully
       }
     } catch (e) {
-      print('Error creating interview: $e');
+      debugPrint('Error creating interview: $e');
       rethrow;
     }
   }
@@ -112,7 +113,7 @@ class InterviewRepository {
             partnershipJobIds.add(job['id'] as String);
           }
         } catch (e) {
-          print('Error fetching partnership job IDs: $e');
+          debugPrint('Error fetching partnership job IDs: $e');
           // Continue anyway
         }
       }
@@ -126,7 +127,7 @@ class InterviewRepository {
         return InterviewModel.fromJson(interviewData);
       }).toList();
     } catch (e) {
-      print('Error fetching interviews: $e');
+      debugPrint('Error fetching interviews: $e');
       return [];
     }
   }
@@ -158,7 +159,7 @@ class InterviewRepository {
             partnershipJobIds.add(job['id'] as String);
           }
         } catch (e) {
-          print('Error fetching partnership job IDs: $e');
+          debugPrint('Error fetching partnership job IDs: $e');
         }
       }
 
@@ -171,7 +172,7 @@ class InterviewRepository {
         return InterviewModel.fromJson(interviewData);
       }).toList();
     } catch (e) {
-      print('Error fetching candidate interviews: $e');
+      debugPrint('Error fetching candidate interviews: $e');
       return [];
     }
   }
@@ -183,7 +184,7 @@ class InterviewRepository {
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', id);
     } catch (e) {
-      print('Error updating evaluation: $e');
+      debugPrint('Error updating evaluation: $e');
       rethrow;
     }
   }
@@ -195,7 +196,7 @@ class InterviewRepository {
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', id);
     } catch (e) {
-      print('Error updating share status: $e');
+      debugPrint('Error updating share status: $e');
       rethrow;
     }
   }
@@ -212,13 +213,13 @@ class InterviewRepository {
         try {
           await _reminderService.cancelInterviewReminders(id, true);  // employer
           await _reminderService.cancelInterviewReminders(id, false); // candidate
-          print('✅ Cancelled reminders for interview $id');
+          debugPrint('✅ Cancelled reminders for interview $id');
         } catch (e) {
-          print('⚠️ Error cancelling reminders: $e');
+          debugPrint('⚠️ Error cancelling reminders: $e');
         }
       }
     } catch (e) {
-      print('Error updating status: $e');
+      debugPrint('Error updating status: $e');
       rethrow;
     }
   }
@@ -229,14 +230,14 @@ class InterviewRepository {
       try {
         await _reminderService.cancelInterviewReminders(id, true);  // employer
         await _reminderService.cancelInterviewReminders(id, false); // candidate
-        print('✅ Cancelled reminders for deleted interview $id');
+        debugPrint('✅ Cancelled reminders for deleted interview $id');
       } catch (e) {
-        print('⚠️ Error cancelling reminders: $e');
+        debugPrint('⚠️ Error cancelling reminders: $e');
       }
 
       await _client.from('interview_schedules').delete().eq('id', id);
     } catch (e) {
-      print('Error deleting interview: $e');
+      debugPrint('Error deleting interview: $e');
       rethrow;
     }
   }
@@ -277,12 +278,12 @@ class InterviewRepository {
           isForEmployer: false,
         );
         
-        print('✅ Rescheduled reminders for interview $id');
+        debugPrint('✅ Rescheduled reminders for interview $id');
       } catch (e) {
-        print('⚠️ Error rescheduling reminders: $e');
+        debugPrint('⚠️ Error rescheduling reminders: $e');
       }
     } catch (e) {
-      print('Error rescheduling interview: $e');
+      debugPrint('Error rescheduling interview: $e');
       rethrow;
     }
   }
@@ -308,7 +309,7 @@ class InterviewRepository {
       }
       return null;
     } catch (e) {
-      print('Error checking interview conflict: $e');
+      debugPrint('Error checking interview conflict: $e');
       return null;
     }
   }
@@ -343,7 +344,7 @@ class InterviewRepository {
         'is_shared': share, // Use share column value
       };
     } catch (e) {
-      print('Error getting evaluation: $e');
+      debugPrint('Error getting evaluation: $e');
       return null;
     }
   }

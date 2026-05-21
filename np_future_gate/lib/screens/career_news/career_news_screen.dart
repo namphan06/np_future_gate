@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/models/career_news_model.dart';
-import '../../core/repositories/career_news_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'career_news_detail_screen.dart';
+import 'package:np_future_gate/core/models/career_news_model.dart';
+import 'package:np_future_gate/core/repositories/career_news_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/career_news/career_news_detail_screen.dart';
 
 class CareerNewsScreen extends StatefulWidget {
   const CareerNewsScreen({super.key});
@@ -132,7 +132,7 @@ class _CareerNewsScreenState extends State<CareerNewsScreen> with SingleTickerPr
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? AppMainColors.primary.withOpacity(0.1)
+                          ? AppMainColors.primary.withValues(alpha: 0.1)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
@@ -327,7 +327,7 @@ class _CareerNewsScreenState extends State<CareerNewsScreen> with SingleTickerPr
                       ),
                       child: Text(
                         news.categoryLabel,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppMainColors.primary,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -529,6 +529,7 @@ class _CareerNewsScreenState extends State<CareerNewsScreen> with SingleTickerPr
 }
 
 // Custom delegate for sticky tab bar (now unused, can be removed)
+// ignore: unused_element
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _StickyTabBarDelegate(this.tabBar);
 

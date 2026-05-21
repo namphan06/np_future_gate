@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
-import '../../core/theme/app_text_styles.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
 
 /// Custom Card với gradient background
 class GradientCard extends StatelessWidget {
-  final Widget child;
-  final Gradient? gradient;
-  final EdgeInsets? padding;
-  final BorderRadius? borderRadius;
-  final double? width;
-  final double? height;
 
   const GradientCard({
     super.key,
@@ -21,6 +15,12 @@ class GradientCard extends StatelessWidget {
     this.width,
     this.height,
   });
+  final Widget child;
+  final Gradient? gradient;
+  final EdgeInsets? padding;
+  final BorderRadius? borderRadius;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +30,11 @@ class GradientCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient ?? AppGradients.cardGradient,
         borderRadius: borderRadius ?? BorderRadius.circular(16),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -48,13 +48,6 @@ class GradientCard extends StatelessWidget {
 
 /// Glass Morphism Card - hiệu ứng kính mờ hiện đại
 class GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsets? padding;
-  final BorderRadius? borderRadius;
-  final double? width;
-  final double? height;
-  final double blur;
-  final double opacity;
 
   const GlassCard({
     super.key,
@@ -66,6 +59,13 @@ class GlassCard extends StatelessWidget {
     this.blur = 10,
     this.opacity = 0.2,
   });
+  final Widget child;
+  final EdgeInsets? padding;
+  final BorderRadius? borderRadius;
+  final double? width;
+  final double? height;
+  final double blur;
+  final double opacity;
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +79,13 @@ class GlassCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(opacity),
-              Colors.white.withOpacity(opacity * 0.5),
+              Colors.white.withValues(alpha: opacity),
+              Colors.white.withValues(alpha: opacity * 0.5),
             ],
           ),
           borderRadius: borderRadius ?? BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -100,10 +100,6 @@ class GlassCard extends StatelessWidget {
 
 /// Info Card với icon và gradient
 class InfoCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final Gradient? gradient;
 
   const InfoCard({
     super.key,
@@ -112,6 +108,10 @@ class InfoCard extends StatelessWidget {
     required this.value,
     this.gradient,
   });
+  final IconData icon;
+  final String title;
+  final String value;
+  final Gradient? gradient;
 
   @override
   Widget build(BuildContext context) {

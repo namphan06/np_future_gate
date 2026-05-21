@@ -1,5 +1,6 @@
-import '../models/career_news_model.dart';
-import '../services/supabase_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/career_news_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 
 /// Repository for Career News
 class CareerNewsRepository {
@@ -33,7 +34,7 @@ class CareerNewsRepository {
           .map((json) => CareerNewsModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting published news: $e');
+      debugPrint('Error getting published news: $e');
       return [];
     }
   }
@@ -53,7 +54,7 @@ class CareerNewsRepository {
           .map((json) => CareerNewsModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting featured news: $e');
+      debugPrint('Error getting featured news: $e');
       return [];
     }
   }
@@ -75,7 +76,7 @@ class CareerNewsRepository {
 
       return CareerNewsModel.fromJson(response);
     } catch (e) {
-      print('Error getting news detail: $e');
+      debugPrint('Error getting news detail: $e');
       return null;
     }
   }
@@ -97,7 +98,7 @@ class CareerNewsRepository {
 
       return CareerNewsModel.fromJson(response);
     } catch (e) {
-      print('Error getting news by slug: $e');
+      debugPrint('Error getting news by slug: $e');
       return null;
     }
   }
@@ -117,7 +118,7 @@ class CareerNewsRepository {
           .map((json) => CareerNewsModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error searching news: $e');
+      debugPrint('Error searching news: $e');
       return [];
     }
   }
@@ -142,7 +143,7 @@ class CareerNewsRepository {
           .map((json) => CareerNewsModel.fromJson(json))
           .toList();
     } catch (e) {
-      print('Error getting related news: $e');
+      debugPrint('Error getting related news: $e');
       return [];
     }
   }
@@ -155,7 +156,7 @@ class CareerNewsRepository {
         params: {'news_id': newsId},
       );
     } catch (e) {
-      print('Error incrementing view count: $e');
+      debugPrint('Error incrementing view count: $e');
     }
   }
 
@@ -174,7 +175,7 @@ class CareerNewsRepository {
 
       return categories;
     } catch (e) {
-      print('Error getting categories: $e');
+      debugPrint('Error getting categories: $e');
       return [];
     }
   }

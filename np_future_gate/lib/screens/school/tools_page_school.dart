@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'jobs/school_jobs_screen.dart';
-import 'jobs/create_school_job_screen.dart';
-import 'partnership/partnership_requests_screen.dart';
-import 'partnership/companies_list_screen.dart';
-import 'evaluation/school_view_evaluations_screen.dart';
-import 'statistics/school_statistics_screen.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
+import 'package:np_future_gate/screens/chat/chat_list_screen.dart';
+import 'package:np_future_gate/screens/school/evaluation/school_view_evaluations_screen.dart';
+import 'package:np_future_gate/screens/school/jobs/create_school_job_screen.dart';
+import 'package:np_future_gate/screens/school/jobs/school_jobs_screen.dart';
+import 'package:np_future_gate/screens/school/partnership/companies_list_screen.dart';
+import 'package:np_future_gate/screens/school/partnership/partnership_requests_screen.dart';
+import 'package:np_future_gate/screens/school/statistics/school_statistics_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_list_screen.dart';
-import '../chat/chat_detail_screen.dart';
 
 class ToolsPageSchool extends StatelessWidget {
   const ToolsPageSchool({super.key});
@@ -60,7 +60,7 @@ class ToolsPageSchool extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.1),
+                              color: Colors.blue.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.work, color: Colors.blue, size: 20),
@@ -134,7 +134,7 @@ class ToolsPageSchool extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.purple.withOpacity(0.1),
+                              color: Colors.purple.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.handshake, color: Colors.purple, size: 20),
@@ -238,7 +238,7 @@ class ToolsPageSchool extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.teal.withOpacity(0.1),
+                              color: Colors.teal.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(Icons.dashboard, color: Colors.teal, size: 20),
@@ -336,9 +336,9 @@ class ToolsPageSchool extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.6),
-                    Colors.white.withOpacity(0.85),
+                    Colors.white.withValues(alpha: 0),
+                    Colors.white.withValues(alpha: 0.6),
+                    Colors.white.withValues(alpha: 0.85),
                     Colors.white,
                   ],
                   stops: const [0.0, 0.2, 0.4, 1.0],
@@ -365,7 +365,7 @@ class ToolsPageSchool extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -389,7 +389,7 @@ class ToolsPageSchool extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 28),
@@ -435,7 +435,7 @@ class ToolsPageSchool extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -457,7 +457,7 @@ class ToolsPageSchool extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 24),

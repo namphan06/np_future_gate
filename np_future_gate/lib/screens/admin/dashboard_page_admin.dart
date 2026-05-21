@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/screens/admin/create_user_screen_admin.dart';
+import 'package:np_future_gate/screens/admin/job_approval_page_admin.dart';
+import 'package:np_future_gate/screens/admin/reports_page_admin.dart';
+import 'package:np_future_gate/screens/admin/settings_page_admin.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'job_approval_page_admin.dart';
-import 'reports_page_admin.dart';
-import 'settings_page_admin.dart';
-import 'create_user_screen_admin.dart';
-import '../../core/repositories/job_repository.dart';
 
 class DashboardPageAdmin extends StatefulWidget {
   const DashboardPageAdmin({super.key});
@@ -371,7 +371,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -387,7 +387,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -396,8 +396,8 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isPositive
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -454,7 +454,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -475,7 +475,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(icon, color: color, size: 24),
@@ -541,7 +541,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -552,7 +552,7 @@ class _DashboardPageAdminState extends State<DashboardPageAdmin> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),

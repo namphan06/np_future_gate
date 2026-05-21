@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV18 - Hospitality & Tourism Template
 /// Mẫu CV dành cho ngành Du lịch, Nhà hàng, Khách sạn
 class Cv18 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv18({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {

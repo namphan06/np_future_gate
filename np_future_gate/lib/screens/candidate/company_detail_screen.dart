@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/company_repository.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/repositories/partnership_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
+import 'package:np_future_gate/screens/school/jobs/create_school_job_screen.dart';
+import 'package:np_future_gate/widgets/animated_avatar.dart';
 import 'package:np_future_gate/widgets/cards/job_card.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/company_repository.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../core/repositories/partnership_repository.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/animated_avatar.dart';
-import '../school/jobs/create_school_job_screen.dart';
-import 'job_detail_screen.dart';
 
 
-class CompanyDetailScreen extends StatefulWidget {
-  final Profile company;
-  final String? userRole; // 'school', 'candidate', null
+class CompanyDetailScreen extends StatefulWidget { // 'school', 'candidate', null
 
   const CompanyDetailScreen({
     super.key, 
     required this.company,
     this.userRole,
   });
+  final Profile company;
+  final String? userRole;
 
   @override
   State<CompanyDetailScreen> createState() => _CompanyDetailScreenState();
@@ -55,7 +55,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         });
       }
     } catch (e) {
-      print('Error checking follow status: $e');
+      debugPrint('Error checking follow status: $e');
     }
   }
 
@@ -80,6 +80,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
         _isFollowing = !_isFollowing;
       });
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi: $e')),
       );
@@ -129,8 +130,8 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
 
       if (existing != null) {
         if (!mounted) return;
-        String status = existing['status'];
-        String msg = status == 'approved' 
+        final String status = existing['status'];
+        final String msg = status == 'approved' 
             ? 'Đã là đối tác của nhau' 
             : status == 'pending' 
                 ? 'Đã gửi yêu cầu, vui lòng chờ phản hồi' 
@@ -207,11 +208,11 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
             leading: Container(
               margin: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                   ),
                 ],
@@ -231,7 +232,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                       ),
                     ],
@@ -249,11 +250,11 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
               Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                     ),
                   ],
@@ -297,7 +298,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -406,7 +407,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -466,7 +467,7 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF42A5F5).withOpacity(0.1),
+                      color: const Color(0xFF42A5F5).withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -517,21 +518,21 @@ class _CompanyDetailScreenState extends State<CompanyDetailScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 4,
                             ),
                           ],
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.location_on, color: Colors.red, size: 20),
-                            const SizedBox(width: 8),
-                            const Text(
+                            Icon(Icons.location_on, color: Colors.red, size: 20),
+                            SizedBox(width: 8),
+                            Text(
                               'Xem trên bản đồ',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),

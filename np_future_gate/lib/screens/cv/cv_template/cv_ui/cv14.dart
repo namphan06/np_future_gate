@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV14 - Compact Professional Template
 /// Mẫu CV chuyên nghiệp gọn gàng, tối ưu cho 1 trang A4
 class Cv14 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv14({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {

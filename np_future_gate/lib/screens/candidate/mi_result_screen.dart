@@ -1,17 +1,18 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import '../../core/models/mi_model.dart';
-import '../../core/repositories/mi_repository.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/services/mi_analysis_service.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/models/mi_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/mi_repository.dart';
+import 'package:np_future_gate/core/services/mi_analysis_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 
 class MIResultScreen extends StatefulWidget {
-  final MIResult result;
   
   const MIResultScreen({super.key, required this.result});
+  final MIResult result;
 
   @override
   State<MIResultScreen> createState() => _MIResultScreenState();
@@ -19,7 +20,9 @@ class MIResultScreen extends StatefulWidget {
 
 class _MIResultScreenState extends State<MIResultScreen> with SingleTickerProviderStateMixin {
   final MIAnalysisService _analysisService = MIAnalysisService();
+  // ignore: unused_field
   final MIRepository _miRepository = MIRepository();
+  // ignore: unused_field
   final AuthRepository _authRepository = AuthRepository();
   
   late TabController _tabController;
@@ -50,13 +53,13 @@ class _MIResultScreenState extends State<MIResultScreen> with SingleTickerProvid
         );
       });
     } catch (e) {
-      print('Error in MI analysis: $e');
+      debugPrint('Error in MI analysis: $e');
       setState(() {
         _isAnalyzing = false;
         _analysisData = {
-          "strengths_weaknesses": "Đã có lỗi xảy ra khi phân tích kết quả. Vui lòng thử lại sau.",
-          "thinking_creative": "Lỗi dữ liệu.",
-          "job_criteria": "Lỗi dữ liệu."
+          'strengths_weaknesses': 'Đã có lỗi xảy ra khi phân tích kết quả. Vui lòng thử lại sau.',
+          'thinking_creative': 'Lỗi dữ liệu.',
+          'job_criteria': 'Lỗi dữ liệu.'
         };
       });
     }
@@ -114,7 +117,7 @@ class _MIResultScreenState extends State<MIResultScreen> with SingleTickerProvid
               RadarChartData(
                 dataSets: [
                   RadarDataSet(
-                    fillColor: AppMainColors.primary.withOpacity(0.2),
+                    fillColor: AppMainColors.primary.withValues(alpha: 0.2),
                     borderColor: AppMainColors.primary,
                     entryRadius: 3,
                     dataEntries: _getRadarEntries(),
@@ -199,13 +202,13 @@ class _MIResultScreenState extends State<MIResultScreen> with SingleTickerProvid
   }
 
   Widget _buildLoadingState() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(color: AppMainColors.primary),
-          const SizedBox(height: 20),
-          const Text(
+          SizedBox(height: 20),
+          Text(
             'AI đang phân tích kết quả của bạn...',
             style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
           ),

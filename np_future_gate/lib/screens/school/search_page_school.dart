@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/company_repository.dart';
+import 'package:np_future_gate/core/repositories/partnership_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/company_detail_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/repositories/company_repository.dart';
-import '../../core/repositories/partnership_repository.dart';
-import '../../widgets/speech_text_field.dart';
-import '../candidate/company_detail_screen.dart';
-import 'jobs/create_school_job_screen.dart';
 
 class SearchPageSchool extends StatefulWidget {
   const SearchPageSchool({super.key});
@@ -18,6 +17,7 @@ class SearchPageSchool extends StatefulWidget {
 
 class _SearchPageSchoolState extends State<SearchPageSchool> {
   final TextEditingController _searchController = TextEditingController();
+  // ignore: unused_field
   final AuthRepository _authRepository = AuthRepository();
   final CompanyRepository _companyRepository = CompanyRepository();
   final PartnershipRepository _partnershipRepository = PartnershipRepository();
@@ -89,7 +89,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
         });
       }
     } catch (e) {
-      print('Error loading followed companies: $e');
+      debugPrint('Error loading followed companies: $e');
     }
   }
 
@@ -115,7 +115,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
         });
       }
     } catch (e) {
-      print('Error loading partner companies: $e');
+      debugPrint('Error loading partner companies: $e');
     }
   }
 
@@ -163,7 +163,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
           final name = employer.fullName?.toLowerCase() ?? '';
           final email = employer.email?.toLowerCase() ?? '';
           final metadata = employer.metadata;
-          final companyName = metadata?['company_name']?.toString().toLowerCase() ?? '';
+          final companyName = metadata['company_name']?.toString().toLowerCase() ?? '';
           
           return name.contains(lowerQuery) || 
                  email.contains(lowerQuery) ||
@@ -181,11 +181,11 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
       margin: const EdgeInsets.only(top: 40, bottom: 20),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -232,7 +232,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   }
   
   List<Widget> _buildPageNumbers(int totalPages) {
-    List<Widget> pages = [];
+    final List<Widget> pages = [];
     
     for (int i = 1; i <= totalPages; i++) {
       if (i == 1 || i == totalPages || (i >= _currentPage - 1 && i <= _currentPage + 1)) {
@@ -296,7 +296,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
               Text(
                 '${_filteredEmployers.length} nhà tuyển dụng',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14,
                 ),
               ),
@@ -327,7 +327,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
                                       ? Icons.business_outlined 
                                       : Icons.search_off_outlined,
                                   size: 80,
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
@@ -335,7 +335,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
                                       ? 'Chưa có nhà tuyển dụng nào'
                                       : 'Không tìm thấy kết quả',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                     fontSize: 16,
                                   ),
                                 ),
@@ -381,7 +381,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
   }
 
   Widget _buildEmployerCard(Profile employer) {
-    final metadata = employer.metadata ?? {};
+    final metadata = employer.metadata;
     final companyName = metadata['company_name']?.toString() ?? 'Công ty';
     final industry = metadata['industry']?.toString();
     final companySize = metadata['company_size']?.toString();
@@ -408,7 +408,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
                 backgroundImage: employer.avatarUrl != null
                     ? NetworkImage(employer.avatarUrl!)
                     : null,
-                backgroundColor: AppMainColors.primary.withOpacity(0.1),
+                backgroundColor: AppMainColors.primary.withValues(alpha: 0.1),
                 child: employer.avatarUrl == null
                     ? const Icon(
                         Icons.business,
@@ -520,8 +520,8 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
 
       if (existing != null) {
         if (!mounted) return;
-        String status = existing['status'];
-        String msg = status == 'approved' 
+        final String status = existing['status'];
+        final String msg = status == 'approved' 
             ? 'Đã là đối tác của nhau' 
             : status == 'pending' 
                 ? 'Đã gửi yêu cầu, vui lòng chờ phản hồi' 
@@ -558,7 +558,7 @@ class _SearchPageSchoolState extends State<SearchPageSchool> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppMainColors.primary.withOpacity(0.1),
+        color: AppMainColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

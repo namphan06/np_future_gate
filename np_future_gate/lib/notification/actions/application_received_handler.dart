@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/screens/employer/jobs/employer_jobs_screen.dart';
+import 'package:np_future_gate/screens/employer/jobs/job_applicants_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/models/job_model.dart';
-import '../../core/repositories/job_repository.dart';
-import '../../screens/employer/jobs/employer_jobs_screen.dart';
-import '../../screens/employer/jobs/job_applicants_screen.dart';
 
 /// Handler để xử lý các action từ notification
 /// Đặc biệt xử lý navigation đến job applicants screen
@@ -104,7 +104,7 @@ class ApplicationReceivedHandler {
 
       return result != null;
     } catch (e) {
-      print('Error checking partnership job: $e');
+      debugPrint('Error checking partnership job: $e');
       return false;
     }
   }
@@ -123,7 +123,7 @@ class ApplicationReceivedHandler {
         return await _jobRepository.getJobById(jobId);
       }
     } catch (e) {
-      print('Error loading job: $e');
+      debugPrint('Error loading job: $e');
       rethrow;
     }
   }

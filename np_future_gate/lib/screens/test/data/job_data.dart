@@ -1,14 +1,4 @@
 class JobPosting {
-  final String id;
-  final String title;
-  final String company;
-  final String location;
-  final String salary;
-  final String type; // Full-time, Part-time, Internship
-  final String level; // Junior, Mid, Senior
-  final String logoUrl;
-  final DateTime postedDate;
-  final List<String> tags;
 
   JobPosting({
     required this.id,
@@ -22,6 +12,16 @@ class JobPosting {
     required this.postedDate,
     required this.tags,
   });
+  final String id;
+  final String title;
+  final String company;
+  final String location;
+  final String salary;
+  final String type; // Full-time, Part-time, Internship
+  final String level; // Junior, Mid, Senior
+  final String logoUrl;
+  final DateTime postedDate;
+  final List<String> tags;
 }
 
 // Mock data cho các tin tuyển dụng

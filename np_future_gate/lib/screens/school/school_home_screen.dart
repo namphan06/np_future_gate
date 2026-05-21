@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../widgets/navigation/custom_bottom_nav_bar.dart';
-import 'home_page_school.dart';
-import 'search_page_school.dart';
-import 'tools_page_school.dart';
-import 'settings_page_school.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/school/home_page_school.dart';
+import 'package:np_future_gate/screens/school/search_page_school.dart';
+import 'package:np_future_gate/screens/school/settings_page_school.dart';
+import 'package:np_future_gate/screens/school/tools_page_school.dart';
+import 'package:np_future_gate/widgets/navigation/custom_bottom_nav_bar.dart';
 
 class SchoolHomeScreen extends StatefulWidget {
   const SchoolHomeScreen({super.key});

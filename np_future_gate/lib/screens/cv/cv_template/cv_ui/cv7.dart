@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class Cv7 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv7({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   // Design Theme: High-End Editorial, Sophisticated, Minimalist
   static const Color primaryColor = Color(0xFF000000); // Pure Black
@@ -55,7 +55,7 @@ class Cv7 extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  (personalInfo['full_name'] ?? "CREATIVE NAME"),
+                                  (personalInfo['full_name'] ?? 'CREATIVE NAME'),
                                   style: GoogleFonts.playfairDisplay(
                                     fontSize: 64,
                                     fontWeight: FontWeight.w900,
@@ -68,7 +68,7 @@ class Cv7 extends StatelessWidget {
                                 Container(width: 80, height: 2, color: accentColor),
                                 const SizedBox(height: 25),
                                 Text(
-                                  (personalInfo['title'] ?? "Senior Visual Designer").toUpperCase(),
+                                  (personalInfo['title'] ?? 'Senior Visual Designer').toUpperCase(),
                                   style: GoogleFonts.montserrat(
                                     fontSize: 14,
                                     letterSpacing: 8,
@@ -104,7 +104,7 @@ class Cv7 extends StatelessWidget {
                               _buildSectionWrapper(
                                 'summary',
                                 _buildVerticalSection('THE PHILOSOPHY', Text(
-                                  displayData['summary'] ?? "Believer in the balance of form and function. Crafting digital experiences that tell compelling stories through thoughtful design systems and visual precision.",
+                                  displayData['summary'] ?? 'Believer in the balance of form and function. Crafting digital experiences that tell compelling stories through thoughtful design systems and visual precision.',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 15,
                                     height: 1.8,
@@ -170,7 +170,7 @@ class Cv7 extends StatelessWidget {
   }
 
   Widget _buildAvatar(String? avatarUrl) {
-    bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
+    final bool hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty && avatarUrl.startsWith('http');
     return Container(
       width: 180,
       height: 180,
@@ -229,9 +229,9 @@ class Cv7 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildContactItem(info['phone'] ?? "+84 000 000 000"),
-        _buildContactItem(info['email'] ?? "design@studio.com"),
-        _buildContactItem(info['address'] ?? "Metropolis City"),
+        _buildContactItem(info['phone'] ?? '+84 000 000 000'),
+        _buildContactItem(info['email'] ?? 'design@studio.com'),
+        _buildContactItem(info['address'] ?? 'Metropolis City'),
         if (info['website'] != null) _buildContactItem(info['website']),
       ],
     );
@@ -257,7 +257,7 @@ class Cv7 extends StatelessWidget {
           children: [
             Container(width: 8, height: 8, color: accentColor),
             const SizedBox(width: 12),
-            Expanded(child: Text(s['name'] ?? "", style: GoogleFonts.montserrat(fontSize: 12, color: textColor, fontWeight: FontWeight.w500))),
+            Expanded(child: Text(s['name'] ?? '', style: GoogleFonts.montserrat(fontSize: 12, color: textColor, fontWeight: FontWeight.w500))),
           ],
         ),
       )).toList(),
@@ -275,14 +275,14 @@ class Cv7 extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(exp['company'] ?? "", style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold))),
-                Text(exp['duration'] ?? "", style: GoogleFonts.montserrat(fontSize: 11, color: secondaryColor, fontWeight: FontWeight.bold)),
+                Expanded(child: Text(exp['company'] ?? '', style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold))),
+                Text(exp['duration'] ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: secondaryColor, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
-            Text((exp['position'] ?? "").toUpperCase(), style: GoogleFonts.montserrat(fontSize: 12, letterSpacing: 2, color: accentColor, fontWeight: FontWeight.w600)),
+            Text((exp['position'] ?? '').toUpperCase(), style: GoogleFonts.montserrat(fontSize: 12, letterSpacing: 2, color: accentColor, fontWeight: FontWeight.w600)),
             const SizedBox(height: 20),
-            Text(exp['description'] ?? "", style: GoogleFonts.montserrat(fontSize: 14, height: 1.8, color: textColor)),
+            Text(exp['description'] ?? '', style: GoogleFonts.montserrat(fontSize: 14, height: 1.8, color: textColor)),
           ],
         ),
       )).toList(),
@@ -298,9 +298,9 @@ class Cv7 extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(edu['school'] ?? "", style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.bold)),
-            Text(edu['degree'] ?? "", style: GoogleFonts.montserrat(fontSize: 12, color: secondaryColor)),
-            Text(edu['year'] ?? "", style: GoogleFonts.montserrat(fontSize: 11, color: accentColor)),
+            Text(edu['school'] ?? '', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.bold)),
+            Text(edu['degree'] ?? '', style: GoogleFonts.montserrat(fontSize: 12, color: secondaryColor)),
+            Text(edu['year'] ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: accentColor)),
           ],
         ),
       )).toList(),
@@ -324,14 +324,14 @@ class Cv7 extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("— ", style: TextStyle(color: accentColor)),
+            const Text('— ', style: TextStyle(color: accentColor)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(p['role'] ?? p['name'] ?? "", style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text(p['role'] ?? p['name'] ?? '', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 5),
-                  Text(p['description'] ?? "", style: GoogleFonts.montserrat(fontSize: 13, height: 1.6, color: secondaryColor)),
+                  Text(p['description'] ?? '', style: GoogleFonts.montserrat(fontSize: 13, height: 1.6, color: secondaryColor)),
                 ],
               ),
             ),

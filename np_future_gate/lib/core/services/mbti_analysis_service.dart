@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../models/mbti_model.dart';
-import 'mistral_service.dart';
+import 'package:np_future_gate/core/models/mbti_model.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
 
 class MBTIAnalysisService {
   final MistralService _mistralService = MistralService();

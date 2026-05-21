@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/evaluation_repository.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/intl.dart';
-import '../../../core/repositories/evaluation_repository.dart';
-import '../../../widgets/speech_text_field.dart';
 
 class SchoolViewEvaluationsScreen extends StatefulWidget {
   const SchoolViewEvaluationsScreen({super.key});
@@ -184,7 +183,7 @@ class _SchoolViewEvaluationsScreenState extends State<SchoolViewEvaluationsScree
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -259,7 +258,7 @@ class _SchoolViewEvaluationsScreenState extends State<SchoolViewEvaluationsScree
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text(
@@ -291,9 +290,9 @@ class _SchoolViewEvaluationsScreenState extends State<SchoolViewEvaluationsScree
 }
 
 class StudentEvaluationDetailSheet extends StatelessWidget {
-  final Map<String, dynamic> record;
 
   const StudentEvaluationDetailSheet({super.key, required this.record});
+  final Map<String, dynamic> record;
 
   @override
   Widget build(BuildContext context) {
@@ -454,7 +453,7 @@ class StudentEvaluationDetailSheet extends StatelessWidget {
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -474,7 +473,7 @@ class StudentEvaluationDetailSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: _getScoreColor(score).withOpacity(0.1),
+                      color: _getScoreColor(score).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -529,7 +528,7 @@ class StudentEvaluationDetailSheet extends StatelessWidget {
             border: Border.all(color: Colors.white),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -578,13 +577,13 @@ class StudentEvaluationDetailSheet extends StatelessWidget {
     Color fg = Colors.white;
     
     if (text == 'Đã hoàn thành') {
-      bg = Colors.green.withOpacity(0.1);
+      bg = Colors.green.withValues(alpha: 0.1);
       fg = Colors.green;
     } else if (text == 'Đang thực hiện') {
-      bg = Colors.blue.withOpacity(0.1);
+      bg = Colors.blue.withValues(alpha: 0.1);
       fg = Colors.blue;
     } else {
-       bg = Colors.grey.withOpacity(0.1);
+       bg = Colors.grey.withValues(alpha: 0.1);
        fg = Colors.grey.shade700;
     }
 

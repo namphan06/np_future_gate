@@ -1,23 +1,5 @@
 /// Model for Career News
 class CareerNewsModel {
-  final String id;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String title;
-  final String? slug;
-  final String? excerpt;
-  final String content;
-  final String? coverImageUrl;
-  final String category;
-  final List<String> tags;
-  final List<String> relatedCompanyIds;
-  final String status;
-  final bool isFeatured;
-  final bool isPinned;
-  final String? authorId;
-  final int viewCount;
-  final String? metaTitle;
-  final String? metaDescription;
 
   CareerNewsModel({
     required this.id,
@@ -62,6 +44,24 @@ class CareerNewsModel {
       metaDescription: json['meta_description'] as String?,
     );
   }
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String title;
+  final String? slug;
+  final String? excerpt;
+  final String content;
+  final String? coverImageUrl;
+  final String category;
+  final List<String> tags;
+  final List<String> relatedCompanyIds;
+  final String status;
+  final bool isFeatured;
+  final bool isPinned;
+  final String? authorId;
+  final int viewCount;
+  final String? metaTitle;
+  final String? metaDescription;
 
   Map<String, dynamic> toJson() {
     return {

@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
 
 /// Custom TextField với viền đẹp
 class GradientTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final String? labelText;
-  final String? hintText;
-  final IconData? prefixIcon;
-  final IconData? suffixIcon;
-  final VoidCallback? onSuffixIconTap;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final String? Function(String?)? validator;
 
   const GradientTextField({
     super.key,
@@ -26,6 +17,15 @@ class GradientTextField extends StatelessWidget {
     this.keyboardType,
     this.validator,
   });
+  final TextEditingController? controller;
+  final String? labelText;
+  final String? hintText;
+  final IconData? prefixIcon;
+  final IconData? suffixIcon;
+  final VoidCallback? onSuffixIconTap;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {

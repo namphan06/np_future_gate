@@ -36,8 +36,8 @@ class AppMainColors {
   static const Color info = Color(0xFF03A9F4);
   
   // Shadow
-  static Color shadow = Colors.black.withOpacity(0.1);
-  static Color shadowLight = Colors.black.withOpacity(0.05);
+  static Color shadow = Colors.black.withValues(alpha: 0.1);
+  static Color shadowLight = Colors.black.withValues(alpha: 0.05);
   
   // Gradient Definitions
   static const LinearGradient primaryGradient = LinearGradient(

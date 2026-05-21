@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
-import '../../core/theme/app_text_styles.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
 
 /// Custom Gradient Button với hiệu ứng đẹp mắt
 class GradientButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final Gradient? gradient;
-  final double? width;
-  final double height;
-  final BorderRadius? borderRadius;
-  final EdgeInsets? padding;
-  final TextStyle? textStyle;
-  final IconData? icon;
-  final bool isLoading;
 
   const GradientButton({
     super.key,
@@ -29,6 +19,16 @@ class GradientButton extends StatelessWidget {
     this.icon,
     this.isLoading = false,
   });
+  final String text;
+  final VoidCallback onPressed;
+  final Gradient? gradient;
+  final double? width;
+  final double height;
+  final BorderRadius? borderRadius;
+  final EdgeInsets? padding;
+  final TextStyle? textStyle;
+  final IconData? icon;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +38,11 @@ class GradientButton extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient ?? AppGradients.primaryBlue,
         borderRadius: borderRadius ?? BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 8,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -87,15 +87,6 @@ class GradientButton extends StatelessWidget {
 
 /// Outlined Button với gradient border
 class GradientOutlinedButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final Gradient? gradient;
-  final double? width;
-  final double height;
-  final BorderRadius? borderRadius;
-  final double borderWidth;
-  final TextStyle? textStyle;
-  final IconData? icon;
 
   const GradientOutlinedButton({
     super.key,
@@ -109,6 +100,15 @@ class GradientOutlinedButton extends StatelessWidget {
     this.textStyle,
     this.icon,
   });
+  final String text;
+  final VoidCallback onPressed;
+  final Gradient? gradient;
+  final double? width;
+  final double height;
+  final BorderRadius? borderRadius;
+  final double borderWidth;
+  final TextStyle? textStyle;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -168,11 +168,6 @@ class GradientOutlinedButton extends StatelessWidget {
 
 /// Icon Button với gradient background
 class GradientIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
-  final Gradient? gradient;
-  final double size;
-  final double iconSize;
 
   const GradientIconButton({
     super.key,
@@ -182,6 +177,11 @@ class GradientIconButton extends StatelessWidget {
     this.size = 48,
     this.iconSize = 24,
   });
+  final IconData icon;
+  final VoidCallback onPressed;
+  final Gradient? gradient;
+  final double size;
+  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -191,11 +191,11 @@ class GradientIconButton extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient ?? AppGradients.primaryBlue,
         shape: BoxShape.circle,
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 8,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -220,11 +220,6 @@ class GradientIconButton extends StatelessWidget {
 
 /// Text Button với gradient text
 class GradientTextButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final Gradient? gradient;
-  final TextStyle? textStyle;
-  final IconData? icon;
 
   const GradientTextButton({
     super.key,
@@ -234,6 +229,11 @@ class GradientTextButton extends StatelessWidget {
     this.textStyle,
     this.icon,
   });
+  final String text;
+  final VoidCallback onPressed;
+  final Gradient? gradient;
+  final TextStyle? textStyle;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {

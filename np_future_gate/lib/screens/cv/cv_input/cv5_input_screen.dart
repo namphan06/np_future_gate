@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../cv_template/cv_ui/cv5.dart';
-import 'cv_input_form.dart';
-import '../../../core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv_input_form.dart';
+import 'package:np_future_gate/screens/cv/cv_template/cv_ui/cv5.dart';
 
 /// CV5 Input Screen - Màn hình nhập liệu tương tác cho CV5
 class CV5InputScreen extends StatefulWidget {
-  final String? cvId;
 
   const CV5InputScreen({super.key, this.cvId});
+  final String? cvId;
 
   @override
   State<CV5InputScreen> createState() => _CV5InputScreenState();
@@ -112,6 +112,7 @@ class _CV5InputScreenState extends State<CV5InputScreen> {
       } else {
         final newId = await _cvService.createCV(_cvData);
         _showSuccess('Đã tạo CV mới: $newId');
+        // ignore: use_build_context_synchronously
         Navigator.pop(context, newId);
       }
     } catch (e) {
@@ -165,7 +166,7 @@ class _CV5InputScreenState extends State<CV5InputScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

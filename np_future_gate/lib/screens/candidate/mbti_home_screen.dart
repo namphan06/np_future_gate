@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../core/models/mbti_model.dart';
-import '../../core/repositories/mbti_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'mbti_type_detail_screen.dart';
+import 'package:np_future_gate/core/models/mbti_model.dart';
+import 'package:np_future_gate/core/repositories/mbti_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/mbti_type_detail_screen.dart';
 
 class MBTIHomeScreen extends StatefulWidget {
-  final String? selectedCode;
 
   const MBTIHomeScreen({super.key, this.selectedCode});
+  final String? selectedCode;
 
   @override
   State<MBTIHomeScreen> createState() => _MBTIHomeScreenState();
@@ -55,7 +55,7 @@ class _MBTIHomeScreenState extends State<MBTIHomeScreen> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(color: AppMainColors.primary),
             )
           : _types.isEmpty
@@ -63,8 +63,8 @@ class _MBTIHomeScreenState extends State<MBTIHomeScreen> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 14, 16, 8),
                   child: Text(
                     '16 nhóm tính cách MBTI',
                     style: TextStyle(
@@ -116,15 +116,15 @@ class _MBTIHomeScreenState extends State<MBTIHomeScreen> {
 }
 
 class _MBTITypeCard extends StatelessWidget {
-  final MBTIType type;
-  final bool isSelected;
-  final VoidCallback onTap;
 
   const _MBTITypeCard({
     required this.type,
     required this.isSelected,
     required this.onTap,
   });
+  final MBTIType type;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

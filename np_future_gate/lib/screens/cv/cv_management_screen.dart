@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../core/services/cv_supabase_service.dart';
-import 'cv_setting/cv_display_manager.dart';
-import 'cv_input/cv1_input_screen.dart';
-import 'cv_input/cv2_input_screen.dart';
-import 'cv_input/cv3_input_screen.dart';
-import 'cv_upload_screen.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv1_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv2_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv3_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/screens/cv/cv_upload_screen.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 /// CV Management Screen - Quản lý danh sách CV của người dùng
 class CVManagementScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
   List<Map<String, dynamic>> _filteredCVList = [];
   bool _isLoading = false;
   final TextEditingController _searchController = TextEditingController();
-  String _searchText = '';
+  final String _searchText = '';
   final Set<String> _selectedTags = {};
 
   @override
@@ -272,7 +272,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 offset: const Offset(0, 2),
                               ),
@@ -318,7 +318,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -373,7 +373,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
+                            color: Colors.black.withValues(alpha: 0.06),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -486,7 +486,7 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -700,12 +700,6 @@ class _CVManagementScreenState extends State<CVManagementScreen> {
 }
 
 class _DomainCVList extends StatefulWidget {
-  final List<Map<String, dynamic>> cvList;
-  final String searchText;
-  final Set<String> selectedTags;
-  final Function(Map<String, dynamic>) onView;
-  final Function(String) onEdit;
-  final Function(String, String) onDelete;
 
   const _DomainCVList({
     required this.cvList,
@@ -715,6 +709,12 @@ class _DomainCVList extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
   });
+  final List<Map<String, dynamic>> cvList;
+  final String searchText;
+  final Set<String> selectedTags;
+  final Function(Map<String, dynamic>) onView;
+  final Function(String) onEdit;
+  final Function(String, String) onDelete;
 
   @override
   State<_DomainCVList> createState() => _DomainCVListState();
@@ -837,7 +837,7 @@ class _DomainCVListState extends State<_DomainCVList> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.green.withOpacity(0.3),
+                    color: Colors.green.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -869,7 +869,7 @@ class _DomainCVListState extends State<_DomainCVList> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -927,9 +927,9 @@ class _DomainCVListState extends State<_DomainCVList> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(0.1),
+                                    color: Colors.orange.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                                    border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
                                   ),
                                   child: Text(
                                     typeField,

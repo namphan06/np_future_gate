@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/cv_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../models/cv_model.dart';
 
 /// CV Supabase Service - Quản lý lưu trữ và truy xuất CV từ Supabase
 class CVSupabaseService {
@@ -287,14 +288,14 @@ class CVSupabaseService {
 
 /// CV Output Widget - Hiển thị CV từ database
 class CVOutputWidget extends StatefulWidget {
-  final String? cvId;
-  final String? mcv;
 
   const CVOutputWidget({
     super.key,
     this.cvId,
     this.mcv,
   });
+  final String? cvId;
+  final String? mcv;
 
   @override
   State<CVOutputWidget> createState() => _CVOutputWidgetState();
@@ -415,7 +416,7 @@ class _CVOutputWidgetState extends State<CVOutputWidget> {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -530,7 +531,7 @@ class _CVOutputWidgetState extends State<CVOutputWidget> {
           borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

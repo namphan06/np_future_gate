@@ -1,22 +1,4 @@
 class MessageModel {
-  final String id;
-  final String conversationId;
-  final String senderId;
-  final String senderType;
-  final String messageType;
-  final String content;
-  final String? attachmentUrl;
-  final String? attachmentName;
-  final int? attachmentSize;
-  final bool isEdited;
-  final bool isDeleted;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  
-  // Thông tin bổ sung để hiển thị
-  String? senderName;
-  String? senderAvatar;
-  bool isSentByMe;
 
   MessageModel({
     required this.id,
@@ -54,6 +36,24 @@ class MessageModel {
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
+  final String id;
+  final String conversationId;
+  final String senderId;
+  final String senderType;
+  final String messageType;
+  final String content;
+  final String? attachmentUrl;
+  final String? attachmentName;
+  final int? attachmentSize;
+  final bool isEdited;
+  final bool isDeleted;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  
+  // Thông tin bổ sung để hiển thị
+  String? senderName;
+  String? senderAvatar;
+  bool isSentByMe;
 
   Map<String, dynamic> toJson() {
     return {

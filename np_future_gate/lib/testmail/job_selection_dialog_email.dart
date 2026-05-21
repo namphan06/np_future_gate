@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../core/models/job_model.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/theme/app_main_colors.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class JobSelectionDialogWithEmail extends StatefulWidget {
-  final Profile candidate;
 
   const JobSelectionDialogWithEmail({super.key, required this.candidate});
+  final Profile candidate;
 
   @override
   State<JobSelectionDialogWithEmail> createState() => _JobSelectionDialogWithEmailState();
@@ -76,6 +76,7 @@ class _JobSelectionDialogWithEmailState extends State<JobSelectionDialogWithEmai
         listenFor: const Duration(seconds: 15),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
+        // ignore: deprecated_member_use
         listenMode: stt.ListenMode.dictation,
       );
     }
@@ -213,7 +214,7 @@ class _JobSelectionDialogWithEmailState extends State<JobSelectionDialogWithEmai
               children: [
                 const Icon(Icons.check_circle, color: Colors.green, size: 50),
                 const SizedBox(height: 16),
-                Text('Đã gửi giống hệt Terminal đến:'),
+                const Text('Đã gửi giống hệt Terminal đến:'),
                 Text(widget.candidate.email!, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
                 const SizedBox(height: 8),
                 const Text('ID từ Server:', style: TextStyle(fontWeight: FontWeight.bold)),

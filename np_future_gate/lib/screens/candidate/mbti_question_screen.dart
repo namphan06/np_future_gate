@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../core/models/mbti_model.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/repositories/mbti_repository.dart';
-import '../../core/services/mbti_analysis_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'mbti_result_screen.dart';
+import 'package:np_future_gate/core/models/mbti_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/repositories/mbti_repository.dart';
+import 'package:np_future_gate/core/services/mbti_analysis_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/mbti_result_screen.dart';
 
 class MBTIQuestionScreen extends StatefulWidget {
   const MBTIQuestionScreen({super.key});
@@ -197,7 +197,7 @@ class _MBTIQuestionScreenState extends State<MBTIQuestionScreen> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? Center(
+          ? const Center(
               child: CircularProgressIndicator(color: AppMainColors.primary),
             )
           : _questions.isEmpty

@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../../core/models/job_model.dart';
-import '../../core/services/mistral_service.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/mistral_service.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 class JobInterviewAIPage extends StatefulWidget {
-  final JobModel job;
 
   const JobInterviewAIPage({super.key, required this.job});
+  final JobModel job;
 
   @override
   State<JobInterviewAIPage> createState() => _JobInterviewAIPageState();
@@ -25,6 +25,7 @@ class _JobInterviewAIPageState extends State<JobInterviewAIPage> {
   bool _isAnalyzing = false;
   List<String> _questions = [];
   int _currentStep = 0; // 0: Questions, 1: Analysis Results
+  // ignore: unused_field
   String? _analysisResult;
   Map<String, dynamic>? _structuredFeedback;
 
@@ -77,7 +78,7 @@ Ví dụ: ["Câu hỏi 1", "Câu hỏi 2", ...]
         throw Exception('Không thể phân tích câu hỏi từ AI');
       }
     } catch (e) {
-      print('Error generating questions: $e');
+      debugPrint('Error generating questions: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi tạo câu hỏi: $e')),
@@ -136,7 +137,7 @@ Chỉ trả về JSON, không kèm văn bản thừa.
         throw Exception('Không thể phân tích kết quả đánh giá');
       }
     } catch (e) {
-      print('Error analyzing answers: $e');
+      debugPrint('Error analyzing answers: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi đánh giá: $e')),
@@ -205,9 +206,15 @@ Chỉ trả về JSON, không kèm văn bản thừa.
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: AppGradients.blueToGreen.withOpacity(0.05) as LinearGradient,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: AppGradients.blueToGreen.colors
+                          .map((c) => c.withValues(alpha: 0.05))
+                          .toList(),
+                    ),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2)),
+                    border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.2)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,7 +305,7 @@ Chỉ trả về JSON, không kèm văn bản thừa.
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryBlue.withOpacity(0.3),
+                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -314,7 +321,7 @@ Chỉ trả về JSON, không kèm văn bản thừa.
                       height: 80,
                       child: CircularProgressIndicator(
                         value: score / 100,
-                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
                         valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                         strokeWidth: 8,
                       ),
@@ -490,7 +497,7 @@ Chỉ trả về JSON, không kèm văn bản thừa.
     if (_isGeneratingQuestions || _isAnalyzing) return const SizedBox.shrink();
 
     return Padding(
-      padding: EdgeInsets.all(20).copyWith(bottom: MediaQuery.of(context).padding.bottom + 10),
+      padding: const EdgeInsets.all(20).copyWith(bottom: MediaQuery.of(context).padding.bottom + 10),
       child: SizedBox(
         width: double.infinity,
         height: 54,

@@ -1,9 +1,6 @@
 /// Auth Result
 /// Kết quả trả về từ các thao tác auth
 class AuthResult {
-  final bool success;
-  final String? message;
-  final dynamic data;
 
   AuthResult({
     required this.success,
@@ -25,6 +22,9 @@ class AuthResult {
       message: message,
     );
   }
+  final bool success;
+  final String? message;
+  final dynamic data;
 }
 
 /// User Role Enum

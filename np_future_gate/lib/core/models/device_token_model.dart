@@ -1,17 +1,6 @@
 /// Device Token Model
 /// Model để lưu thông tin device token cho push notifications
 class DeviceTokenModel {
-  final String? id;
-  final String deviceId; // FCM token hoặc APNS token
-  final String userId;
-  final String role;
-  final String? deviceType; // 'ios' hoặc 'android'
-  final String? deviceName;
-  final String? appVersion;
-  final bool isActive;
-  final DateTime? lastLoginAt;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
 
   DeviceTokenModel({
     this.id,
@@ -49,6 +38,17 @@ class DeviceTokenModel {
           : null,
     );
   }
+  final String? id;
+  final String deviceId; // FCM token hoặc APNS token
+  final String userId;
+  final String role;
+  final String? deviceType; // 'ios' hoặc 'android'
+  final String? deviceName;
+  final String? appVersion;
+  final bool isActive;
+  final DateTime? lastLoginAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   /// Convert to JSON
   Map<String, dynamic> toJson() {

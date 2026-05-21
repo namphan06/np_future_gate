@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/theme/app_text_styles.dart';
 import 'package:np_future_gate/screens/admin/admin_home_screen.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_gradients.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../widgets/buttons/gradient_button.dart';
-import '../../widgets/inputs/gradient_text_field.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/models/auth_models.dart';
-import '../candidate/candidate_home_screen.dart';
-import '../employer/employer_home_screen.dart';
-import '../school/school_home_screen.dart';
+import 'package:np_future_gate/screens/candidate/candidate_home_screen.dart';
+import 'package:np_future_gate/screens/employer/employer_home_screen.dart';
+import 'package:np_future_gate/screens/school/school_home_screen.dart';
+import 'package:np_future_gate/widgets/buttons/gradient_button.dart';
+import 'package:np_future_gate/widgets/inputs/gradient_text_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -251,7 +251,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 32),
 
                   // Role Selection
-                  Text(
+                  const Text(
                     'Bạn là:',
                     style: AppTextStyles.h6,
                   ),
@@ -459,11 +459,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 // Role Card Widget
 class _RoleCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-  final bool isSelected;
-  final VoidCallback onTap;
 
   const _RoleCard({
     required this.icon,
@@ -472,6 +467,11 @@ class _RoleCard extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
   });
+  final IconData icon;
+  final String title;
+  final String description;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -491,7 +491,7 @@ class _RoleCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primaryBlue.withOpacity(0.3),
+                    color: AppColors.primaryBlue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -520,7 +520,7 @@ class _RoleCard extends StatelessWidget {
               description,
               style: AppTextStyles.caption.copyWith(
                 color: isSelected
-                    ? AppColors.textWhite.withOpacity(0.9)
+                    ? AppColors.textWhite.withValues(alpha: 0.9)
                     : AppColors.textSecondary,
                 fontSize: 10,
               ),

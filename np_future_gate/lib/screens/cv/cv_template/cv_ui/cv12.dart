@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV12 - Classic Timeline Template
 /// Mẫu CV dòng thời gian cổ điển, rõ ràng và chuyên nghiệp
 class Cv12 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv12({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +248,7 @@ class Cv12 extends StatelessWidget {
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: const Color(0xFFE94560).withOpacity(0.3),
+                    color: const Color(0xFFE94560).withValues(alpha: 0.3),
                   ),
                 ),
             ],

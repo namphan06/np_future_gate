@@ -1,23 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/repositories/employer_response_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../core/repositories/employer_response_repository.dart';
-import '../../core/services/supabase_service.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class EmailTemplateEditorScreen extends StatefulWidget {
-  final String templateType;
-  final String title;
-  final Color color;
-  
-  // Optional: Nếu null = Template Management Mode (chỉ chỉnh sửa template)
-  // Nếu có = Send Email Mode (gửi email thật)
-  final String? candidateId;
-  final String? jobId;
-  final Map<String, dynamic>? candidateData;
-  final Map<String, dynamic>? jobData;
-  final Map<String, dynamic>? employerData;
-  final Map<String, dynamic>? interviewData;
 
   const EmailTemplateEditorScreen({
     super.key,
@@ -31,6 +19,18 @@ class EmailTemplateEditorScreen extends StatefulWidget {
     this.employerData,
     this.interviewData,
   });
+  final String templateType;
+  final String title;
+  final Color color;
+  
+  // Optional: Nếu null = Template Management Mode (chỉ chỉnh sửa template)
+  // Nếu có = Send Email Mode (gửi email thật)
+  final String? candidateId;
+  final String? jobId;
+  final Map<String, dynamic>? candidateData;
+  final Map<String, dynamic>? jobData;
+  final Map<String, dynamic>? employerData;
+  final Map<String, dynamic>? interviewData;
 
   @override
   State<EmailTemplateEditorScreen> createState() =>
@@ -49,7 +49,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
   final _repository = EmployerResponseRepository();
   final _supabaseService = SupabaseService.instance;
   
-  List<PlatformFile> _attachments = []; // Newly picked files (not uploaded yet)
+  final List<PlatformFile> _attachments = []; // Newly picked files (not uploaded yet)
   List<Map<String, dynamic>> _savedAttachments = []; // Already uploaded files from DB
   bool _isVariablesPanelExpanded = false;
   bool _isSaving = false;
@@ -116,7 +116,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
         }
       }
     } catch (e) {
-      print('Error loading template: $e');
+      debugPrint('Error loading template: $e');
     }
   }
 
@@ -145,7 +145,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
 
   Future<void> _pickFiles() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
@@ -223,6 +223,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
+        // ignore: deprecated_member_use
         listenMode: stt.ListenMode.dictation,
       );
     }
@@ -420,7 +421,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -547,7 +548,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8, left: 16, right: 16),
       child: Material(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           onTap: () => _insertVariable(variable),
@@ -804,7 +805,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
       }
 
       // Upload new attachment files to Supabase Storage
-      List<Map<String, dynamic>> allAttachments = List.from(_savedAttachments);
+      final List<Map<String, dynamic>> allAttachments = List.from(_savedAttachments);
       
       for (var file in _attachments) {
         try {
@@ -816,7 +817,7 @@ class _EmailTemplateEditorScreenState extends State<EmailTemplateEditorScreen> {
             'type': _getContentType(file.extension),
           });
         } catch (e) {
-          print('Error uploading file ${file.name}: $e');
+          debugPrint('Error uploading file ${file.name}: $e');
         }
       }
 

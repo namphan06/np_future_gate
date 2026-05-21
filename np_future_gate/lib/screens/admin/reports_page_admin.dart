@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_main_colors.dart';
 
 class ReportsPageAdmin extends StatefulWidget {
   const ReportsPageAdmin({super.key, this.isStandalone = false});
@@ -27,6 +27,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
   int _newUsersThisPeriod = 0;
   int _newJobsThisPeriod = 0;
   int _newApplicationsThisPeriod = 0;
+  // ignore: unused_field
   int _newInterviewsThisPeriod = 0;
   
   double _applicationSuccessRate = 0.0;
@@ -399,7 +400,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: AppMainColors.primary.withOpacity(0.3),
+                    color: AppMainColors.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -428,7 +429,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -464,7 +465,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
       return Container(
         height: 100,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
@@ -488,13 +489,13 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
       height: 120,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
       child: LineChart(
         LineChartData(
-          gridData: FlGridData(show: false),
-          titlesData: FlTitlesData(show: false),
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
           borderData: FlBorderData(show: false),
           minX: 0,
           maxX: (data.length - 1).toDouble(),
@@ -507,10 +508,10 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
               color: color,
               barWidth: 3,
               isStrokeCapRound: true,
-              dotData: FlDotData(show: false),
+              dotData: const FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
               ),
             ),
           ],
@@ -524,7 +525,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
       height: 120,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.purple.withOpacity(0.05),
+        color: Colors.purple.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -580,7 +581,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -619,7 +620,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -727,7 +728,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -744,7 +745,7 @@ class _ReportsPageAdminState extends State<ReportsPageAdmin> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(icon, color: color, size: 24),

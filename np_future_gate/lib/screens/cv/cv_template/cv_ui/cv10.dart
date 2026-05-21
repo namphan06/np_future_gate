@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV10 - Elegant Minimalist Template
 /// Mẫu CV tối giản sang trọng với typography đẹp và khoảng trắng hài hòa
 class Cv10 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv10({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/conversation_model.dart';
+import 'package:np_future_gate/core/models/message_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/conversation_model.dart';
-import '../models/message_model.dart';
 
 class ChatService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -49,7 +50,7 @@ class ChatService {
 
       return conversations;
     } catch (e) {
-      print('Error getting conversations: $e');
+      debugPrint('Error getting conversations: $e');
       return [];
     }
   }
@@ -78,7 +79,7 @@ class ChatService {
         
         // Nếu có job_id mới và khác với job_id cũ, update conversation
         if (jobId != null && jobId != conversation.jobId) {
-          print('🔄 Updating conversation job_id: ${conversation.jobId} → $jobId');
+          debugPrint('🔄 Updating conversation job_id: ${conversation.jobId} → $jobId');
           
           // Gửi system message đánh dấu job CŨ (đã trao đổi)
           if (conversation.jobId != null) {
@@ -135,7 +136,7 @@ class ChatService {
 
       return conversation;
     } catch (e) {
-      print('Error creating conversation: $e');
+      debugPrint('Error creating conversation: $e');
       return null;
     }
   }
@@ -163,7 +164,7 @@ class ChatService {
 
       return messages;
     } catch (e) {
-      print('Error getting messages: $e');
+      debugPrint('Error getting messages: $e');
       return [];
     }
   }
@@ -183,7 +184,7 @@ class ChatService {
 
       final userType = await _getCurrentUserType();
       
-      print('📤 Sending message: content="$content", sender_id=$userId, sender_type=$userType');
+      debugPrint('📤 Sending message: content="$content", sender_id=$userId, sender_type=$userType');
 
       final response = await _supabase
           .from('messages')
@@ -203,14 +204,14 @@ class ChatService {
       final message = MessageModel.fromJson(response);
       message.isSentByMe = true;
       
-      print('✅ Message sent successfully: id=${message.id}');
+      debugPrint('✅ Message sent successfully: id=${message.id}');
 
       // Đánh dấu đã đọc
       await markAsRead(conversationId);
 
       return message;
     } catch (e) {
-      print('❌ Error sending message: $e');
+      debugPrint('❌ Error sending message: $e');
       return null;
     }
   }
@@ -246,7 +247,7 @@ class ChatService {
         onConflict: 'conversation_id,user_id', // Unique constraint columns
       );
     } catch (e) {
-      print('❌ Error marking as read: $e');
+      debugPrint('❌ Error marking as read: $e');
     }
   }
 
@@ -286,7 +287,7 @@ class ChatService {
 
       return (response as List).length;
     } catch (e) {
-      print('Error getting unread count: $e');
+      debugPrint('Error getting unread count: $e');
       return 0;
     }
   }
@@ -294,7 +295,7 @@ class ChatService {
   // Stream messages realtime
   Stream<List<MessageModel>> streamMessages(String conversationId) {
     final userId = _supabase.auth.currentUser?.id;
-    print('🔑 Current userId: $userId');
+    debugPrint('🔑 Current userId: $userId');
     
     return _supabase
         .from('messages')
@@ -307,7 +308,7 @@ class ChatService {
             .map((json) {
               final message = MessageModel.fromJson(json);
               message.isSentByMe = message.senderId == userId;
-              print('💬 Message: "${message.content}" | senderId: ${message.senderId} | currentUser: $userId | isSentByMe: ${message.isSentByMe}');
+              debugPrint('💬 Message: "${message.content}" | senderId: ${message.senderId} | currentUser: $userId | isSentByMe: ${message.isSentByMe}');
               return message;
             })
             .toList());
@@ -363,7 +364,7 @@ class ChatService {
   // Helper: Lấy thông tin user
   Future<Map<String, String>> _getUserInfo(String userId, String userType) async {
     try {
-      print('🔍 Getting user info for: $userId');
+      debugPrint('🔍 Getting user info for: $userId');
       
       // Lấy từ table profiles - dùng full_name và avatar_url trực tiếp
       final profile = await _supabase
@@ -373,11 +374,11 @@ class ChatService {
           .maybeSingle();
 
       if (profile == null) {
-        print('⚠️ User profile not found for ID: $userId');
+        debugPrint('⚠️ User profile not found for ID: $userId');
         return {'name': 'Người dùng', 'avatar': ''}; 
       }
 
-      print('📋 Profile: full_name=${profile['full_name']}, avatar_url=${profile['avatar_url']}');
+      debugPrint('📋 Profile: full_name=${profile['full_name']}, avatar_url=${profile['avatar_url']}');
 
       // Lấy tên từ full_name column
       final name = profile['full_name'] ?? 'Người dùng';
@@ -385,10 +386,10 @@ class ChatService {
       // Lấy avatar từ avatar_url column
       final avatar = profile['avatar_url'] ?? '';
 
-      print('✅ Loaded user info: $name');
+      debugPrint('✅ Loaded user info: $name');
       return {'name': name, 'avatar': avatar};
     } catch (e) {
-      print('❌ Error getting user info: $e');
+      debugPrint('❌ Error getting user info: $e');
       return {'name': 'Người dùng', 'avatar': ''}; 
     }
   }
@@ -408,7 +409,7 @@ class ChatService {
 
       if (profile != null && profile['role'] != null) {
         final role = profile['role'] as String;
-        print('✅ Current user type: $role');
+        debugPrint('✅ Current user type: $role');
         
         // Map role sang user type cho chat
         if (role == 'employer' || role == 'company') return 'employer';
@@ -420,7 +421,7 @@ class ChatService {
       // Mặc định là candidate
       return 'candidate';
     } catch (e) {
-      print('❌ Error getting user type: $e');
+      debugPrint('❌ Error getting user type: $e');
       return 'candidate';
     }
   }
@@ -435,13 +436,13 @@ class ChatService {
           .maybeSingle();
 
       if (job == null) {
-        print('⚠️ Job not found: $jobId');
+        debugPrint('⚠️ Job not found: $jobId');
         return null;
       }
 
       final metadata = job['metadata'] as Map<String, dynamic>?;
       if (metadata == null) {
-        print('⚠️ Job metadata is null');
+        debugPrint('⚠️ Job metadata is null');
         return null;
       }
 
@@ -474,7 +475,7 @@ class ChatService {
 
       final companyName = creator?['full_name'] ?? 'Công ty';
 
-      print('✅ Loaded job: $title @ $companyName');
+      debugPrint('✅ Loaded job: $title @ $companyName');
       return {
         'id': job['id'],
         'title': title,
@@ -483,7 +484,7 @@ class ChatService {
         'salary_range': salaryRange,
       };
     } catch (e) {
-      print('❌ Error getting job info: $e');
+      debugPrint('❌ Error getting job info: $e');
       return null;
     }
   }
@@ -502,7 +503,7 @@ class ChatService {
           .eq('id', conversationId);
       return true;
     } catch (e) {
-      print('Error deleting conversation: $e');
+      debugPrint('Error deleting conversation: $e');
       return false;
     }
   }
@@ -516,7 +517,7 @@ class ChatService {
           .eq('id', messageId);
       return true;
     } catch (e) {
-      print('Error deleting message: $e');
+      debugPrint('Error deleting message: $e');
       return false;
     }
   }

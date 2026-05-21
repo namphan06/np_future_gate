@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 /// Admin signs out and signs into test account to preview UI
 
 class DemoModeService {
-  static final DemoModeService _instance = DemoModeService._internal();
   factory DemoModeService() => _instance;
   DemoModeService._internal();
+  static final DemoModeService _instance = DemoModeService._internal();
 
   static DemoModeService get instance => _instance;
 
@@ -20,6 +20,7 @@ class DemoModeService {
 
   // Admin's original credentials (to return later)
   String? _adminEmail;
+  // ignore: unused_field
   String? _adminPassword; // WARNING: Storing password is not secure! This is just for demo convenience
 
   String? get adminEmail => _adminEmail;

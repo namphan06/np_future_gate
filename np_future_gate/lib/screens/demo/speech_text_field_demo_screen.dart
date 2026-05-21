@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 /// Demo screen to showcase SpeechTextField functionality
 class SpeechTextFieldDemoScreen extends StatefulWidget {
@@ -95,7 +95,7 @@ class _SpeechTextFieldDemoScreenState extends State<SpeechTextFieldDemoScreen> {
                       Text(
                         'Nói đến đâu hiển thị đến đó!\nCó thể dừng và tiếp tục bất cứ lúc nào.',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,

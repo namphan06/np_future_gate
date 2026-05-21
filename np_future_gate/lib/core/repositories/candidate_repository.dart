@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
-import '../models/profile_model.dart';
 
 class CandidateRepository {
   final SupabaseService _supabaseService = SupabaseService.instance;
@@ -19,7 +20,7 @@ class CandidateRepository {
           .map((e) => e['candidate_id'] as String)
           .toList();
     } catch (e) {
-      print('Error fetching followed candidate IDs: $e');
+      debugPrint('Error fetching followed candidate IDs: $e');
       return [];
     }
   }
@@ -34,7 +35,7 @@ class CandidateRepository {
         'created_at': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      print('Error following candidate: $e');
+      debugPrint('Error following candidate: $e');
       rethrow;
     }
   }
@@ -49,7 +50,7 @@ class CandidateRepository {
           .eq('candidate_id', candidateId)
           .eq('followed_by', 'employer');
     } catch (e) {
-      print('Error unfollowing candidate: $e');
+      debugPrint('Error unfollowing candidate: $e');
       rethrow;
     }
   }
@@ -66,7 +67,7 @@ class CandidateRepository {
 
       return (response as List).map((e) => Profile.fromJson(e)).toList();
     } catch (e) {
-      print('Error fetching recent candidates: $e');
+      debugPrint('Error fetching recent candidates: $e');
       return [];
     }
   }
@@ -84,7 +85,7 @@ class CandidateRepository {
       
       return Profile.fromJson(response);
     } catch (e) {
-      print('Error fetching profile by ID: $e');
+      debugPrint('Error fetching profile by ID: $e');
       return null;
     }
   }

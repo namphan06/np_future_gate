@@ -129,6 +129,7 @@ enum NotificationActionCode {
   final String displayName;
   final bool requiresNavigation;
 
+  // ignore: sort_constructors_first
   const NotificationActionCode(
     this.code,
     this.displayName, {
@@ -165,12 +166,6 @@ enum NotificationActionCode {
 
 /// Config class chứa thông tin navigation cho mỗi action code
 class NotificationActionConfig {
-  final NotificationActionCode actionCode;
-  final String routeName;
-  final Map<String, dynamic> Function(Map<String, dynamic>? actionData)?
-      extractRouteParams;
-  final bool showDialog;
-  final String? dialogTitle;
 
   const NotificationActionConfig({
     required this.actionCode,
@@ -179,6 +174,12 @@ class NotificationActionConfig {
     this.showDialog = false,
     this.dialogTitle,
   });
+  final NotificationActionCode actionCode;
+  final String routeName;
+  final Map<String, dynamic> Function(Map<String, dynamic>? actionData)?
+      extractRouteParams;
+  final bool showDialog;
+  final String? dialogTitle;
 }
 
 /// Danh sách cấu hình navigation cho từng action code
@@ -289,13 +290,13 @@ class NotificationConfigs {
     ),
 
     // SYSTEM - Show Dialog Only
-    NotificationActionCode.systemUpdate: NotificationActionConfig(
+    NotificationActionCode.systemUpdate: const NotificationActionConfig(
       actionCode: NotificationActionCode.systemUpdate,
       routeName: '',
       showDialog: true,
       dialogTitle: 'Cập nhật hệ thống',
     ),
-    NotificationActionCode.announcement: NotificationActionConfig(
+    NotificationActionCode.announcement: const NotificationActionConfig(
       actionCode: NotificationActionCode.announcement,
       routeName: '',
       showDialog: true,
@@ -303,7 +304,7 @@ class NotificationConfigs {
     ),
 
     // DEFAULT
-    NotificationActionCode.none: NotificationActionConfig(
+    NotificationActionCode.none: const NotificationActionConfig(
       actionCode: NotificationActionCode.none,
       routeName: '',
       showDialog: true,

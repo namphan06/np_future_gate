@@ -1,12 +1,5 @@
 /// Model representing the result of CV-to-Job matching analysis.
 class CVMatchingResult {
-  final double overallScore;
-  final double semanticSimilarity;
-  final double keywordMatchScore;
-  final String matchingSummary;
-  final List<String> matchingPoints;
-  final List<String> missingPoints;
-  final Map<String, dynamic> parsedData;
 
   CVMatchingResult({
     required this.overallScore,
@@ -27,6 +20,13 @@ class CVMatchingResult {
     missingPoints: ['Lỗi AI'],
     parsedData: {'Status': 'Mock'},
   );
+  final double overallScore;
+  final double semanticSimilarity;
+  final double keywordMatchScore;
+  final String matchingSummary;
+  final List<String> matchingPoints;
+  final List<String> missingPoints;
+  final Map<String, dynamic> parsedData;
 
   Map<String, dynamic> toJson() => {
     'overall_score': overallScore,

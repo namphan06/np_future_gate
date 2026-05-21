@@ -1,28 +1,29 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:intl/intl.dart';
+import 'package:np_future_gate/core/models/conversation_model.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/models/message_model.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../core/models/conversation_model.dart';
-import '../../core/models/message_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/services/chat_service.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../candidate/job_detail_screen.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChatDetailScreen extends StatefulWidget {
-  final ConversationModel conversation;
-  final String otherUserName;
-  final String otherUserAvatar;
 
   const ChatDetailScreen({
-    Key? key,
+    super.key,
     required this.conversation,
     required this.otherUserName,
     required this.otherUserAvatar,
-  }) : super(key: key);
+  });
+  final ConversationModel conversation;
+  final String otherUserName;
+  final String otherUserAvatar;
 
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
@@ -49,7 +50,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     super.initState();
     _speech = stt.SpeechToText();
     _initSpeech();
-    print('🔵 ChatDetailScreen init - jobId: ${widget.conversation.jobId}');
+    debugPrint('🔵 ChatDetailScreen init - jobId: ${widget.conversation.jobId}');
     _currentJobId = widget.conversation.jobId;
     
     // Mark messages as read when opening
@@ -75,7 +76,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             
             // Nếu job_id thay đổi, reload job info
             if (newJobId != _currentJobId) {
-              print('🔄 Job changed: $_currentJobId → $newJobId');
+              debugPrint('🔄 Job changed: $_currentJobId → $newJobId');
               _currentJobId = newJobId;
               _loadJobInfoById(newJobId);
             }
@@ -88,17 +89,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
   
   Future<void> _loadJobInfoById(String? jobId) async {
-    print('🔍 Loading job info - jobId: $jobId');
+    debugPrint('🔍 Loading job info - jobId: $jobId');
     if (jobId != null) {
       final jobInfo = await _chatService.getJobInfo(jobId);
-      print('📦 Job info loaded: $jobInfo');
+      debugPrint('📦 Job info loaded: $jobInfo');
       if (mounted) {
         setState(() {
           _jobInfo = jobInfo;
         });
       }
     } else {
-      print('⚠️ No job_id');
+      debugPrint('⚠️ No job_id');
       if (mounted) {
         setState(() {
           _jobInfo = null;
@@ -157,6 +158,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
+        // ignore: deprecated_member_use
         listenMode: stt.ListenMode.dictation,
       );
     }
@@ -319,7 +321,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       }
     } catch (e) {
       setState(() => _isUploadingImage = false);
-      print('❌ Error sending image: $e');
+      debugPrint('❌ Error sending image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -406,7 +408,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor: AppMainColors.primary.withOpacity(0.1),
+              backgroundColor: AppMainColors.primary.withValues(alpha: 0.1),
               backgroundImage: widget.otherUserAvatar.isNotEmpty
                   ? NetworkImage(widget.otherUserAvatar)
                   : null,
@@ -600,6 +602,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       
                       if (mounted) {
                         Navigator.push(
+                          // ignore: use_build_context_synchronously
                           context,
                           MaterialPageRoute(
                             builder: (context) => JobDetailScreen(job: job),
@@ -607,8 +610,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         );
                       }
                     } catch (e) {
-                      print('❌ Error loading job: $e');
+                      debugPrint('❌ Error loading job: $e');
                       if (mounted) {
+                        // ignore: use_build_context_synchronously
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Không thể tải thông tin công việc'),
@@ -623,10 +627,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppMainColors.primary.withOpacity(0.1),
+                        color: AppMainColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.work_outline,
                         color: AppMainColors.primary,
                         size: 24,
@@ -676,7 +680,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -689,7 +693,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   children: [
                     // Image picker button
                     IconButton(
-                      icon: Icon(Icons.image, color: AppMainColors.primary),
+                      icon: const Icon(Icons.image, color: AppMainColors.primary),
                       onPressed: _isUploadingImage ? null : _showImageSourcePicker,
                       tooltip: 'Gửi ảnh',
                     ),
@@ -838,7 +842,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           if (!isSentByMe) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppMainColors.primary.withOpacity(0.1),
+              backgroundColor: AppMainColors.primary.withValues(alpha: 0.1),
               backgroundImage: widget.otherUserAvatar.isNotEmpty
                   ? NetworkImage(widget.otherUserAvatar)
                   : null,
@@ -878,7 +882,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -961,7 +965,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 5,
                           offset: const Offset(0, 2),
                         ),
@@ -1064,6 +1068,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                 if (confirmed == true) {
                   await _chatService.deleteConversation(widget.conversation.id);
+                  // ignore: use_build_context_synchronously
                   if (mounted) Navigator.pop(context);
                 }
               },

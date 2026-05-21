@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/services/cv_supabase_service.dart';
-import '../../widgets/speech_text_field.dart';
-import '../cv/cv_setting/cv_display_manager.dart';
 
 class PendingRecruitmentDecisionsScreen extends StatefulWidget {
-  const PendingRecruitmentDecisionsScreen({Key? key}) : super(key: key);
+  const PendingRecruitmentDecisionsScreen({super.key});
 
   @override
   State<PendingRecruitmentDecisionsScreen> createState() =>
@@ -29,7 +29,7 @@ class _PendingRecruitmentDecisionsScreenState
   
   // Comparison mode states
   bool _isComparisonMode = false;
-  Set<String> _selectedCandidatesForComparison = {}; // Store interview IDs
+  final Set<String> _selectedCandidatesForComparison = {}; // Store interview IDs
   static const int _maxComparisonCandidates = 3;
 
   @override
@@ -65,7 +65,7 @@ class _PendingRecruitmentDecisionsScreenState
           .eq('company_id', userId)
           .eq('company_status', 'accepted');
 
-      List<Map<String, dynamic>> allJobs = [];
+      final List<Map<String, dynamic>> allJobs = [];
 
       // Process jobs
       for (var job in jobsData as List) {
@@ -179,7 +179,7 @@ class _PendingRecruitmentDecisionsScreenState
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading pending decisions: $e');
+      debugPrint('Error loading pending decisions: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -308,7 +308,7 @@ class _PendingRecruitmentDecisionsScreenState
           _selectedCandidatesForComparison.add(interviewId);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Chỉ có thể so sánh tối đa $_maxComparisonCandidates ứng viên'),
               backgroundColor: Colors.orange,
             ),
@@ -320,7 +320,7 @@ class _PendingRecruitmentDecisionsScreenState
 
   void _showComparisonScreen() {
     // Get all selected interviews from all jobs
-    List<Map<String, dynamic>> selectedInterviews = [];
+    final List<Map<String, dynamic>> selectedInterviews = [];
     
     for (var job in _filteredJobs) {
       final interviews = job['interviews'] as List;
@@ -390,7 +390,7 @@ class _PendingRecruitmentDecisionsScreenState
       final cvId = interviewData['cv_id'];
       
       // Cập nhật applicants array
-      List<dynamic> applicants = List.from(jobData['applicants'] ?? []);
+      final List<dynamic> applicants = List.from(jobData['applicants'] ?? []);
       
       // Tìm và cập nhật ứng viên
       bool found = false;
@@ -423,6 +423,7 @@ class _PendingRecruitmentDecisionsScreenState
       await _supabase.from(table).update({
         'applicants': applicants,
       }).eq('id', jobId);
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -436,7 +437,7 @@ class _PendingRecruitmentDecisionsScreenState
 
       _loadPendingDecisions();
     } catch (e) {
-      print('Error updating decision: $e');
+      debugPrint('Error updating decision: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Có lỗi xảy ra. Vui lòng thử lại.')),
       );
@@ -454,6 +455,7 @@ class _PendingRecruitmentDecisionsScreenState
 
       // Use getCVFullDataForEmployer for employer access
       final cvData = await _cvService.getCVFullDataForEmployer(cvId);
+      if (!mounted) return;
       
       // Hide loading indicator
       if (mounted) Navigator.pop(context);
@@ -551,7 +553,7 @@ class _PendingRecruitmentDecisionsScreenState
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryGreen.withOpacity(0.4),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.4),
                       blurRadius: 12,
                       spreadRadius: 2,
                       offset: const Offset(0, 4),
@@ -578,7 +580,7 @@ class _PendingRecruitmentDecisionsScreenState
                             border: Border.all(color: Colors.white, width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.red.withOpacity(0.5),
+                                color: Colors.red.withValues(alpha: 0.5),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -636,7 +638,7 @@ class _PendingRecruitmentDecisionsScreenState
                   boxShadow: _isComparisonMode
                       ? [
                           BoxShadow(
-                            color: AppColors.primaryGreen.withOpacity(0.3),
+                            color: AppColors.primaryGreen.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -661,7 +663,7 @@ class _PendingRecruitmentDecisionsScreenState
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white,
-                      AppColors.primaryBlue.withOpacity(0.05),
+                      AppColors.primaryBlue.withValues(alpha: 0.05),
                     ],
                   ),
                 ),
@@ -686,7 +688,7 @@ class _PendingRecruitmentDecisionsScreenState
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primaryBlue.withOpacity(0.3),
+                                    color: AppColors.primaryBlue.withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -744,13 +746,13 @@ class _PendingRecruitmentDecisionsScreenState
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.check_circle_outline,
                         size: 64,
-                        color: AppColors.primaryBlue.withOpacity(0.5),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.5),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -789,7 +791,7 @@ class _PendingRecruitmentDecisionsScreenState
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -1305,10 +1307,10 @@ class _PendingRecruitmentDecisionsScreenState
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.05),
+                        color: AppColors.primaryBlue.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.primaryBlue.withOpacity(0.2),
+                          color: AppColors.primaryBlue.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(
@@ -1398,7 +1400,7 @@ class _PendingRecruitmentDecisionsScreenState
                             Icons.check_circle_outline,
                           ),
                         );
-                      }).toList(),
+                      }),
                       const SizedBox(height: 24),
                     ],
 
@@ -1419,10 +1421,10 @@ class _PendingRecruitmentDecisionsScreenState
                         children: tags.map((tag) => Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryGreen.withOpacity(0.1),
+                            color: AppColors.primaryGreen.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: AppColors.primaryGreen.withOpacity(0.3),
+                              color: AppColors.primaryGreen.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(
@@ -1578,6 +1580,20 @@ class _PendingRecruitmentDecisionsScreenState
 }
 
 class _JobCardWithExpansion extends StatefulWidget {
+
+  const _JobCardWithExpansion({
+    required this.jobTitle,
+    required this.jobType,
+    required this.interviews,
+    required this.jobId,
+    required this.onViewCV,
+    required this.onShowEvaluation,
+    required this.onShowDecision,
+    required this.formatDateTime,
+    required this.isComparisonMode,
+    required this.selectedCandidates,
+    required this.onToggleCandidateSelection,
+  });
   final String jobTitle;
   final String jobType;
   final List interviews;
@@ -1594,20 +1610,6 @@ class _JobCardWithExpansion extends StatefulWidget {
   final bool isComparisonMode;
   final Set<String> selectedCandidates;
   final Function(String) onToggleCandidateSelection;
-
-  const _JobCardWithExpansion({
-    required this.jobTitle,
-    required this.jobType,
-    required this.interviews,
-    required this.jobId,
-    required this.onViewCV,
-    required this.onShowEvaluation,
-    required this.onShowDecision,
-    required this.formatDateTime,
-    required this.isComparisonMode,
-    required this.selectedCandidates,
-    required this.onToggleCandidateSelection,
-  });
 
   @override
   State<_JobCardWithExpansion> createState() => _JobCardWithExpansionState();
@@ -1637,8 +1639,8 @@ class _JobCardWithExpansionState extends State<_JobCardWithExpansion> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primaryBlue.withOpacity(0.1),
-                    AppColors.primaryGreen.withOpacity(0.05),
+                    AppColors.primaryBlue.withValues(alpha: 0.1),
+                    AppColors.primaryGreen.withValues(alpha: 0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.vertical(
@@ -1655,7 +1657,7 @@ class _JobCardWithExpansionState extends State<_JobCardWithExpansion> {
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -1713,7 +1715,7 @@ class _JobCardWithExpansionState extends State<_JobCardWithExpansion> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryGreen.withOpacity(0.2),
+                                  color: AppColors.primaryGreen.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
@@ -1842,7 +1844,7 @@ class _JobCardWithExpansionState extends State<_JobCardWithExpansion> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBlue.withOpacity(0.05),
+                          color: AppColors.primaryBlue.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(
@@ -1994,13 +1996,13 @@ class _JobCardWithExpansionState extends State<_JobCardWithExpansion> {
 
 // Comparison Screen Widget
 class _CandidateComparisonScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> interviews;
-  final Function(String) onViewCV;
 
   const _CandidateComparisonScreen({
     required this.interviews,
     required this.onViewCV,
   });
+  final List<Map<String, dynamic>> interviews;
+  final Function(String) onViewCV;
 
   @override
   State<_CandidateComparisonScreen> createState() => _CandidateComparisonScreenState();
@@ -2042,7 +2044,7 @@ class _CandidateComparisonScreenState extends State<_CandidateComparisonScreen> 
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -2108,7 +2110,7 @@ class _CandidateComparisonScreenState extends State<_CandidateComparisonScreen> 
 
   Widget _buildEvaluationComparison() {
     // Get all evaluation criteria
-    Set<String> allCriteria = {};
+    final Set<String> allCriteria = {};
     for (var interview in widget.interviews) {
       final evaluation = interview['evaluation'] as Map<String, dynamic>? ?? {};
       final requirements = evaluation['requirements_evaluation'] as Map<String, dynamic>? ?? {};
@@ -2270,7 +2272,7 @@ class _CandidateComparisonScreenState extends State<_CandidateComparisonScreen> 
                 return _buildRatingDisplay(rating);
               },
             );
-          }).toList(),
+          }),
 
           // Tags Comparison
           _buildComparisonSection(
@@ -2291,7 +2293,7 @@ class _CandidateComparisonScreenState extends State<_CandidateComparisonScreen> 
                 children: tags.map((tag) => Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.primaryGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -2358,7 +2360,7 @@ class _CandidateComparisonScreenState extends State<_CandidateComparisonScreen> 
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -2455,7 +2457,7 @@ class _CandidateComparisonScreenState extends State<_CandidateComparisonScreen> 
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                     ),
                     child: Row(

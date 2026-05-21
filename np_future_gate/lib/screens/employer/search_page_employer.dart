@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/enums/vietnam_provinces.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/candidate_repository.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
+import 'package:np_future_gate/screens/employer/widgets/job_selection_dialog.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/job_model.dart';
-import '../../core/enums/vietnam_provinces.dart';
-import '../../core/enums/job_fields.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/services/cv_supabase_service.dart';
-import '../../screens/cv/cv_setting/cv_display_manager.dart';
-import '../../widgets/speech_text_field.dart';
-import 'widgets/job_selection_dialog.dart';
-import '../../core/repositories/candidate_repository.dart';
-import '../../core/services/supabase_service.dart';
 
 class SearchPageEmployer extends StatefulWidget {
   const SearchPageEmployer({super.key});
@@ -75,6 +74,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
         });
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi cập nhật theo dõi: $e')),
       );
@@ -92,7 +92,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -139,7 +139,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
   }
   
   List<Widget> _buildPageNumbers(int totalPages) {
-    List<Widget> pages = [];
+    final List<Widget> pages = [];
     
     for (int i = 1; i <= totalPages; i++) {
       if (i == 1 || i == totalPages || (i >= _currentPage - 1 && i <= _currentPage + 1)) {
@@ -199,8 +199,8 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
       final fields = (meta['interested_fields'] as List<dynamic>?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
       final tags = (meta['tags'] as List<dynamic>?)?.map((e) => e.toString().toLowerCase()).toList() ?? [];
       
-      bool matchField = fields.any((f) => f.contains(query));
-      bool matchTag = tags.any((t) => t.contains(query));
+      final bool matchField = fields.any((f) => f.contains(query));
+      final bool matchTag = tags.any((t) => t.contains(query));
       
       if (!matchField && !matchTag) return false;
     }
@@ -209,7 +209,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
     if (_selectedFields.isNotEmpty) {
       final fields = (meta['interested_fields'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
       // Check if any selected field matches candidate's fields
-      bool match = _selectedFields.any((selected) => fields.contains(selected));
+      final bool match = _selectedFields.any((selected) => fields.contains(selected));
       if (!match) return false;
     }
 
@@ -221,7 +221,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
       final locations = (meta['work_locations'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
       // Simple check if selected location is in their preferred locations
       // Or check address? Let's check work_locations
-      bool matchLoc = locations.any((l) => l.toString().contains(_selectedLocation));
+      final bool matchLoc = locations.any((l) => l.toString().contains(_selectedLocation));
       if (!matchLoc) return false;
     }
 
@@ -269,7 +269,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
+                          color: Colors.black.withValues(alpha: 0.06),
                           blurRadius: 15,
                           offset: const Offset(0, 3),
                         ),
@@ -303,7 +303,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 15,
                       offset: const Offset(0, 3),
                     ),
@@ -481,7 +481,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -558,12 +558,12 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    Icon(Icons.work_outline, size: 16, color: AppMainColors.primary),
+                    const Icon(Icons.work_outline, size: 16, color: AppMainColors.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         fields.join(', '),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Colors.black87,
                           fontWeight: FontWeight.w500,
@@ -603,9 +603,9 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isField ? AppMainColors.primary.withOpacity(0.1) : Colors.grey.shade100,
+        color: isField ? AppMainColors.primary.withValues(alpha: 0.1) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(6),
-        border: isField ? Border.all(color: AppMainColors.primary.withOpacity(0.2)) : null,
+        border: isField ? Border.all(color: AppMainColors.primary.withValues(alpha: 0.2)) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -680,7 +680,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                                 border: Border.all(color: Colors.white, width: 4),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 5),
                                   ),
@@ -775,7 +775,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                                 const SizedBox(height: 4),
                                 Text(
                                   exp['position'] ?? 'Vị trí',
-                                  style: TextStyle(color: AppMainColors.primary, fontWeight: FontWeight.w500),
+                                  style: const TextStyle(color: AppMainColors.primary, fontWeight: FontWeight.w500),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -866,7 +866,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -892,7 +892,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: AppMainColors.primary),
+                            side: const BorderSide(color: AppMainColors.primary),
                           ),
                         ),
                       ),
@@ -965,7 +965,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppMainColors.primary.withOpacity(0.1),
+              color: AppMainColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 18, color: AppMainColors.primary),
@@ -1151,7 +1151,7 @@ class _SearchPageEmployerState extends State<SearchPageEmployer> {
             ),
             Text(
               '${values.start.round()} - ${values.end.round()}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: AppMainColors.primary,
                 fontWeight: FontWeight.bold,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/models/notification_model.dart';
+import 'package:np_future_gate/core/repositories/device_token_repository.dart';
+import 'package:np_future_gate/core/repositories/notification_repository.dart';
+import 'package:np_future_gate/core/services/push_notification_service.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../models/notification_model.dart';
-import '../../../notification/models/notification_config.dart';
-import '../../repositories/notification_repository.dart';
-import '../../repositories/device_token_repository.dart';
-import '../push_notification_service.dart';
 
 /// Service xử lý logic navigation và hiển thị thông báo
 class StatusNotificationService {
@@ -22,10 +22,10 @@ class StatusNotificationService {
     BuildContext context,
     NotificationModel notification,
   ) async {
-    print('🔔 ========== handleNotificationTap START ==========');
-    print('🔔 Notification ID: ${notification.id}');
-    print('🔔 Action Code: ${notification.actionCode}');
-    print('🔔 Action Data: ${notification.actionData}');
+    debugPrint('🔔 ========== handleNotificationTap START ==========');
+    debugPrint('🔔 Notification ID: ${notification.id}');
+    debugPrint('🔔 Action Code: ${notification.actionCode}');
+    debugPrint('🔔 Action Data: ${notification.actionData}');
     
     // Đánh dấu đã đọc
     final userId = await _getCurrentUserId();
@@ -40,20 +40,22 @@ class StatusNotificationService {
     final actionCode = notification.actionCodeEnum;
     final config = NotificationConfigs.getConfig(actionCode);
     
-    print('🔔 Action Code Enum: ${actionCode.code}');
-    print('🔔 Config found: ${config != null}');
+    debugPrint('🔔 Action Code Enum: ${actionCode.code}');
+    debugPrint('🔔 Config found: ${config != null}');
 
     if (config == null) {
       // Không có config, show dialog mặc định
-      print('⚠️ No config found, showing dialog');
+      debugPrint('⚠️ No config found, showing dialog');
+      // ignore: use_build_context_synchronously
       _showNotificationDialog(context, notification);
       return false;
     }
 
     // Nếu config yêu cầu show dialog
     if (config.showDialog) {
-      print('💬 Config requires dialog');
+      debugPrint('💬 Config requires dialog');
       _showNotificationDialog(
+        // ignore: use_build_context_synchronously
         context,
         notification,
         dialogTitle: config.dialogTitle,
@@ -63,20 +65,21 @@ class StatusNotificationService {
 
     // Nếu cần navigation
     if (actionCode.requiresNavigation) {
-      print('🧭 Navigation required');
+      debugPrint('🧭 Navigation required');
       // Extract route params từ action_data
       final routeParams = config.extractRouteParams?.call(notification.actionData) ?? {};
-      print('🧭 Route params: $routeParams');
+      debugPrint('🧭 Route params: $routeParams');
       
       // Gọi callback navigate nếu có
       if (onNavigate != null) {
-        print('✅ onNavigate callback is available');
+        debugPrint('✅ onNavigate callback is available');
         try {
+          // ignore: use_build_context_synchronously
           await onNavigate!(context, actionCode, routeParams);
-          print('✅ Navigation completed successfully');
+          debugPrint('✅ Navigation completed successfully');
           return true;
         } catch (e) {
-          print('❌ Error navigating: $e');
+          debugPrint('❌ Error navigating: $e');
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Không thể mở trang này')),
@@ -84,15 +87,17 @@ class StatusNotificationService {
           }
         }
       } else {
-        print('⚠️ onNavigate callback is NULL! Navigation not configured.');
+        debugPrint('⚠️ onNavigate callback is NULL! Navigation not configured.');
         // Fallback: show dialog nếu chưa có callback
+        // ignore: use_build_context_synchronously
         _showNotificationDialog(context, notification);
       }
       return false;
     }
 
     // Default: show dialog
-    print('💬 Default: showing dialog');
+    debugPrint('💬 Default: showing dialog');
+    // ignore: use_build_context_synchronously
     _showNotificationDialog(context, notification);
     return false;
   }
@@ -128,7 +133,7 @@ class StatusNotificationService {
       final user = Supabase.instance.client.auth.currentUser;
       return user?.id;
     } catch (e) {
-      print('Error getting current user ID: $e');
+      debugPrint('Error getting current user ID: $e');
       return null;
     }
   }
@@ -142,7 +147,7 @@ class StatusNotificationService {
     Map<String, dynamic>? data,
   }) async {
     try {
-      print('📱 Sending push notification to user: $userId');
+      debugPrint('📱 Sending push notification to user: $userId');
       
       // Lấy danh sách active device IDs
       final deviceIds = await _deviceTokenRepo.getActiveDeviceIds(
@@ -151,11 +156,11 @@ class StatusNotificationService {
       );
       
       if (deviceIds.isEmpty) {
-        print('ℹ️ No active devices found for user: $userId');
+        debugPrint('ℹ️ No active devices found for user: $userId');
         return;
       }
       
-      print('📱 Found ${deviceIds.length} device(s)');
+      debugPrint('📱 Found ${deviceIds.length} device(s)');
       
       // Gửi notification đến tất cả devices của user
       final success = await PushNotificationService.sendNotificationToMultipleDevices(
@@ -166,12 +171,12 @@ class StatusNotificationService {
       );
       
       if (success) {
-        print('✅ Push notifications sent to ${deviceIds.length} device(s)');
+        debugPrint('✅ Push notifications sent to ${deviceIds.length} device(s)');
       } else {
-        print('❌ Failed to send push notifications');
+        debugPrint('❌ Failed to send push notifications');
       }
     } catch (e) {
-      print('❌ Error sending push notification: $e');
+      debugPrint('❌ Error sending push notification: $e');
     }
   }
 
@@ -182,7 +187,7 @@ class StatusNotificationService {
     required String jobTitle,
     required String candidateName,
   }) async {
-    final title = 'Đơn ứng tuyển mới';
+    const title = 'Đơn ứng tuyển mới';
     final content = '$candidateName đã ứng tuyển vào vị trí $jobTitle';
     
     // Tạo thông báo trong database
@@ -217,7 +222,7 @@ class StatusNotificationService {
     required String jobTitle,
     required DateTime interviewTime,
   }) async {
-    final title = 'Lịch phỏng vấn mới';
+    const title = 'Lịch phỏng vấn mới';
     final content = 'Bạn có lịch phỏng vấn cho vị trí $jobTitle vào ${_formatDateTime(interviewTime)}';
     
     // Tạo thông báo trong database
@@ -254,7 +259,7 @@ class StatusNotificationService {
     required String jobId,
     required String jobTitle,
   }) async {
-    final title = 'Công việc được duyệt';
+    const title = 'Công việc được duyệt';
     final content = 'Tin tuyển dụng "$jobTitle" đã được phê duyệt';
     
     // Tạo thông báo trong database
@@ -288,7 +293,7 @@ class StatusNotificationService {
     required String jobTitle,
     required String reason,
   }) async {
-    final title = 'Công việc bị từ chối';
+    const title = 'Công việc bị từ chối';
     final content = 'Tin tuyển dụng "$jobTitle" đã bị từ chối. Lý do: $reason';
     
     // Tạo thông báo trong database
@@ -322,7 +327,7 @@ class StatusNotificationService {
     required String schoolName,
     required String partnershipId,
   }) async {
-    final title = 'Yêu cầu liên kết';
+    const title = 'Yêu cầu liên kết';
     final content = '$schoolName muốn liên kết với doanh nghiệp của bạn';
     
     // Tạo thông báo trong database
@@ -369,7 +374,7 @@ class StatusNotificationService {
     required String jobTitle,
     required DateTime interviewTime,
   }) async {
-    final title = 'Nhắc nhở phỏng vấn';
+    const title = 'Nhắc nhở phỏng vấn';
     final content = 'Bạn có lịch phỏng vấn cho vị trí $jobTitle vào ngày mai lúc ${_formatDateTime(interviewTime)}';
     
     // Tạo thông báo trong database

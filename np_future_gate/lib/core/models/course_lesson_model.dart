@@ -1,13 +1,4 @@
 class CourseLessonModel {
-  final String id;
-  final DateTime createdAt;
-  final String courseId;
-  final String title;
-  final String? description;
-  final String youtubeUrl;
-  final int order;
-  final int durationMinutes;
-  final bool isPreview;
 
   CourseLessonModel({
     required this.id,
@@ -34,6 +25,15 @@ class CourseLessonModel {
       isPreview: json['is_preview'] as bool? ?? false,
     );
   }
+  final String id;
+  final DateTime createdAt;
+  final String courseId;
+  final String title;
+  final String? description;
+  final String youtubeUrl;
+  final int order;
+  final int durationMinutes;
+  final bool isPreview;
 
   Map<String, dynamic> toJson() {
     return {

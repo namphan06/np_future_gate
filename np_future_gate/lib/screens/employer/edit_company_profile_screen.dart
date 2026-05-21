@@ -1,13 +1,14 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:np_future_gate/core/enums/job_fields.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../../core/enums/job_fields.dart';
-import '../../widgets/speech_text_field.dart';
 
 class EditCompanyProfileScreen extends StatefulWidget {
   const EditCompanyProfileScreen({super.key});
@@ -88,6 +89,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
         });
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi chọn ảnh: $e')),
       );
@@ -181,6 +183,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
     if (desc.isNotEmpty) content += '$desc\n';
     if (website.isNotEmpty) content += 'Website: $website\n';
     
+    // ignore: deprecated_member_use
     Share.share(content, subject: 'Thông tin công ty $name');
   }
 
@@ -319,7 +322,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
                             _tags.remove(tag);
                           });
                         },
-                        backgroundColor: AppMainColors.primary.withOpacity(0.1),
+                        backgroundColor: AppMainColors.primary.withValues(alpha: 0.1),
                         labelStyle: const TextStyle(color: AppMainColors.primary),
                       )).toList(),
                     ),
@@ -500,7 +503,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
                   }
                   onChanged(newItems);
                 },
-                selectedColor: AppMainColors.primary.withOpacity(0.15),
+                selectedColor: AppMainColors.primary.withValues(alpha: 0.15),
                 checkmarkColor: AppMainColors.primary,
                 labelStyle: TextStyle(
                   color: isSelected ? AppMainColors.primary : Colors.black87,
@@ -510,7 +513,7 @@ class _EditCompanyProfileScreenState extends State<EditCompanyProfileScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? AppMainColors.primary.withOpacity(0.5) : Colors.transparent,
+                    color: isSelected ? AppMainColors.primary.withValues(alpha: 0.5) : Colors.transparent,
                   ),
                 ),
               );

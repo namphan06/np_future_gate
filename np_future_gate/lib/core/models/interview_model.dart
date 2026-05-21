@@ -1,16 +1,4 @@
 class InterviewModel {
-  final String id;
-  final String candidateId;
-  final String jobId;
-  final String employerId;
-  final String? cvId;
-  final DateTime interviewTime;
-  final String jobTitle;
-  final Map<String, dynamic> evaluation;
-  final String status;
-  final DateTime createdAt;
-  final bool isPartnership;
-  final bool share;
 
   InterviewModel({
     required this.id,
@@ -43,6 +31,18 @@ class InterviewModel {
       share: json['share'] ?? false,
     );
   }
+  final String id;
+  final String candidateId;
+  final String jobId;
+  final String employerId;
+  final String? cvId;
+  final DateTime interviewTime;
+  final String jobTitle;
+  final Map<String, dynamic> evaluation;
+  final String status;
+  final DateTime createdAt;
+  final bool isPartnership;
+  final bool share;
 
   Map<String, dynamic> toJson() {
     return {

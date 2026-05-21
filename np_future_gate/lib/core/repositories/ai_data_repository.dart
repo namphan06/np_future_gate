@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/ai_intent_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
-import '../models/ai_intent_model.dart';
 
 /// Repository để lấy dữ liệu từ Supabase dựa trên Intent
 class AIDataRepository {
@@ -64,7 +65,7 @@ class AIDataRepository {
           return [];
       }
     } catch (e) {
-      print('Error fetching data for intent ${intent.id}: $e');
+      debugPrint('Error fetching data for intent ${intent.id}: $e');
       return [];
     }
   }

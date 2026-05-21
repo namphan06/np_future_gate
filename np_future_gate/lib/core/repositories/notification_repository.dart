@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/notification_model.dart';
+import 'package:np_future_gate/notification/models/notification_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/notification_model.dart';
-import '../../notification/models/notification_config.dart';
 
 /// Repository xử lý các thao tác với database cho notifications
 class NotificationRepository {
@@ -64,7 +65,7 @@ class NotificationRepository {
 
       return notifications;
     } catch (e) {
-      print('Error getting notifications: $e');
+      debugPrint('Error getting notifications: $e');
       rethrow;
     }
   }
@@ -86,7 +87,7 @@ class NotificationRepository {
               }))
           .toList();
     } catch (e) {
-      print('Error getting unread notifications: $e');
+      debugPrint('Error getting unread notifications: $e');
       rethrow;
     }
   }
@@ -102,7 +103,7 @@ class NotificationRepository {
       );
       return response as int;
     } catch (e) {
-      print('Error counting unread notifications: $e');
+      debugPrint('Error counting unread notifications: $e');
       return 0;
     }
   }
@@ -120,7 +121,7 @@ class NotificationRepository {
     } catch (e) {
       // Ignore nếu đã đọc rồi (unique constraint)
       if (!e.toString().contains('duplicate')) {
-        print('Error marking notification as read: $e');
+        debugPrint('Error marking notification as read: $e');
       }
     }
   }
@@ -145,7 +146,7 @@ class NotificationRepository {
 
       await _supabase.from('notification_reads').insert(reads);
     } catch (e) {
-      print('Error marking all as read: $e');
+      debugPrint('Error marking all as read: $e');
       rethrow;
     }
   }
@@ -177,7 +178,7 @@ class NotificationRepository {
         'read_at': readAt,
       });
     } catch (e) {
-      print('Error getting notification by id: $e');
+      debugPrint('Error getting notification by id: $e');
       return null;
     }
   }
@@ -195,7 +196,7 @@ class NotificationRepository {
 
       return NotificationModel.fromJson(response);
     } catch (e) {
-      print('Error creating notification: $e');
+      debugPrint('Error creating notification: $e');
       rethrow;
     }
   }
@@ -270,7 +271,7 @@ class NotificationRepository {
     try {
       await _supabase.rpc('delete_expired_notifications');
     } catch (e) {
-      print('Error deleting expired notifications: $e');
+      debugPrint('Error deleting expired notifications: $e');
     }
   }
 

@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/config/supabase_config.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
-import '../models/profile_model.dart';
-import '../models/auth_models.dart';
-import '../config/supabase_config.dart';
 
 /// Admin User Repository
 /// Quản lý người dùng từ phía Admin
@@ -23,7 +24,7 @@ class AdminUserRepository {
           .map((json) => Profile.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Error getting users by role: $e');
+      debugPrint('❌ Error getting users by role: $e');
       throw Exception('Failed to get users: $e');
     }
   }
@@ -99,7 +100,7 @@ class AdminUserRepository {
 
       return Profile.fromJson(response);
     } catch (e) {
-      print('❌ Error getting user by ID: $e');
+      debugPrint('❌ Error getting user by ID: $e');
       return null;
     }
   }
@@ -112,10 +113,10 @@ class AdminUserRepository {
           .update({'is_active': isActive})
           .eq('id', userId);
 
-      print('✅ User active status updated: $isActive');
+      debugPrint('✅ User active status updated: $isActive');
       return true;
     } catch (e) {
-      print('❌ Error updating user active status: $e');
+      debugPrint('❌ Error updating user active status: $e');
       throw Exception('Failed to update active status: $e');
     }
   }
@@ -123,22 +124,22 @@ class AdminUserRepository {
   /// Update user metadata (for post limits, etc.)
   Future<bool> updateUserMetadata(String userId, Map<String, dynamic> metadata) async {
     try {
-      print('🔍 Updating metadata for user $userId');
-      print('🔍 New metadata: $metadata');
+      debugPrint('🔍 Updating metadata for user $userId');
+      debugPrint('🔍 New metadata: $metadata');
       
       await _client
           .from('profiles')
           .update({'metadata': metadata})
           .eq('id', userId);
 
-      print('✅ User metadata updated');
+      debugPrint('✅ User metadata updated');
       
       // Force a small delay to ensure database commit
       await Future.delayed(const Duration(milliseconds: 100));
       
       return true;
     } catch (e) {
-      print('❌ Error updating user metadata: $e');
+      debugPrint('❌ Error updating user metadata: $e');
       throw Exception('Failed to update metadata: $e');
     }
   }
@@ -152,22 +153,22 @@ class AdminUserRepository {
         throw Exception('User not found');
       }
 
-      print('🔍 Current metadata: ${profile.metadata}');
+      debugPrint('🔍 Current metadata: ${profile.metadata}');
       
       final updatedMetadata = Map<String, dynamic>.from(profile.metadata);
       updatedMetadata['limit_post'] = limit;
       
-      print('🔍 Updated metadata: $updatedMetadata');
+      debugPrint('🔍 Updated metadata: $updatedMetadata');
 
       await updateUserMetadata(userId, updatedMetadata);
       
       // Verify the update
       final verifyProfile = await getUserById(userId);
-      print('✅ Verified metadata after update: ${verifyProfile?.metadata}');
+      debugPrint('✅ Verified metadata after update: ${verifyProfile?.metadata}');
       
       return true;
     } catch (e) {
-      print('❌ Error setting post limit: $e');
+      debugPrint('❌ Error setting post limit: $e');
       throw Exception('Failed to set post limit: $e');
     }
   }
@@ -189,14 +190,14 @@ class AdminUserRepository {
       try {
         await _client.rpc('delete_user', params: {'user_id': userId});
       } catch (e) {
-        print('⚠️ Could not delete from auth.users: $e');
+        debugPrint('⚠️ Could not delete from auth.users: $e');
         // Continue even if auth deletion fails
       }
 
-      print('✅ User account deleted');
+      debugPrint('✅ User account deleted');
       return true;
     } catch (e) {
-      print('❌ Error deleting user account: $e');
+      debugPrint('❌ Error deleting user account: $e');
       throw Exception('Failed to delete user account: $e');
     }
   }
@@ -213,7 +214,7 @@ class AdminUserRepository {
 
       return List<Map<String, dynamic>>.from(response as List);
     } catch (e) {
-      print('❌ Error getting user applications: $e');
+      debugPrint('❌ Error getting user applications: $e');
       return [];
     }
   }
@@ -229,11 +230,11 @@ class AdminUserRepository {
 
       final jobs = List<Map<String, dynamic>>.from(response as List);
       if (jobs.isNotEmpty) {
-        print('🔍 Sample job data: ${jobs.first}');
+        debugPrint('🔍 Sample job data: ${jobs.first}');
       }
       return jobs;
     } catch (e) {
-      print('❌ Error getting user posted jobs: $e');
+      debugPrint('❌ Error getting user posted jobs: $e');
       return [];
     }
   }
@@ -249,7 +250,7 @@ class AdminUserRepository {
 
       return List<Map<String, dynamic>>.from(response as List);
     } catch (e) {
-      print('❌ Error getting school partnership jobs: $e');
+      debugPrint('❌ Error getting school partnership jobs: $e');
       return [];
     }
   }
@@ -315,7 +316,7 @@ class AdminUserRepository {
           return {};
       }
     } catch (e) {
-      print('❌ Error getting user statistics: $e');
+      debugPrint('❌ Error getting user statistics: $e');
       return {};
     }
   }
@@ -338,7 +339,7 @@ class AdminUserRepository {
           .map((json) => Profile.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Error searching users: $e');
+      debugPrint('❌ Error searching users: $e');
       return [];
     }
   }

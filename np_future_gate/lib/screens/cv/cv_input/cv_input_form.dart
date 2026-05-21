@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
 
 /// CV Input Form - Form nhập liệu cho từng section của CV
 class CV1InputForm extends StatefulWidget {
-  final String section;
-  final Map<String, dynamic> data;
-  final Function(Map<String, dynamic>) onDataChanged;
-  final VoidCallback onClose;
 
   const CV1InputForm({
     super.key,
@@ -15,6 +11,10 @@ class CV1InputForm extends StatefulWidget {
     required this.onDataChanged,
     required this.onClose,
   });
+  final String section;
+  final Map<String, dynamic> data;
+  final Function(Map<String, dynamic>) onDataChanged;
+  final VoidCallback onClose;
 
   @override
   State<CV1InputForm> createState() => _CV1InputFormState();
@@ -142,7 +142,7 @@ class _CV1InputFormState extends State<CV1InputForm> {
             color: Colors.blue[700],
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),

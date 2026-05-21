@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import '../../core/theme/app_main_colors.dart';
 
 class WebViewScreen extends StatefulWidget {
-  final String url;
-  final String title;
 
   const WebViewScreen({
     super.key,
     required this.url,
     required this.title,
   });
+  final String url;
+  final String title;
 
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
@@ -35,7 +35,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       // Setting a Desktop User Agent makes the controls smaller and more compact
-      ..setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36")
+      ..setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36')
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {

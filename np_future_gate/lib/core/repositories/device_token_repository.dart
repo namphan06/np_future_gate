@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:np_future_gate/core/models/device_token_model.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../models/device_token_model.dart';
-import '../services/supabase_service.dart';
 
 /// Device Token Repository
 /// Xử lý tất cả logic liên quan đến device tokens cho push notifications
@@ -78,7 +80,7 @@ class DeviceTokenRepository {
 
       return response as String?;
     } catch (e) {
-      print('Error saving device token: $e');
+      debugPrint('Error saving device token: $e');
       rethrow;
     }
   }
@@ -106,7 +108,7 @@ class DeviceTokenRepository {
         deviceName = '${iosInfo.name} ${iosInfo.model}';
       }
     } catch (e) {
-      print('Error getting device info: $e');
+      debugPrint('Error getting device info: $e');
     }
 
     return {
@@ -134,7 +136,7 @@ class DeviceTokenRepository {
           .map((json) => DeviceTokenModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error getting user device tokens: $e');
+      debugPrint('Error getting user device tokens: $e');
       return [];
     }
   }
@@ -159,7 +161,7 @@ class DeviceTokenRepository {
 
       return response as bool? ?? false;
     } catch (e) {
-      print('Error checking notification permission: $e');
+      debugPrint('Error checking notification permission: $e');
       return false;
     }
   }
@@ -180,7 +182,7 @@ class DeviceTokenRepository {
 
       return response as bool? ?? false;
     } catch (e) {
-      print('Error removing device token: $e');
+      debugPrint('Error removing device token: $e');
       return false;
     }
   }
@@ -194,9 +196,9 @@ class DeviceTokenRepository {
     String? role,
   }) async {
     try {
-      print('🔍 DEBUG Repository Query:');
-      print('   userId: $userId');
-      print('   role: $role');
+      debugPrint('🔍 DEBUG Repository Query:');
+      debugPrint('   userId: $userId');
+      debugPrint('   role: $role');
       
       var query = _supabase
           .from('device_tokens')
@@ -213,16 +215,16 @@ class DeviceTokenRepository {
 
       final response = await query;
       
-      print('📱 DEBUG Raw Response:');
-      print('   Type: ${response.runtimeType}');
-      print('   Length: ${(response as List).length}');
-      print('   Data: $response');
+      debugPrint('📱 DEBUG Raw Response:');
+      debugPrint('   Type: ${response.runtimeType}');
+      debugPrint('   Length: ${(response as List).length}');
+      debugPrint('   Data: $response');
       
       return response
           .map((item) => item['device_id'] as String)
           .toList();
     } catch (e) {
-      print('❌ Error getting active device IDs: $e');
+      debugPrint('❌ Error getting active device IDs: $e');
       return [];
     }
   }
@@ -237,7 +239,7 @@ class DeviceTokenRepository {
       
       return true;
     } catch (e) {
-      print('Error deactivating user tokens: $e');
+      debugPrint('Error deactivating user tokens: $e');
       return false;
     }
   }
@@ -259,7 +261,7 @@ class DeviceTokenRepository {
       
       return true;
     } catch (e) {
-      print('Error updating user role: $e');
+      debugPrint('Error updating user role: $e');
       return false;
     }
   }
@@ -280,7 +282,7 @@ class DeviceTokenRepository {
 
       return response?['notification_settings'] as Map<String, dynamic>?;
     } catch (e) {
-      print('Error getting notification settings: $e');
+      debugPrint('Error getting notification settings: $e');
       return null;
     }
   }
@@ -292,10 +294,10 @@ class DeviceTokenRepository {
     required Map<String, dynamic> settings,
   }) async {
     try {
-      print('📝 Updating notification settings...');
-      print('   User ID: $userId');
-      print('   Device Token: ${deviceToken.substring(0, 20)}...');
-      print('   Settings: $settings');
+      debugPrint('📝 Updating notification settings...');
+      debugPrint('   User ID: $userId');
+      debugPrint('   Device Token: ${deviceToken.substring(0, 20)}...');
+      debugPrint('   Settings: $settings');
 
       await _supabase
           .from('device_tokens')
@@ -304,10 +306,10 @@ class DeviceTokenRepository {
           .eq('device_id', deviceToken)
           .eq('is_active', true);
 
-      print('✅ Notification settings updated successfully');
+      debugPrint('✅ Notification settings updated successfully');
       return true;
     } catch (e) {
-      print('❌ Error updating notification settings: $e');
+      debugPrint('❌ Error updating notification settings: $e');
       return false;
     }
   }
@@ -318,9 +320,9 @@ class DeviceTokenRepository {
     required Map<String, dynamic> settings,
   }) async {
     try {
-      print('📝 Updating notification settings for all devices...');
-      print('   User ID: $userId');
-      print('   Settings: $settings');
+      debugPrint('📝 Updating notification settings for all devices...');
+      debugPrint('   User ID: $userId');
+      debugPrint('   Settings: $settings');
 
       await _supabase
           .from('device_tokens')
@@ -328,10 +330,10 @@ class DeviceTokenRepository {
           .eq('user_id', userId)
           .eq('is_active', true);
 
-      print('✅ Notification settings updated for all devices');
+      debugPrint('✅ Notification settings updated for all devices');
       return true;
     } catch (e) {
-      print('❌ Error updating notification settings for all devices: $e');
+      debugPrint('❌ Error updating notification settings for all devices: $e');
       return false;
     }
   }

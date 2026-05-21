@@ -1,10 +1,12 @@
 import 'dart:io';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../services/supabase_service.dart';
-import '../models/auth_models.dart';
-import '../models/profile_model.dart';
-import 'device_token_repository.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/device_token_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Auth Repository
 /// Xử lý tất cả logic liên quan đến authentication
@@ -26,7 +28,7 @@ class AuthRepository {
     required UserRole role,
   }) async {
     try {
-      print('🔵 Bắt đầu đăng ký: $email');
+      debugPrint('🔵 Bắt đầu đăng ký: $email');
       
       final response = await _client.auth.signUp(
         email: email,
@@ -38,19 +40,19 @@ class AuthRepository {
         },
       );
 
-      print('🔵 Auth response - User: ${response.user?.id}');
-      print('🔵 Auth response - Session: ${response.session != null}');
+      debugPrint('🔵 Auth response - User: ${response.user?.id}');
+      debugPrint('🔵 Auth response - Session: ${response.session != null}');
 
       if (response.user == null) {
-        print('❌ Đăng ký thất bại: User null');
+        debugPrint('❌ Đăng ký thất bại: User null');
         return AuthResult.failure('Đăng ký thất bại. Vui lòng thử lại.');
       }
 
-      print('✅ User đã tạo trong auth.users: ${response.user!.id}');
+      debugPrint('✅ User đã tạo trong auth.users: ${response.user!.id}');
 
       // Tạo profile thủ công nếu trigger không hoạt động
       try {
-        print('🔵 Bắt đầu tạo profile...');
+        debugPrint('🔵 Bắt đầu tạo profile...');
         await _client.from('profiles').insert({
           'id': response.user!.id,
           'email': email,
@@ -60,36 +62,36 @@ class AuthRepository {
           'metadata': {},
           'is_active': false, // Mặc định tài khoản chưa kích hoạt
         });
-        print('✅ Profile đã tạo thành công');
+        debugPrint('✅ Profile đã tạo thành công');
       } catch (profileError) {
         // Ignore nếu profile đã tồn tại (trigger đã tạo)
-        print('⚠️ Lỗi tạo profile (có thể trigger đã tạo): $profileError');
+        debugPrint('⚠️ Lỗi tạo profile (có thể trigger đã tạo): $profileError');
       }
 
       // Kiểm tra xem có cần xác thực email không
       if (response.user!.emailConfirmedAt == null) {
-        print('⚠️ Email chưa được xác thực');
+        debugPrint('⚠️ Email chưa được xác thực');
         return AuthResult.success(
           message: 'Vui lòng kiểm tra email để xác thực tài khoản.',
           data: response.user,
         );
       }
 
-      print('✅ Đăng ký hoàn tất');
+      debugPrint('✅ Đăng ký hoàn tất');
       return AuthResult.success(
         message: 'Đăng ký thành công!',
         data: response.user,
       );
     } on AuthException catch (e) {
-      print('❌ AuthException: ${e.statusCode} - ${e.message}');
+      debugPrint('❌ AuthException: ${e.statusCode} - ${e.message}');
       return AuthResult.failure(_getAuthErrorMessage(e));
     } on PostgrestException catch (e) {
-      print('❌ PostgrestException: ${e.code} - ${e.message}');
-      print('❌ Details: ${e.details}');
-      print('❌ Hint: ${e.hint}');
+      debugPrint('❌ PostgrestException: ${e.code} - ${e.message}');
+      debugPrint('❌ Details: ${e.details}');
+      debugPrint('❌ Hint: ${e.hint}');
       return AuthResult.failure('Lỗi database: ${e.message}');
     } catch (e) {
-      print('❌ Lỗi không xác định: $e');
+      debugPrint('❌ Lỗi không xác định: $e');
       return AuthResult.failure('Đã xảy ra lỗi: $e');
     }
   }
@@ -100,7 +102,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      print('🔵 Bắt đầu đăng nhập: $email');
+      debugPrint('🔵 Bắt đầu đăng nhập: $email');
       
       final response = await _client.auth.signInWithPassword(
         email: email,
@@ -108,17 +110,17 @@ class AuthRepository {
       );
 
       if (response.user == null) {
-        print('❌ Đăng nhập thất bại: User null');
+        debugPrint('❌ Đăng nhập thất bại: User null');
         return AuthResult.failure('Đăng nhập thất bại. Vui lòng thử lại.');
       }
 
-      print('✅ Đăng nhập thành công: ${response.user!.id}');
+      debugPrint('✅ Đăng nhập thành công: ${response.user!.id}');
       
       // Check if account is active
       try {
         final profile = await getCurrentUserProfile();
         if (profile != null && !profile.isActive) {
-          print('⚠️ Tài khoản bị ngừng hoạt động: ${response.user!.id}');
+          debugPrint('⚠️ Tài khoản bị ngừng hoạt động: ${response.user!.id}');
           
           // Sign out immediately
           await _client.auth.signOut();
@@ -129,7 +131,7 @@ class AuthRepository {
           );
         }
       } catch (e) {
-        print('⚠️ Không thể kiểm tra trạng thái tài khoản: $e');
+        debugPrint('⚠️ Không thể kiểm tra trạng thái tài khoản: $e');
         // Allow login to continue if can't check status
       }
       
@@ -138,10 +140,10 @@ class AuthRepository {
         data: response.user,
       );
     } on AuthException catch (e) {
-      print('❌ AuthException: ${e.statusCode} - ${e.message}');
+      debugPrint('❌ AuthException: ${e.statusCode} - ${e.message}');
       return AuthResult.failure(_getAuthErrorMessage(e));
     } catch (e) {
-      print('❌ Lỗi đăng nhập: $e');
+      debugPrint('❌ Lỗi đăng nhập: $e');
       return AuthResult.failure('Đã xảy ra lỗi: $e');
     }
   }
@@ -149,7 +151,7 @@ class AuthRepository {
   /// Sign in with Google
   Future<AuthResult> signInWithGoogle() async {
     try {
-      print('🔵 Bắt đầu đăng nhập Google');
+      debugPrint('🔵 Bắt đầu đăng nhập Google');
       
       // Đăng xuất trước để chọn tài khoản mới
       await _googleSignIn.signOut();
@@ -157,11 +159,11 @@ class AuthRepository {
       // Sign in with Google
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        print('⚠️ User hủy đăng nhập Google');
+        debugPrint('⚠️ User hủy đăng nhập Google');
         return AuthResult.failure('Đăng nhập Google bị hủy.');
       }
 
-      print('🔵 Google user: ${googleUser.email}');
+      debugPrint('🔵 Google user: ${googleUser.email}');
 
       // Get Google authentication
       final googleAuth = await googleUser.authentication;
@@ -169,11 +171,11 @@ class AuthRepository {
       final idToken = googleAuth.idToken;
 
       if (accessToken == null || idToken == null) {
-        print('❌ Không lấy được token từ Google');
+        debugPrint('❌ Không lấy được token từ Google');
         return AuthResult.failure('Không thể lấy thông tin xác thực từ Google.');
       }
 
-      print('🔵 Đang đăng nhập vào Supabase...');
+      debugPrint('🔵 Đang đăng nhập vào Supabase...');
       // Sign in to Supabase with Google credentials
       final response = await _client.auth.signInWithIdToken(
         provider: OAuthProvider.google,
@@ -182,17 +184,17 @@ class AuthRepository {
       );
 
       if (response.user == null) {
-        print('❌ Supabase signIn thất bại');
+        debugPrint('❌ Supabase signIn thất bại');
         return AuthResult.failure('Đăng nhập Google thất bại.');
       }
 
-      print('✅ Đăng nhập Google thành công: ${response.user!.id}');
+      debugPrint('✅ Đăng nhập Google thành công: ${response.user!.id}');
       
       // Check if account is active
       try {
         final profile = await getCurrentUserProfile();
         if (profile != null && !profile.isActive) {
-          print('⚠️ Tài khoản bị ngừng hoạt động: ${response.user!.id}');
+          debugPrint('⚠️ Tài khoản bị ngừng hoạt động: ${response.user!.id}');
           
           // Sign out immediately
           await _client.auth.signOut();
@@ -204,7 +206,7 @@ class AuthRepository {
           );
         }
       } catch (e) {
-        print('⚠️ Không thể kiểm tra trạng thái tài khoản: $e');
+        debugPrint('⚠️ Không thể kiểm tra trạng thái tài khoản: $e');
         // Allow login to continue if can't check status
       }
       
@@ -213,10 +215,10 @@ class AuthRepository {
         data: response.user,
       );
     } on AuthException catch (e) {
-      print('❌ AuthException: ${e.statusCode} - ${e.message}');
+      debugPrint('❌ AuthException: ${e.statusCode} - ${e.message}');
       return AuthResult.failure(_getAuthErrorMessage(e));
     } catch (e) {
-      print('❌ Lỗi Google Sign-in: $e');
+      debugPrint('❌ Lỗi Google Sign-in: $e');
       return AuthResult.failure('Đã xảy ra lỗi khi đăng nhập Google: $e');
     }
   }
@@ -232,7 +234,7 @@ class AuthRepository {
             userId: _supabaseService.currentUserId!,
           );
         } catch (e) {
-          print('⚠️ Error removing device token: $e');
+          debugPrint('⚠️ Error removing device token: $e');
         }
       }
       
@@ -272,7 +274,7 @@ class AuthRepository {
 
       return Profile.fromJson(response);
     } catch (e) {
-      print('Lỗi khi lấy profile: $e');
+      debugPrint('Lỗi khi lấy profile: $e');
       return null;
     }
   }
@@ -330,7 +332,7 @@ class AuthRepository {
            }
         }
       } catch (e) {
-        print('Error deleting old avatar: $e');
+        debugPrint('Error deleting old avatar: $e');
       }
 
       await _client.storage.from('profile').upload(
@@ -342,7 +344,7 @@ class AuthRepository {
       final imageUrl = _client.storage.from('profile').getPublicUrl(filePath);
       return imageUrl;
     } catch (e) {
-      print('Error uploading avatar: $e');
+      debugPrint('Error uploading avatar: $e');
       throw Exception('Upload failed: $e');
     }
   }
@@ -399,7 +401,7 @@ class AuthRepository {
 
       return (response as List).map((e) => Profile.fromJson(e)).toList();
     } catch (e) {
-      print('❌ Lỗi lấy danh sách profiles: $e');
+      debugPrint('❌ Lỗi lấy danh sách profiles: $e');
       return [];
     }
   }
@@ -417,9 +419,9 @@ class AuthRepository {
         userId: userId,
         role: role,
       );
-      print('✅ Device token saved successfully');
+      debugPrint('✅ Device token saved successfully');
     } catch (e) {
-      print('⚠️ Error saving device token: $e');
+      debugPrint('⚠️ Error saving device token: $e');
       // Don't throw, just log the error
       // Push notification registration shouldn't block user flow
     }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Subscription plans for employers
@@ -37,13 +38,7 @@ extension SubscriptionPlanExtension on SubscriptionPlan {
   }
 }
 
-class SubscriptionInfo {
-  final SubscriptionPlan plan;
-  final int maxJobsPerMonth;
-  final int price;
-  final DateTime? expiresAt;
-  final int usedJobsThisMonth;
-  final bool wasExpired; // True if user had a paid plan that expired
+class SubscriptionInfo { // True if user had a paid plan that expired
 
   SubscriptionInfo({
     required this.plan,
@@ -53,6 +48,12 @@ class SubscriptionInfo {
     this.usedJobsThisMonth = 0,
     this.wasExpired = false,
   });
+  final SubscriptionPlan plan;
+  final int maxJobsPerMonth;
+  final int price;
+  final DateTime? expiresAt;
+  final int usedJobsThisMonth;
+  final bool wasExpired;
 
   int get remainingJobs => maxJobsPerMonth - usedJobsThisMonth;
   bool get canPostJob => remainingJobs > 0;
@@ -110,33 +111,33 @@ class SubscriptionInfo {
 }
 
 class SubscriptionService {
-  final SupabaseClient _supabase;
 
   SubscriptionService() : _supabase = Supabase.instance.client;
+  final SupabaseClient _supabase;
 
   /// Get current user's subscription info
   Future<SubscriptionInfo> getCurrentSubscription() async {
     final userId = _supabase.auth.currentUser?.id;
-    print('📦 SubscriptionService: Getting subscription for user: $userId');
+    debugPrint('📦 SubscriptionService: Getting subscription for user: $userId');
     
     if (userId == null) {
-      print('📦 SubscriptionService: No user logged in, returning free plan');
+      debugPrint('📦 SubscriptionService: No user logged in, returning free plan');
       return SubscriptionInfo.fromPlan(SubscriptionPlan.free);
     }
 
     try {
       // Get profile with subscription metadata
-      print('📦 SubscriptionService: Fetching profile metadata...');
+      debugPrint('📦 SubscriptionService: Fetching profile metadata...');
       final response = await _supabase
           .from('profiles')
           .select('metadata')
           .eq('id', userId)
           .maybeSingle();
 
-      print('📦 SubscriptionService: Profile response: $response');
+      debugPrint('📦 SubscriptionService: Profile response: $response');
 
       if (response == null) {
-        print('📦 SubscriptionService: No profile found, returning free plan');
+        debugPrint('📦 SubscriptionService: No profile found, returning free plan');
         return SubscriptionInfo.fromPlan(SubscriptionPlan.free);
       }
 
@@ -155,7 +156,7 @@ class SubscriptionService {
 
       // Check if subscription expired - reset to free plan
       if (expiresAt != null && DateTime.now().isAfter(expiresAt)) {
-        print('📦 SubscriptionService: Subscription expired, resetting to free plan');
+        debugPrint('📦 SubscriptionService: Subscription expired, resetting to free plan');
         final usedJobs = await _countJobsThisMonth(userId);
         
         // Return free plan with wasExpired flag so UI can show "Gia hạn" option
@@ -168,12 +169,12 @@ class SubscriptionService {
 
       final plan = _parsePlan(planStr);
       final usedJobs = await _countJobsThisMonth(userId);
-      print('📦 SubscriptionService: Plan: $plan, Used jobs: $usedJobs');
+      debugPrint('📦 SubscriptionService: Plan: $plan, Used jobs: $usedJobs');
 
       return SubscriptionInfo.fromPlan(plan, usedJobs: usedJobs, expiresAt: expiresAt);
     } catch (e, stackTrace) {
-      print('❌ SubscriptionService Error: $e');
-      print('❌ StackTrace: $stackTrace');
+      debugPrint('❌ SubscriptionService Error: $e');
+      debugPrint('❌ StackTrace: $stackTrace');
       return SubscriptionInfo.fromPlan(SubscriptionPlan.free);
     }
   }
@@ -200,7 +201,7 @@ class SubscriptionService {
 
       return (regularJobs as List).length + (partnershipJobs as List).length;
     } catch (e) {
-      print('Error counting jobs: $e');
+      debugPrint('Error counting jobs: $e');
       return 0;
     }
   }

@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:np_future_gate/screens/cv/cv_input/cv10_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv11_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv12_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv13_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv14_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv15_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv16_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv17_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv18_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv19_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv1_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv2_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv3_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv4_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv5_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv6_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv7_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv8_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv9_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_management_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_metadata.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'cv_metadata.dart';
-import '../cv_input/cv1_input_screen.dart';
-import '../cv_input/cv2_input_screen.dart';
-import '../cv_input/cv3_input_screen.dart';
-import '../cv_input/cv4_input_screen.dart';
-import '../cv_input/cv5_input_screen.dart';
-import '../cv_input/cv6_input_screen.dart';
-import '../cv_input/cv7_input_screen.dart';
-import '../cv_input/cv8_input_screen.dart';
-import '../cv_input/cv9_input_screen.dart';
-import '../cv_input/cv10_input_screen.dart';
-import '../cv_input/cv11_input_screen.dart';
-import '../cv_input/cv12_input_screen.dart';
-import '../cv_input/cv13_input_screen.dart';
-import '../cv_input/cv14_input_screen.dart';
-import '../cv_input/cv15_input_screen.dart';
-import '../cv_input/cv16_input_screen.dart';
-import '../cv_input/cv17_input_screen.dart';
-import '../cv_input/cv18_input_screen.dart';
-import '../cv_input/cv19_input_screen.dart';
-import '../cv_management_screen.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// Screen showing general CV templates
 class CVGeneralTemplatesScreen extends StatefulWidget {
@@ -92,6 +92,7 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
         listenFor: const Duration(seconds: 15),
         pauseFor: const Duration(seconds: 3),
         localeId: 'vi_VN',
+        // ignore: deprecated_member_use
         listenMode: stt.ListenMode.dictation,
       );
     }
@@ -164,7 +165,7 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -201,7 +202,7 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
                       icon: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: Colors.blue.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.manage_search, color: Colors.blue),
@@ -227,7 +228,7 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -331,7 +332,7 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -358,7 +359,7 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -490,9 +491,9 @@ class _CVGeneralTemplatesScreenState extends State<CVGeneralTemplatesScreen> {
                   children: t.tags.map((tag) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: tag.color.withOpacity(0.1),
+                      color: tag.color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: tag.color.withOpacity(0.2)),
+                      border: Border.all(color: tag.color.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

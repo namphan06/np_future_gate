@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
 
 /// Text styles cho ứng dụng NP FutureGate
 /// Đảm bảo typography nhất quán trong toàn bộ ứng dụng

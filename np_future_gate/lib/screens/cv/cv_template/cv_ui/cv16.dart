@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 /// CV16 - Legal & Law Template
 /// Mẫu CV dành cho ngành Luật, Luật sư, Cố vấn pháp lý
 class Cv16 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv16({super.key, this.data, this.onSectionTap});
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +321,7 @@ class Cv16 extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Column(
@@ -370,7 +370,7 @@ class Cv16 extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5DC),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4)),
+        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.4)),
       ),
       child: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF1B2838))),
     );

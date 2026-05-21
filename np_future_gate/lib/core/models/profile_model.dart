@@ -1,18 +1,8 @@
-import 'auth_models.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
 
 /// Profile Model
 /// Đại diện cho thông tin user trong bảng profiles
 class Profile {
-  final String id;
-  final String? email;
-  final String? fullName;
-  final String? avatarUrl;
-  final String? phone;
-  final UserRole role;
-  final Map<String, dynamic> metadata;
-  final bool isActive;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   Profile({
     required this.id,
@@ -42,6 +32,16 @@ class Profile {
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
+  final String id;
+  final String? email;
+  final String? fullName;
+  final String? avatarUrl;
+  final String? phone;
+  final UserRole role;
+  final Map<String, dynamic> metadata;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   /// Convert Profile to JSON (for Supabase update)
   Map<String, dynamic> toJson() {

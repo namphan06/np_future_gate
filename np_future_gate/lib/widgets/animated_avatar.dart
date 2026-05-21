@@ -7,13 +7,6 @@ import 'package:flutter/material.dart';
 /// smoothly transitions to the loaded image with a cross-fade
 /// or an optional Y-axis flip.
 class AnimatedAvatar extends StatefulWidget {
-  final String? avatarUrl;
-  final double width;
-  final double height;
-  final double borderRadius;
-  final bool flipOnLoad;
-  final Color placeholderColor;
-  final IconData placeholderIcon;
 
   const AnimatedAvatar({
     super.key,
@@ -25,6 +18,13 @@ class AnimatedAvatar extends StatefulWidget {
     this.placeholderColor = const Color(0xFFF1F5F9),
     this.placeholderIcon = Icons.person_rounded,
   });
+  final String? avatarUrl;
+  final double width;
+  final double height;
+  final double borderRadius;
+  final bool flipOnLoad;
+  final Color placeholderColor;
+  final IconData placeholderIcon;
 
   @override
   State<AnimatedAvatar> createState() => _AnimatedAvatarState();

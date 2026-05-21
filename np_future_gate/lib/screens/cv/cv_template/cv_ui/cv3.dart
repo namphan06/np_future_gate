@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class Cv3 extends StatelessWidget {
-  final Map<String, dynamic>? data;
-  final Function(String section)? onSectionTap;
 
   const Cv3({
     super.key,
     this.data,
     this.onSectionTap,
   });
+  final Map<String, dynamic>? data;
+  final Function(String section)? onSectionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,7 @@ class Cv3 extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          (personalInfo['full_name'] ?? "NGUYỄN VĂN C").toUpperCase(),
+                          (personalInfo['full_name'] ?? 'NGUYỄN VĂN C').toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 32,
@@ -48,7 +48,7 @@ class Cv3 extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          (personalInfo['title'] ?? "Senior Software Engineer").toUpperCase(),
+                          (personalInfo['title'] ?? 'Senior Software Engineer').toUpperCase(),
                           style: const TextStyle(
                             color: Color(0xFF63B3ED), // Light blue
                             fontSize: 18,
@@ -85,10 +85,10 @@ class Cv3 extends StatelessWidget {
                 spacing: 20,
                 runSpacing: 10,
                 children: [
-                  _buildContactItem(Icons.email, personalInfo['email'] ?? "email@example.com"),
-                  _buildContactItem(Icons.phone, personalInfo['phone'] ?? "0987654321"),
-                  _buildContactItem(Icons.location_on, personalInfo['address'] ?? "Hồ Chí Minh"),
-                  _buildContactItem(Icons.link, personalInfo['website'] ?? "github.com/username"),
+                  _buildContactItem(Icons.email, personalInfo['email'] ?? 'email@example.com'),
+                  _buildContactItem(Icons.phone, personalInfo['phone'] ?? '0987654321'),
+                  _buildContactItem(Icons.location_on, personalInfo['address'] ?? 'Hồ Chí Minh'),
+                  _buildContactItem(Icons.link, personalInfo['website'] ?? 'github.com/username'),
                 ],
               ),
             ),
@@ -186,15 +186,15 @@ class Cv3 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Technical Skills"),
+        _buildSectionTitle('Technical Skills'),
         if (list.isEmpty)
-          const Text("Flutter, Dart, Firebase, Git, CI/CD, Clean Architecture")
+          const Text('Flutter, Dart, Firebase, Git, CI/CD, Clean Architecture')
         else
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: list.map((s) => Chip(
-              label: Text(s['name'] ?? ""),
+              label: Text(s['name'] ?? ''),
               backgroundColor: const Color(0xFFEBF8FF),
               labelStyle: const TextStyle(color: Color(0xFF2C5282), fontWeight: FontWeight.bold),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
@@ -209,20 +209,20 @@ class Cv3 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Work Experience"),
+        _buildSectionTitle('Work Experience'),
         if (list.isEmpty)
           _buildExperienceItem(
-            "Tech Corp",
-            "Senior Developer",
-            "2020 - Present",
-            "• Led a team of 5 developers.\n• Architected the new mobile app using Flutter.\n• Improved app performance by 40%.",
+            'Tech Corp',
+            'Senior Developer',
+            '2020 - Present',
+            '• Led a team of 5 developers.\n• Architected the new mobile app using Flutter.\n• Improved app performance by 40%.',
           )
         else
           ...list.map((e) => _buildExperienceItem(
-            e['company'] ?? "",
-            e['position'] ?? "",
-            e['duration'] ?? "",
-            e['description'] ?? "",
+            e['company'] ?? '',
+            e['position'] ?? '',
+            e['duration'] ?? '',
+            e['description'] ?? '',
           )),
       ],
     );
@@ -286,9 +286,9 @@ class Cv3 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Key Projects"),
+        _buildSectionTitle('Key Projects'),
         if (list.isEmpty)
-          const Text("No projects listed.")
+          const Text('No projects listed.')
         else
           ...list.map((p) => Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -296,12 +296,12 @@ class Cv3 extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  p['name'] ?? "Project Name",
+                  p['name'] ?? 'Project Name',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  p['description'] ?? "",
+                  p['description'] ?? '',
                   style: const TextStyle(fontSize: 14, color: Color(0xFF4A5568)),
                 ),
               ],
@@ -316,9 +316,9 @@ class Cv3 extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("Education"),
+        _buildSectionTitle('Education'),
         if (list.isEmpty)
-          const Text("University of Technology - BS in Computer Science (2015-2019)")
+          const Text('University of Technology - BS in Computer Science (2015-2019)')
         else
           ...list.map((e) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -328,12 +328,12 @@ class Cv3 extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(e['school'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text(e['degree'] ?? "", style: const TextStyle(fontSize: 14)),
+                      Text(e['school'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(e['degree'] ?? '', style: const TextStyle(fontSize: 14)),
                     ],
                   ),
                 ),
-                Text(e['year'] ?? "", style: const TextStyle(color: Color(0xFF718096), fontWeight: FontWeight.bold)),
+                Text(e['year'] ?? '', style: const TextStyle(color: Color(0xFF718096), fontWeight: FontWeight.bold)),
               ],
             ),
           )),

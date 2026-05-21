@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
+import 'package:np_future_gate/core/services/cv_supabase_service.dart';
+import 'package:np_future_gate/screens/candidate/job_detail_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_display_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/services/cv_supabase_service.dart';
-import '../../candidate/job_detail_screen.dart';
-import '../../cv/cv_setting/cv_display_manager.dart';
 
 class NewApplicantsScreen extends StatefulWidget {
   const NewApplicantsScreen({super.key});
@@ -287,7 +287,7 @@ class _NewApplicantsScreenState extends State<NewApplicantsScreen> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),

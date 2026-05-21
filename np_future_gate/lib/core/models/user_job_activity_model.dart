@@ -1,14 +1,4 @@
 class UserJobActivity {
-  final String id;
-  final String userId;
-  final String jobId;
-  final bool isSaved;
-  final bool isApplied;
-  final String? cvId;
-  final String? applicationStatus;
-  final DateTime? appliedAt;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   UserJobActivity({
     required this.id,
@@ -37,6 +27,16 @@ class UserJobActivity {
       updatedAt: DateTime.parse(json['updated_at']),
     );
   }
+  final String id;
+  final String userId;
+  final String jobId;
+  final bool isSaved;
+  final bool isApplied;
+  final String? cvId;
+  final String? applicationStatus;
+  final DateTime? appliedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() {
     return {

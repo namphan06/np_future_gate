@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
-import 'cv_metadata.dart';
-import '../cv_input/cv1_input_screen.dart';
-import '../cv_input/cv2_input_screen.dart';
-import '../cv_input/cv3_input_screen.dart';
-import '../cv_input/cv4_input_screen.dart';
-import '../cv_input/cv5_input_screen.dart';
-import '../cv_input/cv6_input_screen.dart';
-import '../cv_input/cv7_input_screen.dart';
-import '../cv_input/cv8_input_screen.dart';
-import '../cv_input/cv9_input_screen.dart';
-import '../cv_input/cv10_input_screen.dart';
-import '../cv_input/cv11_input_screen.dart';
-import '../cv_input/cv12_input_screen.dart';
-import '../cv_input/cv13_input_screen.dart';
-import '../cv_input/cv14_input_screen.dart';
-import '../cv_input/cv15_input_screen.dart';
-import '../cv_input/cv16_input_screen.dart';
-import '../cv_input/cv17_input_screen.dart';
-import '../cv_input/cv18_input_screen.dart';
-import '../cv_input/cv19_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv10_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv11_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv12_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv13_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv14_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv15_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv16_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv17_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv18_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv19_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv1_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv2_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv3_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv4_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv5_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv6_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv7_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv8_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_input/cv9_input_screen.dart';
+import 'package:np_future_gate/screens/cv/cv_setting/cv_metadata.dart';
 
-class CVFieldCategory {
+class CVFieldCategory { // Tags to filter by
+
+  CVFieldCategory(this.name, this.icon, this.color, this.relatedTags);
   final String name;
   final IconData icon;
   final Color color;
-  final List<String> relatedTags; // Tags to filter by
-
-  CVFieldCategory(this.name, this.icon, this.color, this.relatedTags);
+  final List<String> relatedTags;
 }
 
 class CVFieldTemplatesScreen extends StatefulWidget {
@@ -132,7 +132,7 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -212,7 +212,7 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -299,7 +299,7 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.3),
+                    color: Colors.orange.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -325,7 +325,7 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: category.color.withOpacity(0.1),
+            color: category.color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -342,7 +342,7 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: category.color.withOpacity(0.1),
+                  color: category.color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(category.icon, size: 32, color: category.color),
@@ -379,7 +379,7 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -511,9 +511,9 @@ class _CVFieldTemplatesScreenState extends State<CVFieldTemplatesScreen> {
                   children: t.tags.map((tag) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: tag.color.withOpacity(0.1),
+                      color: tag.color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: tag.color.withOpacity(0.2)),
+                      border: Border.all(color: tag.color.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

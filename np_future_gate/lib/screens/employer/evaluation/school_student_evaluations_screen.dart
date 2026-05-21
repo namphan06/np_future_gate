@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import '../../../core/repositories/evaluation_repository.dart';
-import '../../../widgets/speech_text_field.dart';
+import 'package:np_future_gate/core/repositories/evaluation_repository.dart';
+import 'package:np_future_gate/widgets/speech_text_field.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SchoolStudentEvaluationsScreen extends StatefulWidget {
   const SchoolStudentEvaluationsScreen({super.key});
@@ -177,7 +177,7 @@ class _SchoolStudentEvaluationsScreenState extends State<SchoolStudentEvaluation
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.indigo.withOpacity(0.1),
+                    color: Colors.indigo.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -247,7 +247,7 @@ class _SchoolStudentEvaluationsScreenState extends State<SchoolStudentEvaluation
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -265,7 +265,7 @@ class _SchoolStudentEvaluationsScreenState extends State<SchoolStudentEvaluation
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Row(
@@ -288,7 +288,7 @@ class _SchoolStudentEvaluationsScreenState extends State<SchoolStudentEvaluation
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
@@ -334,14 +334,14 @@ class _SchoolStudentEvaluationsScreenState extends State<SchoolStudentEvaluation
 }
 
 class StudentEvaluationSheet extends StatefulWidget {
-  final Map<String, dynamic> record;
-  final Function(Map<String, dynamic>) onSave;
 
   const StudentEvaluationSheet({
     super.key,
     required this.record,
     required this.onSave,
   });
+  final Map<String, dynamic> record;
+  final Function(Map<String, dynamic>) onSave;
 
   @override
   State<StudentEvaluationSheet> createState() => _StudentEvaluationSheetState();
@@ -615,7 +615,7 @@ class _StudentEvaluationSheetState extends State<StudentEvaluationSheet> with Si
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -765,7 +765,7 @@ class _StudentEvaluationSheetState extends State<StudentEvaluationSheet> with Si
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -828,7 +828,7 @@ class _StudentEvaluationSheetState extends State<StudentEvaluationSheet> with Si
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getScoreColor(item['score']).withOpacity(0.1),
+                      color: _getScoreColor(item['score']).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -850,7 +850,7 @@ class _StudentEvaluationSheetState extends State<StudentEvaluationSheet> with Si
                   trackHeight: 4.0,
                   thumbColor: Colors.white,
                   thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0, elevation: 2),
-                  overlayColor: _getScoreColor(item['score']).withOpacity(0.2),
+                  overlayColor: _getScoreColor(item['score']).withValues(alpha: 0.2),
                   overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
                 ),
                 child: Slider(

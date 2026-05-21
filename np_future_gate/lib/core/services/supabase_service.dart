@@ -1,14 +1,15 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../config/supabase_config.dart';
+import 'package:np_future_gate/core/config/supabase_config.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Supabase Service
 /// Singleton service để khởi tạo và quản lý Supabase client
 class SupabaseService {
-  static SupabaseService? _instance;
-  static SupabaseClient? _client;
 
   SupabaseService._();
+  static SupabaseService? _instance;
+  static SupabaseClient? _client;
 
   /// Get singleton instance
   static SupabaseService get instance {
@@ -42,9 +43,9 @@ class SupabaseService {
       );
 
       _client = Supabase.instance.client;
-      print('✅ Supabase đã khởi tạo thành công');
+      debugPrint('✅ Supabase đã khởi tạo thành công');
     } catch (e) {
-      print('❌ Lỗi khởi tạo Supabase: $e');
+      debugPrint('❌ Lỗi khởi tạo Supabase: $e');
       rethrow;
     }
   }

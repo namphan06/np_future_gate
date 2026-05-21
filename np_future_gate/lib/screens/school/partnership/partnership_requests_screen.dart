@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-import '../../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PartnershipRequestsScreen extends StatefulWidget {
   const PartnershipRequestsScreen({super.key});
@@ -245,7 +245,7 @@ class _PartnershipRequestsScreenState extends State<PartnershipRequestsScreen> {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: AppMainColors.primary,
@@ -335,7 +335,7 @@ class _PartnershipRequestsScreenState extends State<PartnershipRequestsScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -353,7 +353,7 @@ class _PartnershipRequestsScreenState extends State<PartnershipRequestsScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.work, color: Colors.blue),
@@ -495,7 +495,7 @@ class _PartnershipRequestsScreenState extends State<PartnershipRequestsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(

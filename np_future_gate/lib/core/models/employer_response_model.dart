@@ -1,14 +1,4 @@
 class EmployerResponseModel {
-  final String? id;
-  final String employerId;
-  final String candidateId;
-  final String? jobId;
-  final String responseType; // 'accepted', 'rejected', 'interview', 'other'
-  final String message;
-  final List<EmailAttachment> attachments;
-  final Map<String, dynamic> metadata;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   EmployerResponseModel({
     this.id,
@@ -41,6 +31,16 @@ class EmployerResponseModel {
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
+  final String? id;
+  final String employerId;
+  final String candidateId;
+  final String? jobId;
+  final String responseType; // 'accepted', 'rejected', 'interview', 'other'
+  final String message;
+  final List<EmailAttachment> attachments;
+  final Map<String, dynamic> metadata;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   Map<String, dynamic> toJson() {
     return {
@@ -59,10 +59,6 @@ class EmployerResponseModel {
 }
 
 class EmailAttachment {
-  final String url;
-  final String type;
-  final String name;
-  final int size;
 
   EmailAttachment({
     required this.url,
@@ -79,6 +75,10 @@ class EmailAttachment {
       size: json['size'] as int,
     );
   }
+  final String url;
+  final String type;
+  final String name;
+  final int size;
 
   Map<String, dynamic> toJson() {
     return {

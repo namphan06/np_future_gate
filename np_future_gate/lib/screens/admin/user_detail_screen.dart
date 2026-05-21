@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/models/profile_model.dart';
-import '../../core/models/auth_models.dart';
-import '../../core/repositories/admin_user_repository.dart';
-import '../../core/services/chat_service.dart';
-import '../chat/chat_detail_screen.dart';
+import 'package:np_future_gate/core/models/auth_models.dart';
+import 'package:np_future_gate/core/models/profile_model.dart';
+import 'package:np_future_gate/core/repositories/admin_user_repository.dart';
+import 'package:np_future_gate/core/services/chat_service.dart';
+import 'package:np_future_gate/screens/chat/chat_detail_screen.dart';
 
 class UserDetailScreen extends StatefulWidget {
-  final Profile user;
 
   const UserDetailScreen({super.key, required this.user});
+  final Profile user;
 
   @override
   State<UserDetailScreen> createState() => _UserDetailScreenState();
@@ -206,7 +206,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -220,7 +220,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: roleColor.withOpacity(0.1),
+                  color: roleColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   border: Border.all(color: roleColor, width: 3),
                 ),
@@ -279,7 +279,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: roleColor.withOpacity(0.1),
+                  color: roleColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -301,7 +301,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: (_user.isActive ? Colors.green : Colors.red).withOpacity(0.1),
+                  color: (_user.isActive ? Colors.green : Colors.red).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -376,7 +376,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -388,7 +388,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -424,7 +424,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -543,7 +543,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -563,7 +563,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           const SizedBox(height: 16),
           ..._userActivities.take(5).map((activity) {
             return _buildActivityItem(activity);
-          }).toList(),
+          }),
           if (_userActivities.length > 5)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -631,7 +631,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _getRoleColor().withOpacity(0.1),
+              color: _getRoleColor().withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -836,14 +836,18 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 });
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã xóa giới hạn tin đăng')),
                   );
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -880,14 +884,18 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 });
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Đã cập nhật giới hạn: $limit tin')),
                   );
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -971,14 +979,18 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 });
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã xóa tất cả giới hạn')),
                   );
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -1035,7 +1047,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 if (partnershipLimit != null) messages.add('Việc liên kết: $partnershipLimit');
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -1048,7 +1062,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context);
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi: $e')),
                   );
@@ -1097,15 +1113,20 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                 await _adminRepo.deleteUserAccount(_user.id);
                 
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context); // Close loading
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context, true); // Return to list with refresh flag
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đã xóa tài khoản')),
                   );
                 }
               } catch (e) {
                 if (mounted) {
+                  // ignore: use_build_context_synchronously
                   Navigator.pop(context); // Close loading
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Lỗi xóa tài khoản: $e')),
                   );
@@ -1142,10 +1163,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         otherUserType: otherUserType,
       );
 
+      // ignore: use_build_context_synchronously
       if (mounted) Navigator.pop(context); // Close loading
 
       if (conversation != null && mounted) {
         Navigator.push(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(
             builder: (_) => ChatDetailScreen(
@@ -1156,6 +1179,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           ),
         );
       } else if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Không thể tạo cuộc trò chuyện. Vui lòng thử lại.'),
@@ -1164,8 +1188,10 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         );
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       if (mounted) Navigator.pop(context); // Close loading
       if (mounted) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),

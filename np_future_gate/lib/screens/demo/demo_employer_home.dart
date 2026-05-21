@@ -34,8 +34,8 @@ class DemoEmployerHome extends StatelessWidget {
           ),
 
           // Stats
-          Padding(
-            padding: const EdgeInsets.all(16),
+          const Padding(
+            padding: EdgeInsets.all(16),
             child: Row(
               children: [
                 Expanded(
@@ -46,7 +46,7 @@ class DemoEmployerHome extends StatelessWidget {
                     color: Colors.blue,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
                     title: 'Ứng viên',
@@ -91,10 +91,6 @@ class DemoEmployerHome extends StatelessWidget {
 }
 
 class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
 
   const _StatCard({
     required this.title,
@@ -102,6 +98,10 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.color,
   });
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {

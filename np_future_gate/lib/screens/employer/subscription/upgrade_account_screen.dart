@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:np_future_gate/core/services/payos_service.dart';
+import 'package:np_future_gate/core/services/subscription_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../../core/services/subscription_service.dart';
-import '../../../core/services/payos_service.dart';
-import '../../../core/theme/app_main_colors.dart';
 
 class UpgradeAccountScreen extends StatefulWidget {
   const UpgradeAccountScreen({super.key});
@@ -107,10 +107,10 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppMainColors.primary.withOpacity(0.1),
+                      color: AppMainColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.qr_code_2, color: AppMainColors.primary, size: 28),
+                    child: const Icon(Icons.qr_code_2, color: AppMainColors.primary, size: 28),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -357,12 +357,12 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                       end: Alignment.bottomRight,
                       colors: [
                         AppMainColors.primary,
-                        AppMainColors.primary.withOpacity(0.8),
+                        AppMainColors.primary.withValues(alpha: 0.8),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppMainColors.primary.withOpacity(0.3),
+                        color: AppMainColors.primary.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -377,7 +377,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                           // Back button with custom design
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: IconButton(
@@ -400,7 +400,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
+                                        color: Colors.white.withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Icon(
@@ -424,7 +424,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                                 Text(
                                   'Chọn gói phù hợp với nhu cầu của bạn',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 13,
                                   ),
                                 ),
@@ -556,7 +556,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.orange.withOpacity(0.3),
+              color: Colors.orange.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -565,14 +565,14 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
+                Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Gói đăng ký đã hết hạn!',
                         style: TextStyle(
@@ -622,12 +622,12 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppMainColors.primary, AppMainColors.primary.withOpacity(0.8)],
+          colors: [AppMainColors.primary, AppMainColors.primary.withValues(alpha: 0.8)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppMainColors.primary.withOpacity(0.3),
+            color: AppMainColors.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -649,7 +649,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -669,7 +669,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
               padding: const EdgeInsets.all(8),
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.yellow.withOpacity(0.2),
+                color: Colors.yellow.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -767,7 +767,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -781,7 +781,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -823,7 +823,7 @@ class _UpgradeAccountScreenState extends State<UpgradeAccountScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(

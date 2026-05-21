@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/repositories/job_repository.dart';
-import '../../../core/theme/app_main_colors.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/repositories/job_repository.dart';
 
 class SelectCompanyJobScreen extends StatefulWidget {
-  final String companyId;
 
   const SelectCompanyJobScreen({super.key, required this.companyId});
+  final String companyId;
 
   @override
   State<SelectCompanyJobScreen> createState() => _SelectCompanyJobScreenState();
@@ -95,7 +94,7 @@ class _SelectCompanyJobScreenState extends State<SelectCompanyJobScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -144,11 +143,11 @@ class _SelectCompanyJobScreenState extends State<SelectCompanyJobScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.copy, size: 16, color: Colors.purple),
-                    const SizedBox(width: 4),
-                    const Text(
+                    Icon(Icons.copy, size: 16, color: Colors.purple),
+                    SizedBox(width: 4),
+                    Text(
                       'Nhấn để sao chép thông tin',
                       style: TextStyle(
                         fontSize: 12,
@@ -170,7 +169,7 @@ class _SelectCompanyJobScreenState extends State<SelectCompanyJobScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.purple.withOpacity(0.1),
+        color: Colors.purple.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

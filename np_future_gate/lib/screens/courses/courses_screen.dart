@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/models/course_category_model.dart';
-import '../../core/models/course_model.dart';
-import '../../core/repositories/course_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'course_detail_screen.dart';
+import 'package:np_future_gate/core/models/course_category_model.dart';
+import 'package:np_future_gate/core/models/course_model.dart';
+import 'package:np_future_gate/core/repositories/course_repository.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/courses/course_detail_screen.dart';
 
 class CoursesScreen extends StatefulWidget {
   const CoursesScreen({super.key});
@@ -81,9 +81,9 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
   void _filterCourses() {
     setState(() {
       _filteredCourses = _allCourses.where((course) {
-        bool matchCategory = _selectedCategoryId == null || 
+        final bool matchCategory = _selectedCategoryId == null || 
                             course.categoryId == _selectedCategoryId;
-        bool matchLevel = _selectedLevel == null || 
+        final bool matchLevel = _selectedLevel == null || 
                          course.level == _selectedLevel;
         return matchCategory && matchLevel;
       }).toList();
@@ -131,7 +131,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppMainColors.primary.withOpacity(0.05),
+                      AppMainColors.primary.withValues(alpha: 0.05),
                       Colors.white,
                     ],
                   ),
@@ -146,7 +146,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                         height: 150,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppMainColors.primary.withOpacity(0.05),
+                          color: AppMainColors.primary.withValues(alpha: 0.05),
                         ),
                       ),
                     ),
@@ -158,7 +158,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                         height: 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppMainColors.primary.withOpacity(0.03),
+                          color: AppMainColors.primary.withValues(alpha: 0.03),
                         ),
                       ),
                     ),
@@ -209,9 +209,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                       final index = entry.key;
                       final cat = entry.value;
                       final isSelected = _tabController.index == index;
-                      final categoryColor = cat.color != null 
-                          ? Color(int.parse(cat.color!.replaceFirst('#', '0xFF')))
-                          : AppMainColors.primary;
+                      final categoryColor = Color(int.parse(cat.color.replaceFirst('#', '0xFF')));
                       
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
@@ -227,7 +225,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                                   ? LinearGradient(
                                       colors: [
                                         categoryColor,
-                                        categoryColor.withOpacity(0.8),
+                                        categoryColor.withValues(alpha: 0.8),
                                       ],
                                     )
                                   : null,
@@ -240,7 +238,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: categoryColor.withOpacity(0.3),
+                                        color: categoryColor.withValues(alpha: 0.3),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -416,19 +414,19 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
-                  colors: [chipColor, chipColor.withOpacity(0.8)],
+                  colors: [chipColor, chipColor.withValues(alpha: 0.8)],
                 )
               : null,
-          color: isSelected ? null : chipColor.withOpacity(0.1),
+          color: isSelected ? null : chipColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? chipColor : chipColor.withOpacity(0.3),
+            color: isSelected ? chipColor : chipColor.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: chipColor.withOpacity(0.3),
+                    color: chipColor.withValues(alpha: 0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -570,12 +568,12 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppMainColors.primary.withOpacity(0.1),
+                      color: AppMainColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       course.levelLabel,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: AppMainColors.primary,
@@ -771,6 +769,7 @@ class _CoursesScreenState extends State<CoursesScreen> with SingleTickerProvider
 }
 
 // Sticky tab bar delegate
+// ignore: unused_element
 class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _StickyTabBarDelegate(this.child);
 

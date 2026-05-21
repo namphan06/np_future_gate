@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../core/models/mbti_model.dart';
-import '../../core/theme/app_main_colors.dart';
-import 'mbti_home_screen.dart';
-import 'mbti_type_detail_screen.dart';
+import 'package:np_future_gate/core/models/mbti_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/candidate/mbti_home_screen.dart';
+import 'package:np_future_gate/screens/candidate/mbti_type_detail_screen.dart';
 
 class MBTIResultScreen extends StatelessWidget {
-  final MBTIType resultType;
-  final List<MBTIType> allTypes;
-  final String? reasoning;
 
   const MBTIResultScreen({
     super.key,
@@ -16,6 +13,9 @@ class MBTIResultScreen extends StatelessWidget {
     this.allTypes = const [],
     this.reasoning,
   });
+  final MBTIType resultType;
+  final List<MBTIType> allTypes;
+  final String? reasoning;
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,5 @@
+import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
 
 class PartnershipRepository {
   final SupabaseService _supabaseService = SupabaseService.instance;

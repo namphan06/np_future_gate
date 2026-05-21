@@ -1,15 +1,5 @@
 /// Model cho notification settings
 class NotificationSettingsModel {
-  final bool enabled;
-  final bool soundEnabled;
-  final bool vibrationEnabled;
-  final bool jobNotifications;
-  final bool systemNotifications;
-  final bool messageNotifications;
-  final bool interviewNotifications;
-  final bool applicationNotifications;
-  final bool partnershipNotifications;
-  final NotificationTypesSettings notificationTypes;
 
   NotificationSettingsModel({
     this.enabled = true,
@@ -40,6 +30,16 @@ class NotificationSettingsModel {
           : NotificationTypesSettings(),
     );
   }
+  final bool enabled;
+  final bool soundEnabled;
+  final bool vibrationEnabled;
+  final bool jobNotifications;
+  final bool systemNotifications;
+  final bool messageNotifications;
+  final bool interviewNotifications;
+  final bool applicationNotifications;
+  final bool partnershipNotifications;
+  final NotificationTypesSettings notificationTypes;
 
   Map<String, dynamic> toJson() {
     return {
@@ -85,13 +85,6 @@ class NotificationSettingsModel {
 
 /// Model cho notification types settings
 class NotificationTypesSettings {
-  final bool info;
-  final bool error;
-  final bool success;
-  final bool warning;
-  final bool reminder;
-  final bool requirement;
-  final bool announcement;
 
   NotificationTypesSettings({
     this.info = true,
@@ -114,6 +107,13 @@ class NotificationTypesSettings {
       announcement: json['announcement'] as bool? ?? true,
     );
   }
+  final bool info;
+  final bool error;
+  final bool success;
+  final bool warning;
+  final bool reminder;
+  final bool requirement;
+  final bool announcement;
 
   Map<String, dynamic> toJson() {
     return {

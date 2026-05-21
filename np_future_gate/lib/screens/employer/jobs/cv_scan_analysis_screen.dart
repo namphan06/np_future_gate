@@ -1,23 +1,24 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../core/models/job_model.dart';
-import '../../../core/services/mlkit_ocr_service.dart';
-import '../../../core/services/ai_matching_service.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_gradients.dart';
+import 'package:np_future_gate/core/models/job_model.dart';
+import 'package:np_future_gate/core/services/ai_matching_service.dart';
+import 'package:np_future_gate/core/services/mlkit_ocr_service.dart';
+import 'package:np_future_gate/core/theme/app_colors.dart';
+import 'package:np_future_gate/core/theme/app_gradients.dart';
 
 /// Màn hình scan CV bằng ML Kit và phân tích AI
 /// Dành cho nhà tuyển dụng: chụp/chọn ảnh CV → OCR → AI phân tích độ phù hợp
 class CVScanAnalysisScreen extends StatefulWidget {
-  final JobModel job;
-  final String? applicantName;
 
   const CVScanAnalysisScreen({
     super.key,
     required this.job,
     this.applicantName,
   });
+  final JobModel job;
+  final String? applicantName;
 
   @override
   State<CVScanAnalysisScreen> createState() => _CVScanAnalysisScreenState();

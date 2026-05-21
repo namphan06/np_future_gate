@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class GlobalFloatingChatButton extends StatefulWidget {
-  final Widget child;
 
   const GlobalFloatingChatButton({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
+  final Widget child;
 
   @override
   State<GlobalFloatingChatButton> createState() => GlobalFloatingChatButtonState();

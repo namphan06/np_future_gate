@@ -1,18 +1,5 @@
 
-class JobModel {
-  final String? id;
-  final String creatorId;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  final bool isActive;
-  final DateTime? deadline;
-  final JobMetadata metadata;
-  final List<JobApplication> applicants;
-  final int viewCount;
-  final String status; // 'pending', 'approved', 'rejected', 'closed'
-  final String? creatorName;
-  final String? creatorAvatarUrl;
-  final Map<String, dynamic>? creatorProfile; // Full profile data for admin
+class JobModel { // Full profile data for admin
 
 
   JobModel({
@@ -33,7 +20,7 @@ class JobModel {
   });
 
   factory JobModel.fromJson(Map<String, dynamic> json) {
-    var profileData = json['profiles'];
+    final profileData = json['profiles'];
     Map<String, dynamic>? profile;
 
     if (profileData is List) {
@@ -64,6 +51,19 @@ class JobModel {
       
     );
   }
+  final String? id;
+  final String creatorId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final bool isActive;
+  final DateTime? deadline;
+  final JobMetadata metadata;
+  final List<JobApplication> applicants;
+  final int viewCount;
+  final String status; // 'pending', 'approved', 'rejected', 'closed'
+  final String? creatorName;
+  final String? creatorAvatarUrl;
+  final Map<String, dynamic>? creatorProfile;
 
   Map<String, dynamic> toJson() {
     return {
@@ -103,18 +103,6 @@ class JobModel {
 }
 
 class JobMetadata {
-  final String title;
-  final List<String> workingRegions;
-  final String experienceRequired;
-  final List<String> fields;
-  final List<String> requirementsTags;
-  final JobSalary salary;
-  final List<String> employmentTypes;
-  final List<String> workLocations;
-  final List<String> jobDescription;
-  final List<String> candidateRequirements;
-  final List<String> benefits;
-  final bool isIntern;
 
   JobMetadata({
     required this.title,
@@ -147,6 +135,18 @@ class JobMetadata {
       isIntern: json['is_intern'] ?? false,
     );
   }
+  final String title;
+  final List<String> workingRegions;
+  final String experienceRequired;
+  final List<String> fields;
+  final List<String> requirementsTags;
+  final JobSalary salary;
+  final List<String> employmentTypes;
+  final List<String> workLocations;
+  final List<String> jobDescription;
+  final List<String> candidateRequirements;
+  final List<String> benefits;
+  final bool isIntern;
 
   Map<String, dynamic> toJson() {
     return {
@@ -166,12 +166,7 @@ class JobMetadata {
   }
 }
 
-class JobSalary {
-  final double? min;
-  final double? max;
-  final String currency;
-  final bool isNegotiable;
-  final String type; // 'monthly', 'hourly', 'yearly'
+class JobSalary { // 'monthly', 'hourly', 'yearly'
 
   JobSalary({
     this.min,
@@ -190,6 +185,11 @@ class JobSalary {
       type: json['type'] ?? 'monthly',
     );
   }
+  final double? min;
+  final double? max;
+  final String currency;
+  final bool isNegotiable;
+  final String type;
 
   Map<String, dynamic> toJson() {
     return {
@@ -202,12 +202,7 @@ class JobSalary {
   }
 }
 
-class JobApplication {
-  final String userId;
-  final String cvId;
-  final DateTime appliedAt;
-  final String status; // 'pending', 'accepted', 'rejected'
-  final String? recruitmentStatus; // Additional recruitment tracking
+class JobApplication { // Additional recruitment tracking
 
   JobApplication({
     required this.userId,
@@ -226,6 +221,11 @@ class JobApplication {
       recruitmentStatus: json['recruitment_status'],
     );
   }
+  final String userId;
+  final String cvId;
+  final DateTime appliedAt;
+  final String status; // 'pending', 'accepted', 'rejected'
+  final String? recruitmentStatus;
 
   Map<String, dynamic> toJson() {
     return {

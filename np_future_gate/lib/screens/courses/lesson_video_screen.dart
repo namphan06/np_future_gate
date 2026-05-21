@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:np_future_gate/core/models/course_lesson_model.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../../core/models/course_lesson_model.dart';
-import '../../core/theme/app_main_colors.dart';
 
 class LessonVideoScreen extends StatefulWidget {
-  final CourseLessonModel lesson;
-  final List<CourseLessonModel> allLessons;
 
   const LessonVideoScreen({
     super.key,
     required this.lesson,
     required this.allLessons,
   });
+  final CourseLessonModel lesson;
+  final List<CourseLessonModel> allLessons;
 
   @override
   State<LessonVideoScreen> createState() => _LessonVideoScreenState();
@@ -133,7 +133,7 @@ class _LessonVideoScreenState extends State<LessonVideoScreen> {
         controller: _controller,
         showVideoProgressIndicator: true,
         progressIndicatorColor: AppMainColors.primary,
-        bottomActions: [
+        bottomActions: const [
           CurrentPosition(),
           ProgressBar(
             isExpanded: true,
@@ -143,7 +143,7 @@ class _LessonVideoScreenState extends State<LessonVideoScreen> {
             ),
           ),
           RemainingDuration(),
-          const PlaybackSpeedButton(),
+          PlaybackSpeedButton(),
           FullScreenButton(),
         ],
       ),
@@ -293,7 +293,7 @@ class _LessonVideoScreenState extends State<LessonVideoScreen> {
                             margin: const EdgeInsets.only(bottom: 8),
                             decoration: BoxDecoration(
                               color: isPlaying 
-                                  ? AppMainColors.primary.withOpacity(0.1)
+                                  ? AppMainColors.primary.withValues(alpha: 0.1)
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
@@ -319,7 +319,7 @@ class _LessonVideoScreenState extends State<LessonVideoScreen> {
                                         decoration: BoxDecoration(
                                           color: isPlaying
                                               ? AppMainColors.primary
-                                              : AppMainColors.primary.withOpacity(0.1),
+                                              : AppMainColors.primary.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Center(

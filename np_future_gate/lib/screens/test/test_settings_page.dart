@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../core/services/supabase_service.dart';
-import '../../core/repositories/auth_repository.dart';
-import '../../core/theme/app_main_colors.dart';
-import '../auth/login_screen.dart';
+import 'package:np_future_gate/core/repositories/auth_repository.dart';
+import 'package:np_future_gate/core/services/supabase_service.dart';
+import 'package:np_future_gate/core/theme/app_main_colors.dart';
+import 'package:np_future_gate/screens/auth/login_screen.dart';
 
 class TestSettingsPage extends StatelessWidget {
   const TestSettingsPage({super.key});
@@ -27,7 +27,7 @@ class TestSettingsPage extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.settings_rounded,
                       size: 80,
                       color: AppMainColors.primaryLight,
@@ -63,7 +63,7 @@ class TestSettingsPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),

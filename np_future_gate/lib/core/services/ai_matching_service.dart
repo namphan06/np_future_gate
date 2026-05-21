@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:np_future_gate/core/models/cv_comparison_result_model.dart';
 import 'package:np_future_gate/core/models/cv_matching_result_model.dart';
@@ -7,9 +8,9 @@ import 'package:np_future_gate/core/models/job_model.dart';
 import 'package:np_future_gate/core/services/mistral_service.dart';
 import 'package:np_future_gate/core/services/mlkit_ocr_service.dart';
 
+export 'package:np_future_gate/core/models/cv_comparison_result_model.dart';
 // Re-export models so existing imports continue to work
 export 'package:np_future_gate/core/models/cv_matching_result_model.dart';
-export 'package:np_future_gate/core/models/cv_comparison_result_model.dart';
 
 class AIMatchingService {
   final MistralService _mistralService = MistralService();

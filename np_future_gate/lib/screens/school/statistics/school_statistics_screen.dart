@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SchoolStatisticsScreen extends StatefulWidget {
   const SchoolStatisticsScreen({super.key});
@@ -26,6 +26,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
   
   // Chart data
   List<MapEntry<String, int>> _jobsByMonth = [];
+  // ignore: unused_field
   List<MapEntry<String, int>> _applicationsByStatus = [];
   List<MapEntry<String, int>> _topDepartments = [];
 
@@ -74,7 +75,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
       _activeJobs = jobsData.where((job) => 
           job['status'] == 'approved' && job['is_active'] == true).length;
     } catch (e) {
-      print('Error loading job statistics: $e');
+      debugPrint('Error loading job statistics: $e');
     }
   }
 
@@ -93,8 +94,8 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
           .eq('school_id', schoolId);
       
       final allJobIds = [
-        ...(jobsData as List).map((j) => j['id'] as String).toList(),
-        ...(partnershipJobsData as List).map((j) => j['id'] as String).toList(),
+        ...(jobsData as List).map((j) => j['id'] as String),
+        ...(partnershipJobsData as List).map((j) => j['id'] as String),
       ];
       
       if (allJobIds.isEmpty) {
@@ -120,7 +121,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
       _rejectedApplications = activitiesData.where((app) => 
           app['application_status'] == 'rejected').length;
     } catch (e) {
-      print('Error loading application statistics: $e');
+      debugPrint('Error loading application statistics: $e');
       _totalApplications = 0;
       _pendingApplications = 0;
       _acceptedApplications = 0;
@@ -140,7 +141,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
       _activePartnerships = partnershipJobsData.where((p) => 
           p['company_status'] == 'accepted' && p['admin_status'] == 'approved').length;
     } catch (e) {
-      print('Error loading partnership statistics: $e');
+      debugPrint('Error loading partnership statistics: $e');
     }
   }
 
@@ -155,7 +156,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
           .eq('is_applied', true)
           .inFilter('job_id', await _getSchoolJobIds(schoolId));
       
-      Map<String, int> dayCounts = {};
+      final Map<String, int> dayCounts = {};
       for (var activity in activitiesData) {
         try {
           final date = DateTime.parse(activity['applied_at']);
@@ -181,7 +182,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
           .select('metadata')
           .eq('creator_id', schoolId);
       
-      Map<String, int> fieldCounts = {};
+      final Map<String, int> fieldCounts = {};
       for (var job in jobsData) {
         try {
           final metadata = job['metadata'] as Map<String, dynamic>;
@@ -199,7 +200,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         ..sort((a, b) => b.value.compareTo(a.value))
         ..take(5).toList();
     } catch (e) {
-      print('Error loading chart data: $e');
+      debugPrint('Error loading chart data: $e');
     }
   }
 
@@ -216,8 +217,8 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         .eq('school_id', schoolId);
     
     return [
-      ...(jobsData as List).map((j) => j['id'] as String).toList(),
-      ...(partnershipJobsData as List).map((j) => j['id'] as String).toList(),
+      ...(jobsData as List).map((j) => j['id'] as String),
+      ...(partnershipJobsData as List).map((j) => j['id'] as String),
     ];
   }
 
@@ -264,17 +265,17 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
   Widget _buildCustomAppBar() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF2196F3),
-            const Color(0xFF1976D2),
+            Color(0xFF2196F3),
+            Color(0xFF1976D2),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2196F3).withOpacity(0.3),
+            color: const Color(0xFF2196F3).withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -288,7 +289,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
@@ -316,7 +317,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
                       'Báo cáo tuyển dụng',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -326,7 +327,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.analytics_outlined, color: Colors.white, size: 24),
@@ -409,7 +410,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -422,7 +423,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 16),
@@ -472,7 +473,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -486,7 +487,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.trending_up, color: Colors.blue, size: 20),
@@ -588,7 +589,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
                           ),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: Colors.blue.withOpacity(0.1),
+                            color: Colors.blue.withValues(alpha: 0.1),
                           ),
                         ),
                       ],
@@ -608,7 +609,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -622,7 +623,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.pie_chart, color: Colors.green, size: 20),
@@ -787,7 +788,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -801,7 +802,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
+                  color: Colors.purple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.bar_chart, color: Colors.purple, size: 20),
@@ -866,7 +867,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
                               minHeight: 8,
                               backgroundColor: Colors.grey[200],
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.purple.withOpacity(0.8),
+                                Colors.purple.withValues(alpha: 0.8),
                               ),
                             ),
                           ),
@@ -888,7 +889,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -902,7 +903,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.1),
+                  color: Colors.teal.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.handshake, color: Colors.teal, size: 20),
@@ -949,7 +950,7 @@ class _SchoolStatisticsScreenState extends State<SchoolStatisticsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

@@ -1,6 +1,8 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class EmailJsService {
   // Load credentials from .env file
@@ -46,14 +48,14 @@ class EmailJsService {
       );
 
       if (response.statusCode == 200) {
-        print('✅ Email sent successfully to $toEmail');
+        debugPrint('✅ Email sent successfully to $toEmail');
         return true;
       } else {
-        print('❌ Failed to send email: ${response.body}');
+        debugPrint('❌ Failed to send email: ${response.body}');
         return false;
       }
     } catch (e) {
-      print('❌ Error sending email: $e');
+      debugPrint('❌ Error sending email: $e');
       return false;
     }
   }
