@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:np_future_gate/core/models/auth_models.dart';
 import 'package:np_future_gate/core/repositories/auth_repository.dart';
 import 'package:np_future_gate/core/services/supabase_service.dart';
-import 'package:np_future_gate/screens/admin/admin_home_screen.dart';
-import 'package:np_future_gate/screens/auth/login_screen.dart';
-import 'package:np_future_gate/screens/candidate/candidate_home_screen.dart';
-import 'package:np_future_gate/screens/employer/employer_home_screen.dart';
-import 'package:np_future_gate/screens/school/school_home_screen.dart';
+import 'package:np_future_gate/features/admin/screens/admin_home_screen.dart';
+import 'package:np_future_gate/features/auth/screens/login_screen.dart';
+import 'package:np_future_gate/features/candidate/screens/candidate_home_screen.dart';
+import 'package:np_future_gate/features/employer/screens/employer_home_screen.dart';
+import 'package:np_future_gate/features/school/screens/school_home_screen.dart';
 
 /// Splash Screen - Kiểm tra auth state khi khởi động app
 class SplashScreen extends StatefulWidget {

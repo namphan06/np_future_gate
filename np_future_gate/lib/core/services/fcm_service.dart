@@ -9,7 +9,7 @@ import 'package:np_future_gate/core/repositories/auth_repository.dart';
 import 'package:np_future_gate/core/repositories/device_token_repository.dart';
 import 'package:np_future_gate/core/services/notification/status_notification_service.dart';
 import 'package:np_future_gate/main.dart'; // For navigatorKey
-import 'package:np_future_gate/notification/models/notification_config.dart';
+import 'package:np_future_gate/features/notification/models/notification_config.dart';
 
 /// Firebase Cloud Messaging Service
 /// Xử lý việc nhận và gửi push notifications

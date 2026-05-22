@@ -3,7 +3,7 @@ import 'package:np_future_gate/core/models/notification_model.dart';
 import 'package:np_future_gate/core/repositories/device_token_repository.dart';
 import 'package:np_future_gate/core/repositories/notification_repository.dart';
 import 'package:np_future_gate/core/services/push_notification_service.dart';
-import 'package:np_future_gate/notification/models/notification_config.dart';
+import 'package:np_future_gate/features/notification/models/notification_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Service xử lý logic navigation và hiển thị thông báo

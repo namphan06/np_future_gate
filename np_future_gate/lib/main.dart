@@ -8,7 +8,7 @@ import 'package:np_future_gate/core/services/fcm_service.dart';
 import 'package:np_future_gate/core/services/supabase_service.dart';
 import 'package:np_future_gate/core/theme/app_theme.dart';
 import 'package:np_future_gate/firebase_options.dart';
-import 'package:np_future_gate/notification/notification_navigation_setup.dart';
+import 'package:np_future_gate/features/notification/notification_navigation_setup.dart';
 import 'package:np_future_gate/screens/splash/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;

@@ -1,4 +1,4 @@
-import 'package:np_future_gate/notification/models/notification_config.dart';
+import 'package:np_future_gate/features/notification/models/notification_config.dart';
 
 /// Model đại diện cho một thông báo
 class NotificationModel { // Thời gian đọc

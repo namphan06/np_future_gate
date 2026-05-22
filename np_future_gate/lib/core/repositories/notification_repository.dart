@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:np_future_gate/core/models/notification_model.dart';
-import 'package:np_future_gate/notification/models/notification_config.dart';
+import 'package:np_future_gate/features/notification/models/notification_config.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Repository xử lý các thao tác với database cho notifications

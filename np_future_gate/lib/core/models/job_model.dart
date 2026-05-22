@@ -1,3 +1,4 @@
+import 'package:np_future_gate/core/models/application_model.dart';
 
 class JobModel { // Full profile data for admin
 
@@ -235,5 +236,20 @@ class JobApplication { // Additional recruitment tracking
       'status': status,
       if (recruitmentStatus != null) 'recruitment_status': recruitmentStatus,
     };
+  }
+
+  /// Converts this [JobApplication] to an [ApplicationModel] instance.
+  ///
+  /// Requires [jobId] since JobApplication does not store it directly
+  /// (it's typically inferred from the parent JobModel).
+  ApplicationModel toApplicationModel({required String jobId}) {
+    return ApplicationModel(
+      userId: userId,
+      cvId: cvId,
+      jobId: jobId,
+      appliedAt: appliedAt,
+      status: status,
+      recruitmentStatus: recruitmentStatus,
+    );
   }
 }

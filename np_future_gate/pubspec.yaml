@@ -82,6 +82,7 @@ dependencies:
   fl_chart: ^0.69.2
   google_fonts: ^6.2.1
 
+  webview_flutter: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

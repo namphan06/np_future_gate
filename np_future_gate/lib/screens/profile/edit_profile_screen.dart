@@ -8,7 +8,7 @@ import 'package:np_future_gate/core/enums/job_fields.dart';
 import 'package:np_future_gate/core/models/profile_model.dart';
 import 'package:np_future_gate/core/repositories/auth_repository.dart';
 import 'package:np_future_gate/core/services/cv_supabase_service.dart';
-import 'package:np_future_gate/widgets/speech_text_field.dart';
+import 'package:np_future_gate/shared/widgets/inputs/speech_text_field.dart';
 
 class EditProfileScreen extends StatefulWidget {
 
