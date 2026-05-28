@@ -1,0 +1,52 @@
+%% Sơ đồ luồng State Management - NP FutureGate
+%% Mô tả: Luồng quản lý trạng thái từ hành động người dùng đến cập nhật giao diện
+%% Pattern: ChangeNotifier → BaseController → Feature Controller → UI rebuild
+
+sequenceDiagram
+    autonumber
+    participant User as 👤 Người dùng
+    participant Widget as 🖥️ Widget/Screen
+    participant Controller as 🎮 Feature Controller<br/>(extends BaseController)
+    participant Base as 📦 BaseController<br/>(extends ChangeNotifier)
+    participant Repo as 🗄️ Repository/Service
+    participant DB as ☁️ Supabase/External API
+
+    Note over User, DB: === GIAI ĐOẠN 1: Người dùng thực hiện hành động ===
+
+    User->>Widget: Tương tác (nhấn nút, kéo refresh,...)
+    Widget->>Controller: Gọi method<br/>(vd: loadStatistics(), toggleSaveJob())
+
+    Note over Controller, Base: === GIAI ĐOẠN 2: Bắt đầu xử lý - Hiển thị loading ===
+
+    Controller->>Base: isLoading = true
+    Base->>Base: safeNotifyListeners()
+    Note right of Base: Kiểm tra _isDisposed<br/>trước khi notify
+    Base-->>Widget: notifyListeners() → UI rebuild
+    Widget-->>User: Hiển thị trạng thái loading<br/>(CircularProgressIndicator)
+
+    Note over Controller, DB: === GIAI ĐOẠN 3: Gọi dữ liệu từ tầng Data ===
+
+    Controller->>Repo: Gọi repository/service method<br/>(vd: fetchData(), callExternalAPI())
+    Repo->>DB: Query dữ liệu<br/>(Supabase, Mistral AI, Firebase,...)
+    DB-->>Repo: Trả về dữ liệu (JSON/Response)
+    Repo-->>Controller: Trả về Model/Data đã parse
+
+    Note over Controller, Base: === GIAI ĐOẠN 4: Cập nhật state thành công ===
+
+    Controller->>Controller: Cập nhật state variables<br/>(_data = result, _items = list)
+    Controller->>Base: isLoading = false
+    Base->>Base: safeNotifyListeners()
+    Base-->>Widget: notifyListeners() → UI rebuild
+    Widget-->>User: Hiển thị dữ liệu mới<br/>(ListView, Card, Chart,...)
+
+    Note over Controller, DB: === GIAI ĐOẠN 5 (Ngoại lệ): Xử lý lỗi ===
+
+    rect rgb(255, 230, 230)
+        Controller->>Base: setError(errorMessage)
+        Base->>Base: _error = error
+        Base->>Base: safeNotifyListeners()
+        Base-->>Widget: notifyListeners() → UI rebuild
+        Widget-->>User: Hiển thị thông báo lỗi<br/>(SnackBar, Error Widget)
+        Controller->>Base: isLoading = false
+        Base->>Base: safeNotifyListeners()
+    end

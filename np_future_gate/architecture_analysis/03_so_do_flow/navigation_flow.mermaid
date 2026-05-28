@@ -1,0 +1,195 @@
+%% Sơ đồ Navigation Flow - NP FutureGate
+%% Mô tả cấu trúc điều hướng giữa các màn hình theo vai trò
+%% 4 vai trò: Candidate, Employer, School, Admin
+
+flowchart TD
+    %% === KHỞI ĐỘNG ỨNG DỤNG ===
+    Start([Khởi động App]) --> Splash[SplashScreen<br/>Kiểm tra trạng thái đăng nhập]
+
+    %% === KIỂM TRA XÁC THỰC ===
+    Splash -->|Đã đăng nhập| CheckRole{Xác định vai trò<br/>từ UserProfile}
+    Splash -->|Chưa đăng nhập| Login[LoginScreen<br/>Đăng nhập]
+
+    %% === MÀN HÌNH XÁC THỰC ===
+    Login -->|Chưa có tài khoản| Register[RegisterScreen<br/>Đăng ký tài khoản mới]
+    Register -->|Đăng ký thành công| Login
+    Login -->|Đăng nhập thành công| CheckRole
+    Login -->|Đổi mật khẩu| ChangePass[ChangePasswordScreen<br/>Đổi mật khẩu]
+
+    %% === ĐIỀU HƯỚNG THEO VAI TRÒ ===
+    CheckRole -->|role = candidate| CandidateHome
+    CheckRole -->|role = employer| EmployerHome
+    CheckRole -->|role = school| SchoolHome
+    CheckRole -->|role = admin| AdminHome
+
+    %% ============================================
+    %% CANDIDATE - Ứng viên tìm việc
+    %% ============================================
+    subgraph CandidateFlow["🎓 CANDIDATE - Ứng viên"]
+        CandidateHome[CandidateHomeScreen<br/>Trang chủ ứng viên]
+
+        %% Bottom Navigation Tabs
+        CandidateHome --> CandHomePage[HomePage<br/>Danh sách việc làm]
+        CandidateHome --> CandSearch[SearchPage<br/>Tìm kiếm việc làm]
+        CandidateHome --> CandTools[ToolsPage<br/>Công cụ hỗ trợ]
+        CandidateHome --> CandSettings[SettingsPage<br/>Cài đặt cá nhân]
+
+        %% Tìm việc & Ứng tuyển
+        CandHomePage --> JobDetail[JobDetailScreen<br/>Chi tiết việc làm]
+        CandHomePage --> CompanyList[CompaniesListScreen<br/>Danh sách công ty]
+        CompanyList --> CompanyDetail[CompanyDetailScreen<br/>Chi tiết công ty]
+        JobDetail --> CVSelection[CVSelectionScreen<br/>Chọn CV ứng tuyển]
+        CandHomePage --> AppliedJobs[AppliedJobsScreen<br/>Việc đã ứng tuyển]
+        CandHomePage --> SavedJobs[SavedJobsScreen<br/>Việc đã lưu]
+        CandHomePage --> SchoolJobs[SchoolJobsScreen<br/>Việc từ trường]
+        SchoolJobs --> PartnershipJobDetail[PartnershipJobDetailScreen<br/>Chi tiết việc partnership]
+
+        %% Phỏng vấn
+        CandHomePage --> InterviewSchedule[InterviewScheduleCandidateScreen<br/>Lịch phỏng vấn]
+        InterviewSchedule --> InterviewDetailCand[InterviewDetailCandidateScreen<br/>Chi tiết phỏng vấn]
+        CandTools --> JobInterviewAI[JobInterviewAIPage<br/>Phỏng vấn thử với AI]
+
+        %% Công cụ - MBTI & MI
+        CandTools --> MBTIHome[MBTIHomeScreen<br/>Trắc nghiệm MBTI]
+        MBTIHome --> MBTIQuestion[MBTIQuestionScreen<br/>Câu hỏi MBTI]
+        MBTIQuestion --> MBTIResult[MBTIResultScreen<br/>Kết quả MBTI]
+        MBTIResult --> MBTITypeDetail[MBTITypeDetailScreen<br/>Chi tiết loại MBTI]
+        CandTools --> MIQuestion[MIQuestionScreen<br/>Trắc nghiệm đa trí tuệ]
+        MIQuestion --> MIResult[MIResultScreen<br/>Kết quả đa trí tuệ]
+
+        %% Tiến trình thực tập
+        CandHomePage --> InternshipProgress[InternshipProgressScreen<br/>Tiến trình thực tập]
+    end
+
+    %% ============================================
+    %% EMPLOYER - Nhà tuyển dụng
+    %% ============================================
+    subgraph EmployerFlow["🏢 EMPLOYER - Nhà tuyển dụng"]
+        EmployerHome[EmployerHomeScreen<br/>Trang chủ nhà tuyển dụng]
+
+        %% Bottom Navigation Tabs
+        EmployerHome --> EmpHomePage[HomePage<br/>Quản lý tin tuyển dụng]
+        EmployerHome --> EmpSearch[SearchPage<br/>Tìm kiếm ứng viên]
+        EmployerHome --> EmpTools[ToolsPage<br/>Công cụ quản lý]
+        EmployerHome --> EmpProfile[ProfilePage<br/>Hồ sơ công ty]
+
+        %% Quản lý tin tuyển dụng
+        EmpHomePage --> EmpJobs[Jobs Management<br/>Quản lý bài đăng]
+        EmpHomePage --> PendingDecisions[PendingRecruitmentDecisionsScreen<br/>Quyết định tuyển dụng chờ xử lý]
+        EmpHomePage --> SavedCandidates[SavedCandidatesScreen<br/>Ứng viên đã lưu]
+
+        %% Phỏng vấn
+        EmpHomePage --> EmpInterviewSchedule[InterviewScheduleScreen<br/>Lịch phỏng vấn]
+        EmpInterviewSchedule --> EmpInterviewDetail[InterviewDetailScreen<br/>Chi tiết phỏng vấn]
+
+        %% Đánh giá ứng viên
+        EmpHomePage --> EmpEvaluation[Evaluation<br/>Đánh giá ứng viên]
+
+        %% Thống kê
+        EmpTools --> EmpStatistics[Statistics<br/>Thống kê tuyển dụng]
+
+        %% Partnership
+        EmpHomePage --> EmpPartnership[PartnershipRequestsScreen<br/>Yêu cầu hợp tác trường học]
+
+        %% Gói dịch vụ
+        EmpTools --> EmpSubscription[Subscription<br/>Gói dịch vụ & Thanh toán]
+
+        %% Hồ sơ & Cài đặt
+        EmpProfile --> EditCompanyProfile[EditCompanyProfileScreen<br/>Chỉnh sửa hồ sơ công ty]
+        EmpProfile --> EmailSettings[EmailNotificationSettingsScreen<br/>Cài đặt email thông báo]
+        EmailSettings --> EmailTemplate[EmailTemplateEditorScreen<br/>Chỉnh sửa mẫu email]
+    end
+
+    %% ============================================
+    %% SCHOOL - Trường học
+    %% ============================================
+    subgraph SchoolFlow["🏫 SCHOOL - Trường học"]
+        SchoolHome[SchoolHomeScreen<br/>Trang chủ trường học]
+
+        %% Bottom Navigation Tabs
+        SchoolHome --> SchHomePage[HomePage<br/>Quản lý sinh viên]
+        SchoolHome --> SchSearch[SearchPage<br/>Tìm kiếm]
+        SchoolHome --> SchTools[ToolsPage<br/>Công cụ]
+        SchoolHome --> SchSettings[SettingsPage<br/>Cài đặt]
+
+        %% Quản lý sinh viên & Việc làm
+        SchHomePage --> SchJobs[Jobs<br/>Quản lý việc làm cho sinh viên]
+        SchHomePage --> SchPartnership[Partnership<br/>Quản lý hợp tác doanh nghiệp]
+
+        %% Đánh giá
+        SchHomePage --> SchEvaluation[Evaluation<br/>Đánh giá sinh viên]
+
+        %% Thống kê
+        SchTools --> SchStatistics[Statistics<br/>Thống kê trường học]
+
+        %% Cài đặt email
+        SchSettings --> SchEmailSetup[SchoolEmailSetupScreen<br/>Cài đặt email trường]
+    end
+
+    %% ============================================
+    %% ADMIN - Quản trị viên
+    %% ============================================
+    subgraph AdminFlow["⚙️ ADMIN - Quản trị viên"]
+        AdminHome[AdminHomeScreen<br/>Trang chủ quản trị]
+
+        %% Navigation Tabs
+        AdminHome --> AdminDashboard[DashboardPage<br/>Bảng điều khiển tổng quan]
+        AdminHome --> AdminUsers[UsersManagementPage<br/>Quản lý người dùng]
+        AdminHome --> AdminJobs[JobApprovalPage<br/>Duyệt tin tuyển dụng]
+        AdminHome --> AdminContent[ContentManagementPage<br/>Quản lý nội dung]
+        AdminHome --> AdminReports[ReportsPage<br/>Báo cáo & Thống kê]
+        AdminHome --> AdminSettings[SettingsPage<br/>Cài đặt hệ thống]
+
+        %% Chi tiết quản lý users
+        AdminUsers --> UserDetail[UserDetailScreen<br/>Chi tiết người dùng]
+        AdminUsers --> CreateUser[CreateUserScreen<br/>Tạo tài khoản mới]
+
+        %% Testing
+        AdminHome --> AdminTest[TestPage<br/>Trang kiểm thử]
+    end
+
+    %% ============================================
+    %% TÍNH NĂNG DÙNG CHUNG (Cross-role)
+    %% ============================================
+    subgraph SharedFeatures["💬 Tính năng dùng chung"]
+        ChatList[ChatListScreen<br/>Danh sách cuộc trò chuyện]
+        ChatDetail[ChatDetailScreen<br/>Chi tiết trò chuyện]
+        ChatList --> ChatDetail
+
+        CVManagement[CVManagementScreen<br/>Quản lý CV]
+        CVCreation[CVCreationScreen<br/>Tạo CV mới]
+        CVUpload[CVUploadScreen<br/>Tải lên CV]
+        CVManagement --> CVCreation
+        CVManagement --> CVUpload
+
+        Notifications[Notifications<br/>Thông báo đẩy]
+    end
+
+    %% Liên kết tính năng dùng chung
+    CandTools -->|Chat| ChatList
+    EmpTools -->|Chat| ChatList
+    SchTools -->|Chat| ChatList
+    CandTools -->|Quản lý CV| CVManagement
+    CandidateHome -.->|Nhận thông báo| Notifications
+    EmployerHome -.->|Nhận thông báo| Notifications
+    SchoolHome -.->|Nhận thông báo| Notifications
+    AdminHome -.->|Nhận thông báo| Notifications
+
+    %% ============================================
+    %% STYLING
+    %% ============================================
+    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef auth fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef candidate fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef employer fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef school fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef admin fill:#efebe9,stroke:#3e2723,stroke-width:2px
+    classDef shared fill:#e0f7fa,stroke:#006064,stroke-width:2px
+
+    class Start,Splash startEnd
+    class Login,Register,ChangePass,CheckRole auth
+    class CandidateHome,CandHomePage,CandSearch,CandTools,CandSettings candidate
+    class EmployerHome,EmpHomePage,EmpSearch,EmpTools,EmpProfile employer
+    class SchoolHome,SchHomePage,SchSearch,SchTools,SchSettings school
+    class AdminHome,AdminDashboard,AdminUsers,AdminJobs,AdminContent,AdminReports,AdminSettings admin
+    class ChatList,ChatDetail,CVManagement,CVCreation,CVUpload,Notifications shared
